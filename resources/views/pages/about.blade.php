@@ -287,7 +287,7 @@
                 <!-- RIGHT ICON BOX -->
                 <div class="abt-value-iconbox">
                     <div class="abt-icon-card">
-                        <img id="abtIconImage" src="https://cdn-icons-png.flaticon.com/512/992/992651.png" alt="Icon">
+                        <img id="abtIconImage" src="{{ $aboutPage->values_who_we_are_image_url ?? 'https://cdn-icons-png.flaticon.com/512/992/992651.png' }}" alt="Icon">
                     </div>
                 </div>
             </div>
@@ -299,10 +299,10 @@
             const tabs = document.querySelectorAll(".abt-tab-item");
 
             const icons = {
-                who: "https://cdn-icons-png.flaticon.com/512/992/992651.png",
-                mission: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png",
-                vision: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                pro: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                who: "{{ $aboutPage->values_who_we_are_image_url ?? 'https://cdn-icons-png.flaticon.com/512/992/992651.png' }}",
+                mission: "{{ $aboutPage->values_mission_image_url ?? 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' }}",
+                vision: "{{ $aboutPage->values_vision_image_url ?? 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }}",
+                pro: "{{ $aboutPage->values_teamwork_image_url ?? 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }}"
             };
 
             tabs.forEach(tab => {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AboutPageSection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class AboutPageController extends Controller
@@ -39,9 +40,13 @@ class AboutPageController extends Controller
             'vision_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'values_heading' => 'nullable|string|max:255',
             'values_who_we_are' => 'nullable|string',
+            'values_who_we_are_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'values_mission' => 'nullable|string',
+            'values_mission_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'values_vision' => 'nullable|string',
+            'values_vision_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'values_teamwork' => 'nullable|string',
+            'values_teamwork_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'team_section_title' => 'nullable|string|max:255',
             'team_section_heading' => 'nullable|string|max:255',
             'is_active' => 'boolean',
@@ -70,6 +75,32 @@ class AboutPageController extends Controller
                 Storage::disk('public')->delete($aboutPage->vision_icon);
             }
             $validated['vision_icon'] = $request->file('vision_icon')->store('about-icons', 'public');
+        }
+
+        // Handle values tab image uploads (stored in public/about-values/)
+        $valuesImageFields = [
+            'values_who_we_are_image',
+            'values_mission_image',
+            'values_vision_image',
+            'values_teamwork_image',
+        ];
+
+        $uploadDir = public_path('about-values');
+        if (!File::isDirectory($uploadDir)) {
+            File::makeDirectory($uploadDir, 0755, true);
+        }
+
+        foreach ($valuesImageFields as $field) {
+            if ($request->hasFile($field)) {
+                // Delete old file
+                if ($aboutPage->$field && File::exists(public_path($aboutPage->$field))) {
+                    File::delete(public_path($aboutPage->$field));
+                }
+                $file = $request->file($field);
+                $filename = time() . '_' . $field . '.' . $file->getClientOriginalExtension();
+                $file->move($uploadDir, $filename);
+                $validated[$field] = 'about-values/' . $filename;
+            }
         }
 
         $validated['is_active'] = 1;

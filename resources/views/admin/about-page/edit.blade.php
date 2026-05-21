@@ -138,21 +138,45 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tab 1: Who We Are</label>
                             <textarea name="values_who_we_are" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('values_who_we_are', $aboutPage->values_who_we_are ?? '') }}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 mt-3 mb-2">Tab 1 Image</label>
+                            @if ($aboutPage && $aboutPage->values_who_we_are_image)
+                                <img src="{{ $aboutPage->values_who_we_are_image_url }}" alt="Who We Are" class="h-20 w-20 object-cover rounded mb-2">
+                            @endif
+                            <input type="file" name="values_who_we_are_image" accept="image/*"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tab 2: Mission</label>
                             <textarea name="values_mission" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('values_mission', $aboutPage->values_mission ?? '') }}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 mt-3 mb-2">Tab 2 Image</label>
+                            @if ($aboutPage && $aboutPage->values_mission_image)
+                                <img src="{{ $aboutPage->values_mission_image_url }}" alt="Mission" class="h-20 w-20 object-cover rounded mb-2">
+                            @endif
+                            <input type="file" name="values_mission_image" accept="image/*"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tab 3: Vision</label>
                             <textarea name="values_vision" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('values_vision', $aboutPage->values_vision ?? '') }}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 mt-3 mb-2">Tab 3 Image</label>
+                            @if ($aboutPage && $aboutPage->values_vision_image)
+                                <img src="{{ $aboutPage->values_vision_image_url }}" alt="Vision" class="h-20 w-20 object-cover rounded mb-2">
+                            @endif
+                            <input type="file" name="values_vision_image" accept="image/*"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tab 4: Teamwork</label>
                             <textarea name="values_teamwork" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('values_teamwork', $aboutPage->values_teamwork ?? '') }}</textarea>
+                            <label class="block text-sm font-medium text-gray-700 mt-3 mb-2">Tab 4 Image</label>
+                            @if ($aboutPage && $aboutPage->values_teamwork_image)
+                                <img src="{{ $aboutPage->values_teamwork_image_url }}" alt="Teamwork" class="h-20 w-20 object-cover rounded mb-2">
+                            @endif
+                            <input type="file" name="values_teamwork_image" accept="image/*"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                         </div>
                     </div>
                 </div>
