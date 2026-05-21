@@ -70,9 +70,9 @@
 <body class="bg-pattern-white font-body">
 
     <!-- Preloader -->
-    <div id="preloader">
+    {{-- <div id="preloader">
         <div class="spinner"></div>
-    </div>
+    </div> --}}
 
     @include('common.header')
 

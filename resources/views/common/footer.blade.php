@@ -60,8 +60,6 @@
                  <p class="text-gray-400 font-body text-sm leading-relaxed mb-6">
                     Schedule appointments easily via phone, email, or our online booking system. Let's find your perfect property.
                  </p>
-                  <a href="#" class="px-6 py-3 rounded-full font-highlight font-semibold shadow-lg transition-all transform hover:scale-105 inline-block text-sm btn-anim btn-dark-bg">Register Now
-                     </a>
             </div>
 
         </div>

@@ -17,14 +17,15 @@ class PropertyTypeController extends Controller
 {
     public function index(): View
     {
-        $propertyTypes = PropertyType::withCount('serviceTypes')->orderBy('sort_order', 'asc')->paginate(10);
+        $propertyTypes = PropertyType::withCount(['serviceTypes', 'bhks'])->orderBy('sort_order', 'asc')->paginate(10);
         return view('admin.property-types.index', compact('propertyTypes'));
     }
 
     public function create(): View
     {
         $serviceTypes = ServiceType::active()->ordered()->get();
-        return view('admin.property-types.create', compact('serviceTypes'));
+        $bhks = \App\Models\Bhk::active()->ordered()->get();
+        return view('admin.property-types.create', compact('serviceTypes', 'bhks'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -39,6 +40,8 @@ class PropertyTypeController extends Controller
             'sort_order' => 'integer|min:0',
             'service_types' => 'nullable|array',
             'service_types.*' => 'exists:service_types,id',
+            'bhks' => 'nullable|array',
+            'bhks.*' => 'exists:bhks,id',
             
             // Carousel section fields
             'carousel_title' => 'nullable|string|max:255',
@@ -78,6 +81,11 @@ class PropertyTypeController extends Controller
             $propertyType->serviceTypes()->sync($request->service_types);
         }
 
+        // Sync BHKs
+        if ($request->has('bhks')) {
+            $propertyType->bhks()->sync($request->bhks);
+        }
+
         // Handle carousel section
         $this->handleSection($propertyType, $request, 'carousel');
         
@@ -100,8 +108,9 @@ class PropertyTypeController extends Controller
     public function edit(PropertyType $propertyType): View
     {
         $serviceTypes = ServiceType::active()->ordered()->get();
-        $propertyType->load(['serviceTypes', 'carouselSection', 'perspectiveSection', 'introSection']);
-        return view('admin.property-types.edit', compact('propertyType', 'serviceTypes'));
+        $bhks = \App\Models\Bhk::active()->ordered()->get();
+        $propertyType->load(['serviceTypes', 'bhks', 'carouselSection', 'perspectiveSection', 'introSection']);
+        return view('admin.property-types.edit', compact('propertyType', 'serviceTypes', 'bhks'));
     }
 
     public function update(Request $request, PropertyType $propertyType): RedirectResponse
@@ -116,6 +125,8 @@ class PropertyTypeController extends Controller
             'sort_order' => 'integer|min:0',
             'service_types' => 'nullable|array',
             'service_types.*' => 'exists:service_types,id',
+            'bhks' => 'nullable|array',
+            'bhks.*' => 'exists:bhks,id',
             
             // Carousel section fields
             'carousel_title' => 'nullable|string|max:255',
@@ -155,6 +166,9 @@ class PropertyTypeController extends Controller
         // Sync service types
         $propertyType->serviceTypes()->sync($request->service_types ?? []);
 
+        // Sync BHKs
+        $propertyType->bhks()->sync($request->bhks ?? []);
+
         // Handle carousel section
         $this->handleSection($propertyType, $request, 'carousel', true);
         
@@ -171,6 +185,7 @@ class PropertyTypeController extends Controller
     public function destroy(PropertyType $propertyType): RedirectResponse
     {
         $propertyType->serviceTypes()->detach();
+        $propertyType->bhks()->detach();
         $propertyType->delete();
 
         return redirect()->route('admin.property-types.index')

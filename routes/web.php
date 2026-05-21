@@ -47,6 +47,7 @@ Route::get('/blog/{blog:slug}', [HomeController::class, 'blogShow'])->name('blog
 Route::get('/properties', [HomeController::class, 'properties'])->name('properties.index');
 Route::get('/properties/{property:slug}', [HomeController::class, 'show'])->name('properties.show');
 Route::get('/properties/search', [HomeController::class, 'search'])->name('properties.search');
+Route::get('/api/bhks-by-property-type', [HomeController::class, 'getBhksByPropertyType'])->name('api.bhks-by-property-type');
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('privacy-policy');
 Route::get('/terms-and-conditions', [HomeController::class, 'termsAndConditions'])->name('terms-and-conditions');
 // Calculator Routes

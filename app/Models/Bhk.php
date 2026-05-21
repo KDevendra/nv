@@ -33,4 +33,13 @@ class Bhk extends Model
     {
         return $query->orderBy('sort_order', 'asc');
     }
+
+    /**
+     * Get the property types associated with this BHK.
+     */
+    public function propertyTypes()
+    {
+        return $this->belongsToMany(PropertyType::class, 'bhk_property_type')
+                    ->withTimestamps();
+    }
 }

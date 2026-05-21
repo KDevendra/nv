@@ -122,7 +122,14 @@ class HomeController extends Controller
         $cities = City::active()->ordered()->get();
         $locations = Location::active()->ordered()->get();
         $propertyTypes = PropertyType::active()->ordered()->get();
-        $bhks = Bhk::active()->ordered()->get();
+        
+        // Filter BHKs based on selected property type
+        if ($selectedPropertyType) {
+            $bhks = $selectedPropertyType->bhks()->active()->ordered()->get();
+        } else {
+            $bhks = Bhk::active()->ordered()->get();
+        }
+        
         $projectStatuses = ProjectStatus::active()->ordered()->get();
         $builders = Builder::active()->verified()->ordered()->get();
         $workProcesses = WorkProcess::active()->ordered()->get();
@@ -158,7 +165,7 @@ class HomeController extends Controller
             }
         }
         
-        return view('pages.properties', compact('properties', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder'));
+        return view('pages.properties', compact('properties', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder', 'selectedPropertyType'));
     }
 
     public function show(Property $property)
@@ -246,4 +253,29 @@ class HomeController extends Controller
     public function ftToCm()             { return view('pages.calculators.ft-to-cm'); }
     public function ftToInches()         { return view('pages.calculators.ft-to-inches'); }
     public function ftToMm()             { return view('pages.calculators.ft-to-mm'); }
+
+    /**
+     * Get BHKs for a specific property type (AJAX endpoint)
+     */
+    public function getBhksByPropertyType(Request $request)
+    {
+        $propertyTypeId = $request->input('property_type_id');
+        
+        if ($propertyTypeId) {
+            $propertyType = PropertyType::find($propertyTypeId);
+            if ($propertyType) {
+                $bhks = $propertyType->bhks()->active()->ordered()->get(['id', 'name']);
+            } else {
+                $bhks = [];
+            }
+        } else {
+            $bhks = Bhk::active()->ordered()->get(['id', 'name']);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'bhks' => $bhks,
+            'count' => $bhks->count()
+        ]);
+    }
 }

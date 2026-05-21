@@ -111,6 +111,35 @@
                 @enderror
             </div>
 
+            <!-- BHK Mapping -->
+            <div class="pt-6 border-t border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Map BHK Types
+                </label>
+                <p class="text-sm text-gray-600 mb-4">Select which BHK configurations are available for this property type</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    @forelse($bhks as $bhk)
+                        <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-zendo-gold cursor-pointer transition-colors">
+                            <input type="checkbox" name="bhks[]" value="{{ $bhk->id }}"
+                                {{ in_array($bhk->id, old('bhks', $propertyType->bhks->pluck('id')->toArray())) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-zendo-gold focus:ring-zendo-gold mr-3">
+                            <span class="text-sm font-medium text-gray-700">
+                                {{ $bhk->name }}
+                            </span>
+                        </label>
+                    @empty
+                        <p class="text-sm text-gray-500 col-span-4">No BHK types available. Create BHK types first.</p>
+                    @endforelse
+                </div>
+                @error('bhks')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Status -->
             <div class="pt-6 border-t border-gray-200">
                 <div class="space-y-3">

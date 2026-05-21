@@ -32,6 +32,15 @@ class PropertyType extends Model
     }
 
     /**
+     * Get the BHKs associated with this property type.
+     */
+    public function bhks()
+    {
+        return $this->belongsToMany(Bhk::class, 'bhk_property_type')
+                    ->withTimestamps();
+    }
+
+    /**
      * Scope a query to only include active property types.
      */
     public function scopeActive($query)
