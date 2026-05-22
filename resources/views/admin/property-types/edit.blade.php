@@ -287,18 +287,23 @@
                     
                     @if($propertyType->carouselSection && $propertyType->carouselSection->images)
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Images</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             @foreach($propertyType->carouselSection->images as $index => $image)
-                            <div class="relative group">
-                                <img src="{{ Storage::url($image) }}" alt="Carousel {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg">
-                                <label class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <input type="checkbox" name="carousel_remove_images[]" value="{{ $image }}" class="hidden">
+                            <div class="relative group image-remove-wrapper" data-image="{{ $image }}">
+                                <img src="{{ asset($image) }}" alt="Carousel {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
+                                <button type="button"
+                                    onclick="toggleRemoveImage(this, 'carousel')"
+                                    class="remove-btn absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
-                                </label>
-                                <input type="hidden" name="carousel_existing_images[]" value="{{ $image }}">
+                                </button>
+                                <input type="hidden" name="carousel_existing_images[]" value="{{ $image }}" class="existing-input">
+                                <input type="hidden" name="carousel_remove_images[]" value="" class="remove-input" disabled>
+                                <div class="remove-overlay hidden absolute inset-0 bg-red-500 bg-opacity-60 rounded-lg flex items-center justify-center">
+                                    <span class="text-white text-xs font-semibold">Will be removed</span>
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -380,18 +385,23 @@
                     
                     @if($propertyType->perspectiveSection && $propertyType->perspectiveSection->images)
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Images</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             @foreach($propertyType->perspectiveSection->images as $index => $image)
-                            <div class="relative group">
-                                <img src="{{ Storage::url($image) }}" alt="Perspective {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg">
-                                <label class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <input type="checkbox" name="perspective_remove_images[]" value="{{ $image }}" class="hidden">
+                            <div class="relative group image-remove-wrapper" data-image="{{ $image }}">
+                                <img src="{{ asset($image) }}" alt="Perspective {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
+                                <button type="button"
+                                    onclick="toggleRemoveImage(this, 'perspective')"
+                                    class="remove-btn absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
-                                </label>
-                                <input type="hidden" name="perspective_existing_images[]" value="{{ $image }}">
+                                </button>
+                                <input type="hidden" name="perspective_existing_images[]" value="{{ $image }}" class="existing-input">
+                                <input type="hidden" name="perspective_remove_images[]" value="" class="remove-input" disabled>
+                                <div class="remove-overlay hidden absolute inset-0 bg-red-500 bg-opacity-60 rounded-lg flex items-center justify-center">
+                                    <span class="text-white text-xs font-semibold">Will be removed</span>
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -424,4 +434,35 @@
         </form>
     </div>
 </div>
+
+<script>
+function toggleRemoveImage(btn, prefix) {
+    const wrapper = btn.closest('.image-remove-wrapper');
+    const overlay = wrapper.querySelector('.remove-overlay');
+    const existingInput = wrapper.querySelector('.existing-input');
+    const removeInput = wrapper.querySelector('.remove-input');
+    const img = wrapper.querySelector('img');
+    const isMarked = !overlay.classList.contains('hidden');
+
+    if (isMarked) {
+        // Undo removal
+        overlay.classList.add('hidden');
+        img.classList.remove('opacity-40');
+        existingInput.disabled = false;
+        removeInput.disabled = true;
+        removeInput.value = '';
+        btn.classList.remove('bg-green-500');
+        btn.classList.add('bg-red-500');
+    } else {
+        // Mark for removal
+        overlay.classList.remove('hidden');
+        img.classList.add('opacity-40');
+        existingInput.disabled = true;
+        removeInput.disabled = false;
+        removeInput.value = wrapper.dataset.image;
+        btn.classList.remove('bg-red-500');
+        btn.classList.add('bg-green-500');
+    }
+}
+</script>
 @endsection

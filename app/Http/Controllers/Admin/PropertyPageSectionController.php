@@ -84,32 +84,43 @@ class PropertyPageSectionController extends Controller
     public function update(Request $request, PropertyPageSection $propertyPageSection)
     {
         $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'button_text' => 'nullable|string|max:255',
-            'button_link' => 'nullable|string|max:255',
-            'secondary_button_text' => 'nullable|string|max:255',
-            'secondary_button_link' => 'nullable|string|max:255',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'features' => 'nullable|array',
-            'features.*' => 'nullable|string',
-            'is_active' => 'boolean',
-            'order' => 'nullable|integer',
+            'title'                  => 'nullable|string|max:255',
+            'subtitle'               => 'nullable|string|max:255',
+            'kicker'                 => 'nullable|string|max:255',
+            'description'            => 'nullable|string',
+            'button_text'            => 'nullable|string|max:255',
+            'button_link'            => 'nullable|string|max:255',
+            'secondary_button_text'  => 'nullable|string|max:255',
+            'secondary_button_link'  => 'nullable|string|max:255',
+            'images.*'               => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'features'               => 'nullable|array',
+            'features.*'             => 'nullable|string',
+            'badges'                 => 'nullable|array',
+            'badges.*'               => 'nullable|string',
+            'is_active'              => 'boolean',
+            'order'                  => 'nullable|integer',
         ]);
 
+        // Preserve existing images; append new uploads
         $images = $propertyPageSection->images ?? [];
-        
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $path = ImageHelper::storeWebp($image, $propertyPageSection->section_key, $propertyPageSection->id, 'img-' . ($index + 1), 'property-page-sections');
+                $path = ImageHelper::storeWebp(
+                    $image,
+                    $propertyPageSection->section_key,
+                    $propertyPageSection->id,
+                    'img-' . (count($images) + $index + 1),
+                    'property-page-sections'
+                );
                 $images[] = $path;
             }
         }
 
-        $validated['images'] = $images;
-        $validated['features'] = array_filter($request->input('features', []));
-        $validated['is_active'] = $request->has('is_active');
+        $validated['images']    = $images;
+        $validated['features']  = array_values(array_filter($request->input('features', [])));
+        $validated['badges']    = array_values(array_filter($request->input('badges', [])));
+        $validated['is_active'] = $request->boolean('is_active');
 
         $propertyPageSection->update($validated);
 
@@ -138,7 +149,10 @@ class PropertyPageSectionController extends Controller
         $images = $propertyPageSection->images ?? [];
 
         if (isset($images[$imageIndex])) {
-            Storage::disk('public')->delete($images[$imageIndex]);
+            $filePath = public_path($images[$imageIndex]);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
             unset($images[$imageIndex]);
             $propertyPageSection->update(['images' => array_values($images)]);
         }

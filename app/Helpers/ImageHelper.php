@@ -46,7 +46,7 @@ class ImageHelper
         $slug     = Str::slug($seoName);
         $base     = $suffix ? "{$slug}-{$id}-{$suffix}" : "{$slug}-{$id}";
         $filename = "{$base}.webp";
-        $dir      = storage_path("app/public/{$folder}");
+        $dir      = public_path("uploads/{$folder}");
 
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
@@ -54,6 +54,6 @@ class ImageHelper
 
         $image->toWebp($quality)->save("{$dir}/{$filename}");
 
-        return "{$folder}/{$filename}";
+        return "uploads/{$folder}/{$filename}";
     }
 }

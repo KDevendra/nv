@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class PropertyTypeController extends Controller
 {
@@ -206,66 +205,86 @@ class PropertyTypeController extends Controller
      */
     private function handleSection(PropertyType $propertyType, Request $request, string $sectionType, bool $isUpdate = false): void
     {
-        $prefix = $sectionType;
+        $prefix    = $sectionType;
         $sectionKey = $sectionType . '_section';
-        
-        // Check if any section data is provided
-        $hasData = $request->filled("{$prefix}_title") || 
-                   $request->hasFile("{$prefix}_images") ||
-                   ($isUpdate && $request->has("{$prefix}_existing_images"));
-        
-        if (!$hasData) {
+
+        // Always process on update so text-only edits are saved.
+        // On create, skip if absolutely nothing was provided.
+        $hasAnyData = $request->filled("{$prefix}_title")
+            || $request->filled("{$prefix}_subtitle")
+            || $request->filled("{$prefix}_description")
+            || $request->filled("{$prefix}_button_text")
+            || $request->filled("{$prefix}_button_link")
+            || $request->filled("{$prefix}_secondary_button_text")
+            || $request->filled("{$prefix}_secondary_button_link")
+            || $request->hasFile("{$prefix}_images");
+
+        if (!$isUpdate && !$hasAnyData) {
             return;
         }
 
-        // Get or create section
-        $section = $isUpdate 
-            ? $propertyType->propertyPageSections()->where('section_key', $sectionKey)->first()
-            : null;
+        // Find existing section (both on create and update, to avoid duplicate-key errors)
+        $section = $propertyType->propertyPageSections()
+            ->where('section_key', $sectionKey)
+            ->first();
 
-        // Handle images
+        // ── Image handling ──────────────────────────────────────────────────
         $images = [];
-        
-        // Keep existing images if updating (only those not marked for removal)
-        if ($isUpdate && $request->has("{$prefix}_existing_images")) {
-            $existingImages = $request->input("{$prefix}_existing_images", []);
-            $removeImages = $request->input("{$prefix}_remove_images", []);
-            
-            // Delete images marked for removal
-            if ($section && $section->images) {
-                foreach ($section->images as $oldImage) {
-                    if (in_array($oldImage, $removeImages)) {
-                        Storage::disk('public')->delete($oldImage);
-                    } elseif (in_array($oldImage, $existingImages)) {
-                        $images[] = $oldImage;
+
+        if ($isUpdate && $section && $section->images) {
+            // Start from the images already stored in the DB
+            $existingImages = $request->input("{$prefix}_existing_images", $section->images);
+            $removeImages   = $request->input("{$prefix}_remove_images", []);
+
+            foreach ($section->images as $storedImage) {
+                if (in_array($storedImage, $removeImages)) {
+                    // User explicitly ticked "remove" — delete from disk
+                    $filePath = public_path($storedImage);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
                     }
+                } elseif (in_array($storedImage, $existingImages)) {
+                    // Keep it
+                    $images[] = $storedImage;
                 }
             }
+        } elseif (!$isUpdate) {
+            // Fresh create — no existing images to worry about
+            $images = [];
+        } else {
+            // Update but section had no images yet — preserve whatever hidden inputs sent
+            $images = $request->input("{$prefix}_existing_images", []);
         }
-        
+
         // Upload new images
         if ($request->hasFile("{$prefix}_images")) {
             foreach ($request->file("{$prefix}_images") as $index => $image) {
-                $path = ImageHelper::storeWebp($image, $propertyType->name, $propertyType->id, "{$prefix}-" . ($index + 1), 'property-page-sections');
+                $path = ImageHelper::storeWebp(
+                    $image,
+                    $propertyType->name,
+                    $propertyType->id,
+                    "{$prefix}-" . ($index + 1),
+                    'property-page-sections'
+                );
                 $images[] = $path;
             }
         }
 
-        // Prepare section data
+        // ── Persist ─────────────────────────────────────────────────────────
         $sectionData = [
-            'property_type_id' => $propertyType->id,
-            'section_key' => $sectionKey,
-            'title' => $request->input("{$prefix}_title"),
-            'subtitle' => $request->input("{$prefix}_subtitle"),
-            'description' => $request->input("{$prefix}_description"),
-            'button_text' => $request->input("{$prefix}_button_text"),
-            'button_link' => $request->input("{$prefix}_button_link"),
-            'secondary_button_text' => $request->input("{$prefix}_secondary_button_text"),
-            'secondary_button_link' => $request->input("{$prefix}_secondary_button_link"),
-            'images' => $images,
-            'features' => $request->input("{$prefix}_features", []),
-            'is_active' => true,
-            'order' => $sectionType === 'carousel' ? 1 : 2,
+            'property_type_id'       => $propertyType->id,
+            'section_key'            => $sectionKey,
+            'title'                  => $request->input("{$prefix}_title"),
+            'subtitle'               => $request->input("{$prefix}_subtitle"),
+            'description'            => $request->input("{$prefix}_description"),
+            'button_text'            => $request->input("{$prefix}_button_text"),
+            'button_link'            => $request->input("{$prefix}_button_link"),
+            'secondary_button_text'  => $request->input("{$prefix}_secondary_button_text"),
+            'secondary_button_link'  => $request->input("{$prefix}_secondary_button_link"),
+            'images'                 => $images,
+            'features'               => $request->input("{$prefix}_features", []),
+            'is_active'              => true,
+            'order'                  => $sectionType === 'carousel' ? 1 : 2,
         ];
 
         if ($section) {
@@ -280,30 +299,29 @@ class PropertyTypeController extends Controller
      */
     private function handleIntroSection(PropertyType $propertyType, Request $request, bool $isUpdate = false): void
     {
-        // Check if any intro data is provided
-        $hasData = $request->filled('intro_kicker') || 
-                   $request->filled('intro_title') ||
-                   $request->filled('intro_description');
-        
-        if (!$hasData) {
+        $hasAnyData = $request->filled('intro_kicker')
+            || $request->filled('intro_title')
+            || $request->filled('intro_description')
+            || $request->has('intro_badges');
+
+        if (!$isUpdate && !$hasAnyData) {
             return;
         }
 
-        // Get or create section
-        $section = $isUpdate 
-            ? $propertyType->propertyPageSections()->where('section_key', 'intro_section')->first()
-            : null;
+        // Find existing section (both on create and update)
+        $section = $propertyType->propertyPageSections()
+            ->where('section_key', 'intro_section')
+            ->first();
 
-        // Prepare section data
         $sectionData = [
             'property_type_id' => $propertyType->id,
-            'section_key' => 'intro_section',
-            'kicker' => $request->input('intro_kicker'),
-            'title' => $request->input('intro_title'),
-            'description' => $request->input('intro_description'),
-            'badges' => $request->input('intro_badges', []),
-            'is_active' => true,
-            'order' => 0, // First section
+            'section_key'      => 'intro_section',
+            'kicker'           => $request->input('intro_kicker'),
+            'title'            => $request->input('intro_title'),
+            'description'      => $request->input('intro_description'),
+            'badges'           => array_filter($request->input('intro_badges', [])),
+            'is_active'        => true,
+            'order'            => 0,
         ];
 
         if ($section) {

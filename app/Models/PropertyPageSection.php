@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class PropertyPageSection extends Model
 {
@@ -58,7 +57,7 @@ class PropertyPageSection extends Model
     public function getImageUrlAttribute()
     {
         if ($this->images && isset($this->images[0])) {
-            return Storage::url($this->images[0]);
+            return asset($this->images[0]);
         }
         return null;
     }
@@ -67,7 +66,7 @@ class PropertyPageSection extends Model
     {
         if ($this->images && is_array($this->images)) {
             return array_map(function($image) {
-                return Storage::url($image);
+                return asset($image);
             }, $this->images);
         }
         return [];
