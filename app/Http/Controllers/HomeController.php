@@ -94,9 +94,17 @@ class HomeController extends Controller
         if ($request->filled('builder_id')) {
             $query->filterByBuilder($request->builder_id);
         }
-        $selectedBuilder = $request->filled('builder_id')
-            ? Builder::with(['amenities', 'projectStatuses'])->find($request->builder_id)
-            : null;        if ($request->filled('min_price') || $request->filled('max_price')) {
+        $selectedBuilder = null;
+        if ($request->filled('builder_id')) {
+            $selectedBuilder = Builder::find($request->builder_id);
+            if ($selectedBuilder) {
+                try {
+                    $selectedBuilder->load(['amenities', 'projectStatuses']);
+                } catch (\Exception $e) {
+                    // Silently fail if relationship not available
+                }
+            }
+        }        if ($request->filled('min_price') || $request->filled('max_price')) {
             $query->filterByPriceRange($request->min_price, $request->max_price);
         }
         if ($request->filled('search')) {
@@ -171,10 +179,37 @@ class HomeController extends Controller
     public function show(Property $property)
     {
         $property->incrementViews();
-        $property->load(['propertyType', 'bhk', 'city', 'location', 'projectStatus', 'builder.amenities', 'builder.projectStatuses', 'images', 'amenities', 'specifications', 'faqs' => function ($query) {
-            $query->active()->ordered();
-        }]);
-        $similarProperties = Property::with(['propertyType', 'bhk', 'city', 'mainImage'])->active()->published()->where('id', '!=', $property->id)->where('property_type_id', $property->property_type_id)->where('city_id', $property->city_id)->limit(3)->get();
+        $property->load([
+            'propertyType',
+            'bhk',
+            'city',
+            'location',
+            'projectStatus',
+            'builder',
+            'images',
+            'amenities',
+            'specifications',
+            'faqs' => function ($query) {
+                $query->active()->ordered();
+            }
+        ]);
+
+        // Load builder relationships separately to avoid issues
+        if ($property->builder) {
+            try {
+                $property->builder->load(['amenities', 'projectStatuses']);
+            } catch (\Exception $e) {
+                // Silently fail if relationship not available
+            }
+        }
+
+        $similarProperties = Property::with(['propertyType', 'bhk', 'city', 'mainImage'])
+            ->active()->published()
+            ->where('id', '!=', $property->id)
+            ->where('property_type_id', $property->property_type_id)
+            ->where('city_id', $property->city_id)
+            ->limit(3)->get();
+
         return view('pages.property-detail', compact('property', 'similarProperties'));
     }
 

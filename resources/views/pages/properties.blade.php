@@ -1507,7 +1507,7 @@
                         </div>
 
                         <!-- BHK -->
-                      <div class="apw-field" id="bhk-section">
+                      <div class="apw-field" id="bhk-section" style="{{ $bhks->count() > 0 ? '' : 'display:none;' }}">
 
     <label class="apw-label">BHK</label>
 
