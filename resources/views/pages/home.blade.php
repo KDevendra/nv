@@ -1419,9 +1419,8 @@
             <p class="text-gray-600 font-body">We can help you realize your dream of a new home.</p>
          </div>
          <div class="mt-6 md:mt-0">
-            <a href="#"
-               class="px-6 py-3 rounded-full font-highlight font-semibold shadow-lg transition-all transform hover:scale-105 inline-block btn-anim btn-light-bg">Subscribe
-            Now
+            <a href="{{ route('contact') }}"
+               class="px-6 py-3 rounded-full font-highlight font-semibold shadow-lg transition-all transform hover:scale-105 inline-block btn-anim btn-light-bg">Contact us
             </a>
          </div>
       </div>
