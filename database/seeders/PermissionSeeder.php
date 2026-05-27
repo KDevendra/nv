@@ -45,6 +45,7 @@ class PermissionSeeder extends Seeder
             'testimonials'           => ['type' => 'full',  'label' => 'Testimonials'],
             'work-processes'         => ['type' => 'full',  'label' => 'Work Processes'],
             'users'                  => ['type' => 'full',  'label' => 'Users'],
+            'seo-metas'             => ['type' => 'full',  'label' => 'SEO Metas'],
 
             // Read-only (view + show only)
             'consultations'          => ['type' => 'read',  'label' => 'Consultations'],
@@ -109,6 +110,7 @@ class PermissionSeeder extends Seeder
                 'contact-page'           => ['view', 'edit'],
                 'privacy-policy'         => ['view', 'edit'],
                 'terms-and-conditions'   => ['view', 'edit'],
+                'seo-metas'             => ['view', 'create', 'edit', 'delete'],
                 'dashboard'              => ['view'],
                 // No users management
             ],
@@ -145,6 +147,7 @@ class PermissionSeeder extends Seeder
                 'contact-page'           => ['view'],
                 'privacy-policy'         => ['view'],
                 'terms-and-conditions'   => ['view'],
+                'seo-metas'             => ['view'],
                 'dashboard'              => ['view'],
             ],
         ];

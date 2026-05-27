@@ -364,7 +364,7 @@
                                 <div class="mb-6">
                                     <h4 class="text-sm font-medium text-gray-700 mb-2">Main Image</h4>
                                     <div class="relative group inline-block">
-                                        <img src="{{ asset('storage/' . $mainImage->image_path) }}" alt="Main Image"
+                                        <img src="{{ asset($mainImage->image_path) }}" alt="{{ $mainImage->alt_tag ?? $property->title }}"
                                             class="w-48 h-32 object-cover rounded-lg border-2 border-zendo-gold">
                                         <span
                                             class="absolute top-2 left-2 bg-zendo-gold text-white text-xs px-2 py-1 rounded">Main</span>
@@ -377,6 +377,13 @@
                                             </svg>
                                         </button>
                                     </div>
+                                    <div class="mt-2 max-w-xs">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Alt Tag</label>
+                                        <input type="text" name="existing_images_alt[{{ $mainImage->id }}]"
+                                            value="{{ $mainImage->alt_tag }}"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                                            placeholder="Describe this image for SEO">
+                                    </div>
                                 </div>
                             @endif
 
@@ -387,8 +394,8 @@
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         @foreach ($galleryImages as $image)
                                             <div class="relative group">
-                                                <img src="{{ asset('storage/' . $image->image_path) }}"
-                                                    alt="Gallery Image" class="w-full h-32 object-cover rounded-lg">
+                                                <img src="{{ asset($image->image_path) }}"
+                                                    alt="{{ $image->alt_tag ?? 'Gallery Image' }}" class="w-full h-32 object-cover rounded-lg">
                                                 <button type="button" onclick="deleteImage({{ $image->id }})"
                                                     class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 text-white p-1 rounded hover:bg-red-700">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -397,6 +404,12 @@
                                                             stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                     </svg>
                                                 </button>
+                                                <div class="mt-1">
+                                                    <input type="text" name="existing_images_alt[{{ $image->id }}]"
+                                                        value="{{ $image->alt_tag }}"
+                                                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                                                        placeholder="Alt tag">
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -427,18 +440,25 @@
                             @error('main_image')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                            <div class="mt-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Alt Tag (SEO)</label>
+                                <input type="text" name="main_image_alt" value="{{ old('main_image_alt') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                                    placeholder="Describe the image for SEO & accessibility">
+                            </div>
                         </div>
 
                         <!-- Upload Gallery Images -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Add Gallery Images</label>
-                            <input type="file" name="gallery_images[]" multiple accept="image/*"
+                            <input type="file" name="gallery_images[]" multiple accept="image/*" id="gallery_images_input"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                             <p class="mt-1 text-sm text-gray-500">Upload additional images for the property gallery.
                                 Accepted formats: JPEG, PNG, JPG, WEBP. Max size: 2MB per image.</p>
                             @error('gallery_images.*')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                            <div id="gallery-alt-tags-container" class="mt-3 space-y-2"></div>
                         </div>
                     </div>
 
@@ -829,5 +849,22 @@
                     form.submit();
                 }
             }
+
+            // Gallery images alt tag dynamic inputs
+            document.getElementById('gallery_images_input').addEventListener('change', function() {
+                const container = document.getElementById('gallery-alt-tags-container');
+                container.innerHTML = '';
+                const files = this.files;
+                for (let i = 0; i < files.length; i++) {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alt Tag for: ${files[i].name}</label>
+                        <input type="text" name="gallery_images_alt[]"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                            placeholder="Describe this image for SEO & accessibility">
+                    `;
+                    container.appendChild(div);
+                }
+            });
         </script>
     @endpush

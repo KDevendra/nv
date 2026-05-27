@@ -32,7 +32,7 @@
 
     <!-- Call -->
     <a class="sticky-item call"
-        href="tel:+919990186086"
+        href="74-94-01-01-01"
         aria-label="Call now">
 
         <span class="icon">

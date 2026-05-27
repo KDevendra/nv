@@ -68,11 +68,14 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             @foreach ($property->images as $image)
                                 <div class="relative">
-                                    <img src="{{ asset('storage/' . $image->image_path) }}" alt="Property Image"
+                                    <img src="{{ asset($image->image_path) }}" alt="{{ $image->alt_tag ?? $property->title }}"
                                         class="w-full h-48 object-cover rounded-lg">
                                     @if ($image->image_type === 'main')
                                         <span
                                             class="absolute top-2 left-2 bg-zendo-gold text-white text-xs px-2 py-1 rounded">Main</span>
+                                    @endif
+                                    @if ($image->alt_tag)
+                                        <span class="block mt-1 text-xs text-gray-500 truncate">{{ $image->alt_tag }}</span>
                                     @endif
                                 </div>
                             @endforeach

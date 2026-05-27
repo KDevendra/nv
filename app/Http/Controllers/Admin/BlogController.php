@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Helpers\ImageHelper;
 use App\Models\Blog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -30,6 +29,7 @@ class BlogController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'featured_image_alt' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
             'published_date' => 'nullable|date',
             'category' => 'nullable|string|max:255',
@@ -74,6 +74,7 @@ class BlogController extends Controller
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'featured_image_alt' => 'nullable|string|max:255',
             'author' => 'nullable|string|max:255',
             'published_date' => 'nullable|date',
             'category' => 'nullable|string|max:255',
@@ -92,7 +93,10 @@ class BlogController extends Controller
 
         if ($request->hasFile('featured_image')) {
             if ($blog->featured_image) {
-                Storage::disk('public')->delete($blog->featured_image);
+                $oldPath = public_path($blog->featured_image);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
             }
             $validated['featured_image'] = ImageHelper::storeWebp($request->file('featured_image'), $validated['title'], $blog->id, 'featured', 'blogs');
         }
@@ -106,7 +110,10 @@ class BlogController extends Controller
     public function destroy(Blog $blog)
     {
         if ($blog->featured_image) {
-            Storage::disk('public')->delete($blog->featured_image);
+            $path = public_path($blog->featured_image);
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
 
         $blog->delete();
@@ -126,11 +133,17 @@ class BlogController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('blogs/content', $filename, 'public');
-            
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            $dir = public_path('uploads/blogs/content');
+
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            $file->move($dir, $filename);
+
             return response()->json([
-                'location' => asset('storage/' . $path)
+                'location' => asset('uploads/blogs/content/' . $filename)
             ]);
         }
 

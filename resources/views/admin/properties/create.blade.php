@@ -325,17 +325,24 @@
                         @error('main_image')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        <div class="mt-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alt Tag (SEO)</label>
+                            <input type="text" name="main_image_alt" value="{{ old('main_image_alt') }}"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                                placeholder="Describe the image for SEO & accessibility">
+                        </div>
                     </div>
                     <!-- Gallery Images -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Gallery Images (Optional)</label>
-                        <input type="file" name="gallery_images[]" multiple accept="image/*"
+                        <input type="file" name="gallery_images[]" multiple accept="image/*" id="gallery_images_input"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                         <p class="mt-1 text-sm text-gray-500">Upload additional images for the property gallery. Accepted
                             formats: JPEG, PNG, JPG, WEBP. Max size: 2MB per image.</p>
                         @error('gallery_images.*')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        <div id="gallery-alt-tags-container" class="mt-3 space-y-2"></div>
                     </div>
                 </div>
 
@@ -619,5 +626,22 @@
                 }
             }
         }
+
+        // Gallery images alt tag dynamic inputs
+        document.getElementById('gallery_images_input').addEventListener('change', function() {
+            const container = document.getElementById('gallery-alt-tags-container');
+            container.innerHTML = '';
+            const files = this.files;
+            for (let i = 0; i < files.length; i++) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alt Tag for: ${files[i].name}</label>
+                    <input type="text" name="gallery_images_alt[]"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                        placeholder="Describe this image for SEO & accessibility">
+                `;
+                container.appendChild(div);
+            }
+        });
     </script>
 @endpush

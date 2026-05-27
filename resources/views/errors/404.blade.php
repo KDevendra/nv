@@ -45,7 +45,7 @@
                     </div>
                     <h4 class="font-semibold text-zendo-navy font-highlight mb-2">Call Us</h4>
                     <p class="text-gray-600 font-body">
-                        <a href="tel:+919990186086" class="hover:text-zendo-gold transition-colors">+91-9990186086</a>
+                        <a href="74-94-01-01-01" class="hover:text-zendo-gold transition-colors">74-94-01-01-01</a>
                     </p>
                 </div>
                 

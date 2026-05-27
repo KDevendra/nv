@@ -364,12 +364,14 @@
             border-radius: 18px;
             overflow: hidden;
             box-shadow: 0 14px 35px rgba(0, 0, 0, .07);
+            line-height: 0;
         }
 
         .sgdxp-image-wrapper {
             position: relative;
             padding-top: 62%;
             overflow: hidden;
+            line-height: 0;
         }
 
         .sgdxp-image-wrapper img {
@@ -378,6 +380,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .sgdxp-contact-card {
@@ -989,6 +992,15 @@
     <!-- Inquiry Popup Modal -->
     <div id="inquiry-popup-overlay" class="inquiry-popup-overlay hidden">
         <div class="inquiry-popup-content">
+            <!-- Close Button -->
+            <button type="button" id="popup-close-btn"
+                style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:#ef4444;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(239,68,68,0.3);transition:all 0.2s ease;z-index:10;"
+                onmouseover="this.style.background='#dc2626';this.style.transform='scale(1.1)'"
+                onmouseout="this.style.background='#ef4444';this.style.transform='scale(1)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
             <div class="inquiry-popup-header">
                 <h5 class="inquiry-popup-title">Interested in {{ $property->title }}?</h5>
                 <p class="inquiry-popup-subtitle">Our expert team will provide you with floor plans, pricing, and a free
@@ -1165,11 +1177,11 @@
         </div>
 
         <div id="sgdxp-main">
-            <div class="sgdxp-image-card">
-                <div class="sgdxp-image-wrapper">
+            <div class="">
+                <div class="">
                     @if ($property->images->count() > 0)
-                        <img src="{{ asset('storage/' . $property->images->first()->image_path) }}"
-                            alt="{{ $property->title }}">
+                        <img src="{{ asset($property->images->first()->image_path) }}" style="box-shadow: 0 14px 35px rgba(0, 0, 0, .07);border-radius: 5px;"
+                            alt="{{ $property->images->first()->alt_tag ?? $property->title }}">
                     @else
                         <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=70"
                             alt="{{ $property->title }}">
@@ -1235,7 +1247,27 @@
                 <div class="sgdxp-request-btn">
                     <button type="button" id="open-callback-modal-btn">Request Callback</button>
                 </div>
+
+                {{-- Video inside contact card --}}
+                @if($property->youtube_url || $property->video_path)
+                <div style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1);">
+                    <h3 style="font-size:15px;font-weight:600;color:#f4e1bc;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;">Property Video</h3>
+                    @if($property->youtube_url)
+                        @php preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $property->youtube_url, $pm); $ytId = $pm[1] ?? null; @endphp
+                        @if($ytId)
+                        <div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;">
+                            <iframe style="width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/{{ $ytId }}" allowfullscreen loading="lazy"></iframe>
+                        </div>
+                        @endif
+                    @elseif($property->video_path)
+                        <video controls style="width:100%;border-radius:12px;">
+                            <source src="{{ asset('storage/'.$property->video_path) }}" type="video/mp4">
+                        </video>
+                    @endif
+                </div>
+                @endif
             </aside>
+
         </div>
     </div>
 
@@ -1425,32 +1457,6 @@
 
     <!-- GALLERY + SIMILAR PROPERTIES -->
     <section id="sg-gallery-similar">
-
-    {{-- ── VIDEO SECTION ── --}}
-    @if($property->youtube_url || $property->video_path)
-    <section style="background:#f8f6f1;padding:48px 20px;">
-      <div style="max-width:1200px;margin:0 auto;">
-        <h2 style="font-size:26px;font-weight:700;color:#0b2c3d;margin:0 0 20px;">Property Video</h2>
-        <div style="max-width:760px;">
-          @if($property->youtube_url)
-            @php preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $property->youtube_url, $pm); $ytId = $pm[1] ?? null; @endphp
-            @if($ytId)
-            <div style="aspect-ratio:16/9;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.1);">
-              <iframe style="width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/{{ $ytId }}" allowfullscreen loading="lazy"></iframe>
-            </div>
-            @endif
-          @elseif($property->video_path)
-          <video controls style="width:100%;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.1);">
-            <source src="{{ asset('storage/'.$property->video_path) }}" type="video/mp4">
-          </video>
-          @endif
-        </div>
-      </div>
-    </section>
-    @endif
-
-    <!-- GALLERY + SIMILAR PROPERTIES -->
-    <section id="sg-gallery-similar">
         <div class="sg-gs-row">
             <div class="sg-gallery-box">
                 <h2 class="sg-gallery-title">Gallery</h2>
@@ -1460,7 +1466,7 @@
                     @if ($property->images->count() > 0)
                         @foreach ($property->images as $image)
                             <div class="sg-slide">
-                                <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $property->title }}">
+                                <img src="{{ asset($image->image_path) }}" alt="{{ $image->alt_tag ?? $property->title }}">
                             </div>
                         @endforeach
                     @else
@@ -1481,8 +1487,8 @@
                 @forelse($similarProperties as $similar)
                     <div class="sg-similar-card">
                         @if ($similar->mainImage)
-                            <img src="{{ asset('storage/' . $similar->mainImage->image_path) }}"
-                                alt="{{ $similar->title }}">
+                            <img src="{{ asset($similar->mainImage->image_path) }}"
+                                alt="{{ $similar->mainImage->alt_tag ?? $similar->title }}">
                         @else
                             <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=400&q=70"
                                 alt="{{ $similar->title }}">
@@ -1627,6 +1633,23 @@
         const propertyId = '{{ $property->id }}';
         const storageKey = 'property_inquiry_submitted_' + propertyId;
         const hasSubmittedLocal = localStorage.getItem(storageKey);
+
+        // Close popup button handler
+        const popupCloseBtn = document.getElementById('popup-close-btn');
+        if (popupCloseBtn) {
+            popupCloseBtn.addEventListener('click', function() {
+                popupOverlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            });
+        }
+
+        // Close popup when clicking overlay background
+        popupOverlay.addEventListener('click', function(e) {
+            if (e.target === popupOverlay) {
+                popupOverlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
 
         // If already submitted locally, don't show popup
         if (hasSubmittedLocal) {

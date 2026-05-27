@@ -69,8 +69,8 @@
                         <div class="bg-gray-50 rounded-lg p-4">
                             <div class="flex items-center mb-4">
                                 @if($propertyInquiry->property->mainImage)
-                                    <img src="{{ asset('storage/' . $propertyInquiry->property->mainImage->image_path) }}" 
-                                         alt="{{ $propertyInquiry->property->title }}" 
+                                    <img src="{{ asset($propertyInquiry->property->mainImage->image_path) }}" 
+                                         alt="{{ $propertyInquiry->property->mainImage->alt_tag ?? $propertyInquiry->property->title }}" 
                                          class="w-20 h-20 object-cover rounded-lg mr-4">
                                 @else
                                     <div class="w-20 h-20 bg-gray-200 rounded-lg mr-4 flex items-center justify-center">

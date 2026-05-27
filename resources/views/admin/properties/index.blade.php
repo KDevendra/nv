@@ -180,14 +180,14 @@
                                     @php
                                         $imageUrl = null;
                                         if ($property->mainImage) {
-                                            $imageUrl = asset('storage/' . $property->mainImage->image_path);
+                                            $imageUrl = asset($property->mainImage->image_path);
                                         } elseif ($property->images->first()) {
-                                            $imageUrl = asset('storage/' . $property->images->first()->image_path);
+                                            $imageUrl = asset($property->images->first()->image_path);
                                         }
                                     @endphp
 
                                     @if ($imageUrl)
-                                        <img src="{{ $imageUrl }}" alt="{{ $property->title }}"
+                                        <img src="{{ $imageUrl }}" alt="{{ $property->mainImage->alt_tag ?? $property->title }}"
                                             class="w-16 h-16 object-cover rounded-lg mr-4 border border-gray-200">
                                     @else
                                         <div
@@ -302,14 +302,14 @@
                         @php
                             $imageUrl = null;
                             if ($property->mainImage) {
-                                $imageUrl = asset('storage/' . $property->mainImage->image_path);
+                                $imageUrl = asset($property->mainImage->image_path);
                             } elseif ($property->images->first()) {
-                                $imageUrl = asset('storage/' . $property->images->first()->image_path);
+                                $imageUrl = asset($property->images->first()->image_path);
                             }
                         @endphp
 
                         @if ($imageUrl)
-                            <img src="{{ $imageUrl }}" alt="{{ $property->title }}"
+                            <img src="{{ $imageUrl }}" alt="{{ $property->mainImage->alt_tag ?? $property->title }}"
                                 class="w-20 h-20 object-cover rounded-lg flex-shrink-0 border border-gray-200">
                         @else
                             <div

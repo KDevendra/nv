@@ -46,7 +46,7 @@ class TermsConditionSeeder extends Seeder
 <p>If you have any questions about these Terms, please contact us at:</p>
 <ul>
     <li>Email: info@zendoindia.com</li>
-    <li>Phone: +91-9990186086</li>
+    <li>Phone: 74-94-01-01-01</li>
     <li>Address: Room No 1, Plot No 1, Ground Floor, Vatika Primrose Avenue, Sector-82, Gurugram, Haryana - 122012</li>
 </ul>',
                 'effective_date' => now(),

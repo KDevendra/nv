@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\ContactInfoController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\PrivacyPolicyController;
 use App\Http\Controllers\Admin\TermsConditionController;
+use App\Http\Controllers\Admin\SeoMetaController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -229,6 +230,9 @@ Route::middleware('auth')->group(function () {
         // Terms & Conditions (Single Page)
         Route::get('terms-and-conditions', [TermsConditionController::class, 'edit'])->name('terms-and-conditions.edit');
         Route::put('terms-and-conditions', [TermsConditionController::class, 'update'])->name('terms-and-conditions.update');
+
+        // SEO Meta
+        Route::resource('seo-metas', SeoMetaController::class);
     });
 });
 

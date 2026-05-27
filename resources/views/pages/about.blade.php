@@ -428,7 +428,7 @@
     </style>
     <!-- Our recoginzation-->
     <!--- profile section -->
-    <section class="bg-pattern-light py-24 animate-on-scroll fade-in-up">
+    {{-- <section class="bg-pattern-light py-24 animate-on-scroll fade-in-up">
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Section Header -->
             <div class="text-center mb-16">
@@ -470,7 +470,7 @@
                 @endforelse
             </div>
         </div>
-    </section>
+    </section> --}}
     <!-- ended -->
     <!-- cta button -->
     <section id="inquiry-section" class="py-24 animate-on-scroll fade-in-up">

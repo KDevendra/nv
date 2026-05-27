@@ -245,7 +245,7 @@ class Property extends Model
         $imagePath = $this->mainImage?->image_path ?? $this->images->first()?->image_path;
         
         if ($imagePath) {
-            return asset('storage/' . $imagePath);
+            return asset($imagePath);
         }
         
         return null;

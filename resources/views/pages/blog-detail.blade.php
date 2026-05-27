@@ -101,7 +101,7 @@
                     <!-- Featured Image -->
                     @if ($blog->featured_image)
                         <div class="mb-8">
-                            <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->title }}"
+                            <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
                                 class="w-full h-auto rounded-lg shadow-xl">
                         </div>
                     @endif

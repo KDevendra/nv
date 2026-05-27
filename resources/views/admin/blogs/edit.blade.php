@@ -116,7 +116,7 @@
                 <label for="featured_image" class="block text-sm font-medium text-gray-700 mb-2">Featured Image</label>
                 @if($blog->featured_image)
                     <div class="mb-3">
-                        <img src="{{ $blog->featured_image_url }}" alt="Current Image" 
+                        <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}" 
                              class="h-48 w-auto rounded-lg border border-gray-200">
                     </div>
                 @endif
@@ -130,6 +130,13 @@
                 <div id="imagePreview" class="mt-3 hidden">
                     <img src="" alt="Preview" class="h-48 w-auto rounded-lg border border-gray-200">
                 </div>
+            </div>
+
+            <div>
+                <label for="featured_image_alt" class="block text-sm font-medium text-gray-700 mb-2">Image Alt Tag (SEO)</label>
+                <input type="text" name="featured_image_alt" id="featured_image_alt" value="{{ old('featured_image_alt', $blog->featured_image_alt) }}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent"
+                    placeholder="Describe the image for SEO & accessibility">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

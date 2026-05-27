@@ -83,8 +83,8 @@
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div class="flex items-center flex-1">
                         @if($property->mainImage)
-                            <img src="{{ asset('storage/' . $property->mainImage->image_path) }}" 
-                                 alt="{{ $property->title }}" 
+                            <img src="{{ asset($property->mainImage->image_path) }}" 
+                                 alt="{{ $property->mainImage->alt_tag ?? $property->title }}" 
                                  class="w-16 h-16 object-cover rounded-lg mr-4">
                         @else
                             <div class="w-16 h-16 bg-gray-200 rounded-lg mr-4 flex items-center justify-center">

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Blog extends Model
@@ -14,6 +13,7 @@ class Blog extends Model
         'excerpt',
         'content',
         'featured_image',
+        'featured_image_alt',
         'author',
         'published_date',
         'category',
@@ -32,8 +32,8 @@ class Blog extends Model
 
     public function getFeaturedImageUrlAttribute()
     {
-        if ($this->featured_image && Storage::disk('public')->exists($this->featured_image)) {
-            return Storage::url($this->featured_image);
+        if ($this->featured_image && file_exists(public_path($this->featured_image))) {
+            return asset($this->featured_image);
         }
         return asset('assets/images/default-blog.jpg');
     }

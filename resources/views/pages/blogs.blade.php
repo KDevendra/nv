@@ -98,7 +98,7 @@
                 <div class="blog-card bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
                     <a href="{{ route('blogs.show', $blog->slug) }}">
                         <div class="overflow-hidden">
-                            <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->title }}"
+                            <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
                                  class="w-full h-56 object-cover hover:scale-110 transition-transform duration-300">
                         </div>
                         <div class="p-6">

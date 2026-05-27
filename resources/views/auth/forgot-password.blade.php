@@ -93,8 +93,8 @@
             If you're having trouble accessing your account, our support team is here to help.
         </p>
         <div class="flex justify-center space-x-4 text-xs">
-            <a href="tel:+919990186086" class="text-zendo-navy hover:text-zendo-gold transition-colors font-semibold">
-                📞 +91-9990186086
+            <a href="74-94-01-01-01" class="text-zendo-navy hover:text-zendo-gold transition-colors font-semibold">
+                📞 74-94-01-01-01
             </a>
             <a href="mailto:info@zendoindia.com" class="text-zendo-navy hover:text-zendo-gold transition-colors font-semibold">
                 ✉️ info@zendoindia.com

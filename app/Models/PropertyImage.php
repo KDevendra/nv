@@ -12,6 +12,7 @@ class PropertyImage extends Model
         'image_path',
         'image_type',
         'title',
+        'alt_tag',
         'display_order',
     ];
 
@@ -40,6 +41,6 @@ class PropertyImage extends Model
     // Accessors
     public function getFullUrlAttribute(): string
     {
-        return asset('storage/' . $this->image_path);
+        return asset($this->image_path);
     }
 }

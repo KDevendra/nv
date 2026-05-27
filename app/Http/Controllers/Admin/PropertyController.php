@@ -130,7 +130,9 @@ class PropertyController extends Controller
             'amenities' => 'nullable|array',
             'amenities.*' => 'exists:amenities,id',
             'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'main_image_alt' => 'nullable|string|max:255',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gallery_images_alt.*' => 'nullable|string|max:255',
             // Specifications
             'total_floors' => 'nullable|integer|min:1',
             'floor_number' => 'nullable|integer|min:0',
@@ -183,17 +185,20 @@ class PropertyController extends Controller
             $property->images()->create([
                 'image_path' => $path,
                 'image_type' => 'main',
+                'alt_tag' => $request->input('main_image_alt'),
                 'display_order' => 0,
             ]);
         }
 
         // Upload gallery images
         if ($request->hasFile('gallery_images')) {
+            $galleryAlts = $request->input('gallery_images_alt', []);
             foreach ($request->file('gallery_images') as $index => $image) {
                 $path = ImageHelper::storeWebp($image, $validated['title'], $property->id, 'gallery-' . ($index + 1));
                 $property->images()->create([
                     'image_path' => $path,
                     'image_type' => 'gallery',
+                    'alt_tag' => $galleryAlts[$index] ?? null,
                     'display_order' => $index + 1,
                 ]);
             }
@@ -294,7 +299,11 @@ class PropertyController extends Controller
             'amenities' => 'nullable|array',
             'amenities.*' => 'exists:amenities,id',
             'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'main_image_alt' => 'nullable|string|max:255',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gallery_images_alt.*' => 'nullable|string|max:255',
+            'existing_images_alt' => 'nullable|array',
+            'existing_images_alt.*' => 'nullable|string|max:255',
             'total_floors' => 'nullable|integer|min:1',
             'floor_number' => 'nullable|integer|min:0',
             'bedrooms' => 'nullable|integer|min:0',
@@ -343,7 +352,10 @@ class PropertyController extends Controller
             // Delete old main image if exists
             $oldMainImage = $property->images()->where('image_type', 'main')->first();
             if ($oldMainImage) {
-                Storage::disk('public')->delete($oldMainImage->image_path);
+                $oldPath = public_path($oldMainImage->image_path);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
                 $oldMainImage->delete();
             }
 
@@ -351,6 +363,7 @@ class PropertyController extends Controller
             $property->images()->create([
                 'image_path' => $path,
                 'image_type' => 'main',
+                'alt_tag' => $request->input('main_image_alt'),
                 'display_order' => 0,
             ]);
         }
@@ -358,14 +371,23 @@ class PropertyController extends Controller
         // Upload new gallery images
         if ($request->hasFile('gallery_images')) {
             $lastOrder = $property->images()->where('image_type', 'gallery')->max('display_order') ?? 0;
+            $galleryAlts = $request->input('gallery_images_alt', []);
 
             foreach ($request->file('gallery_images') as $index => $image) {
                 $path = ImageHelper::storeWebp($image, $validated['title'], $property->id, 'gallery-' . ($lastOrder + $index + 1));
                 $property->images()->create([
                     'image_path' => $path,
                     'image_type' => 'gallery',
+                    'alt_tag' => $galleryAlts[$index] ?? null,
                     'display_order' => $lastOrder + $index + 1,
                 ]);
+            }
+        }
+
+        // Update alt tags for existing images
+        if ($request->has('existing_images_alt')) {
+            foreach ($request->input('existing_images_alt') as $imageId => $altTag) {
+                $property->images()->where('id', $imageId)->update(['alt_tag' => $altTag]);
             }
         }
 
@@ -455,9 +477,12 @@ class PropertyController extends Controller
     {
         $property = Property::onlyTrashed()->findOrFail($id);
 
-        // Delete images from storage
+        // Delete images from public folder
         foreach ($property->images as $image) {
-            Storage::disk('public')->delete($image->image_path);
+            $path = public_path($image->image_path);
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
 
         if ($property->video_path) {
@@ -494,7 +519,10 @@ class PropertyController extends Controller
     public function deleteImage($imageId)
     {
         $image = \App\Models\PropertyImage::findOrFail($imageId);
-        Storage::disk('public')->delete($image->image_path);
+        $path = public_path($image->image_path);
+        if (file_exists($path)) {
+            unlink($path);
+        }
         $image->delete();
 
         return back()->with('success', 'Image deleted successfully.');
