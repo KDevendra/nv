@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\OurClient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class OurClientController extends Controller
 {
@@ -30,7 +30,7 @@ class OurClientController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $validated['logo'] = $request->file('logo')->store('clients', 'public');
+            $validated['logo'] = $this->uploadLogo($request->file('logo'));
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -57,10 +57,11 @@ class OurClientController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            if ($ourClient->logo) {
-                Storage::disk('public')->delete($ourClient->logo);
+            // Delete old logo
+            if ($ourClient->logo && File::exists(public_path($ourClient->logo))) {
+                File::delete(public_path($ourClient->logo));
             }
-            $validated['logo'] = $request->file('logo')->store('clients', 'public');
+            $validated['logo'] = $this->uploadLogo($request->file('logo'));
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -73,13 +74,26 @@ class OurClientController extends Controller
 
     public function destroy(OurClient $ourClient)
     {
-        if ($ourClient->logo) {
-            Storage::disk('public')->delete($ourClient->logo);
+        if ($ourClient->logo && File::exists(public_path($ourClient->logo))) {
+            File::delete(public_path($ourClient->logo));
         }
-        
+
         $ourClient->delete();
 
         return redirect()->route('admin.our-clients.index')
             ->with('success', 'Client deleted successfully!');
+    }
+
+    private function uploadLogo($file): string
+    {
+        $dir = public_path('uploads/clients');
+        if (!File::isDirectory($dir)) {
+            File::makeDirectory($dir, 0755, true);
+        }
+
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move($dir, $filename);
+
+        return 'uploads/clients/' . $filename;
     }
 }

@@ -29,6 +29,6 @@ class OurClient extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo ? asset('storage/' . $this->logo) : null;
+        return $this->logo ? asset($this->logo) : null;
     }
 }

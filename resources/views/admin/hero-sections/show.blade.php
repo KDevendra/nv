@@ -54,8 +54,8 @@
                 <div class="bg-gray-50 p-4 rounded-lg">
                     @if($heroSection->video_path)
                     <div class="relative bg-black rounded-lg overflow-hidden">
-                        <video class="w-full" controls poster="{{ $heroSection->poster_image ? asset('storage/' . $heroSection->poster_image) : '' }}">
-                            <source src="{{ asset('storage/' . $heroSection->video_path) }}" type="video/mp4">
+                        <video class="w-full" controls poster="{{ $heroSection->poster_image ? asset($heroSection->poster_image) : '' }}">
+                            <source src="{{ asset($heroSection->video_path) }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
@@ -67,7 +67,7 @@
                     </div>
                     @elseif($heroSection->poster_image)
                     <div class="relative rounded-lg overflow-hidden">
-                        <img src="{{ asset('storage/' . $heroSection->poster_image) }}" alt="Poster" class="w-full">
+                        <img src="{{ asset($heroSection->poster_image) }}" alt="Poster" class="w-full">
                     </div>
                     <div class="mt-3 flex items-center space-x-2 text-sm text-gray-600">
                         <svg class="w-5 h-5 text-zendo-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,11 +171,11 @@
                 <div class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
                     <div class="relative bg-gradient-to-br from-zendo-navy to-gray-900 rounded-lg overflow-hidden shadow-xl">
                         @if($heroSection->video_path)
-                        <video class="w-full h-64 object-cover opacity-50" muted poster="{{ $heroSection->poster_image ? asset('storage/' . $heroSection->poster_image) : '' }}">
-                            <source src="{{ asset('storage/' . $heroSection->video_path) }}" type="video/mp4">
+                        <video class="w-full h-64 object-cover opacity-50" muted poster="{{ $heroSection->poster_image ? asset($heroSection->poster_image) : '' }}">
+                            <source src="{{ asset($heroSection->video_path) }}" type="video/mp4">
                         </video>
                         @elseif($heroSection->poster_image)
-                        <img src="{{ asset('storage/' . $heroSection->poster_image) }}" alt="Poster" class="w-full h-64 object-cover opacity-50">
+                        <img src="{{ asset($heroSection->poster_image) }}" alt="Poster" class="w-full h-64 object-cover opacity-50">
                         @else
                         <div class="w-full h-64 bg-gradient-to-br from-zendo-navy to-gray-900"></div>
                         @endif
