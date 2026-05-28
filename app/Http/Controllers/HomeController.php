@@ -27,6 +27,7 @@ use App\Models\PropertyType;
 use App\Models\ServiceType;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
+use App\Models\VideoTourSection;
 use App\Models\WorkProcess;
 use Illuminate\Http\Request;
 
@@ -50,11 +51,12 @@ class HomeController extends Controller
         $popularProperties = Property::with(['propertyType', 'bhk', 'city', 'location', 'projectStatus', 'mainImage', 'specifications'])->active()->published()->orderBy('views_count', 'desc')->limit(3)->get();
         $rentalProperties = Property::with(['propertyType', 'bhk', 'city', 'location', 'projectStatus', 'mainImage', 'specifications'])->active()->published()->latest('published_at')->limit(3)->get();
         $blogs = Blog::active()->published()->ordered()->limit(4)->get();
+        $videoTour = VideoTourSection::getActive();
         $serviceTypeMapping = [];
         foreach ($serviceTypes as $serviceType) {
             $serviceTypeMapping[$serviceType->slug] = $serviceType->propertyTypes->pluck('slug')->toArray();
         }
-        return view('pages.home', compact('heroSections', 'testimonials', 'faqs', 'features', 'whyChooseUsFeatures', 'latestPropertiesFeatures', 'aboutUs', 'categories', 'cities', 'commercialSection', 'serviceTypes', 'propertyTypes', 'serviceTypeMapping', 'featuredProperties', 'popularProperties', 'rentalProperties', 'blogs'));
+        return view('pages.home', compact('heroSections', 'testimonials', 'faqs', 'features', 'whyChooseUsFeatures', 'latestPropertiesFeatures', 'aboutUs', 'categories', 'cities', 'commercialSection', 'serviceTypes', 'propertyTypes', 'serviceTypeMapping', 'featuredProperties', 'popularProperties', 'rentalProperties', 'blogs', 'videoTour'));
     }
 
     public function search(Request $request)

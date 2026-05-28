@@ -20,7 +20,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgb(0 0 0 / 62%);
+            background: linear-gradient(135deg, rgba(15, 32, 39, 0.88), rgba(32, 58, 67, 0.85), rgba(44, 83, 100, 0.82));
         }
 
         .about-banner-container {
@@ -1600,7 +1600,7 @@
                 <main class="apw-resiListings" aria-label="Residential Listings">
                     <div class="apw-listTop">
                         <div class="apw-listTopLeft">
-                            <h2 class="apw-listTitle">Featured Residential Listings</h2>
+                            <h2 class="apw-listTitle">Property Listings</h2>
                             <p class="apw-listSub">Showing {{ $properties->count() }} of {{ $properties->total() }}
                                 properties</p>
                         </div>

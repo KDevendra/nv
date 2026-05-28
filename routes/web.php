@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\PrivacyPolicyController;
 use App\Http\Controllers\Admin\TermsConditionController;
 use App\Http\Controllers\Admin\SeoMetaController;
+use App\Http\Controllers\Admin\VideoTourController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -233,6 +234,10 @@ Route::middleware('auth')->group(function () {
 
         // SEO Meta
         Route::resource('seo-metas', SeoMetaController::class);
+
+        // Video Tour Section
+        Route::get('video-tour', [VideoTourController::class, 'edit'])->name('video-tour.edit');
+        Route::put('video-tour', [VideoTourController::class, 'update'])->name('video-tour.update');
     });
 });
 

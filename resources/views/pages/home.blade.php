@@ -1051,6 +1051,7 @@
    </div>
 </section>
 <!-- VIDEO TOUR SECTION -->
+@if($videoTour)
 <section class="bg-pattern-light py-24 animate-on-scroll fade-in-up">
    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Main container for the section -->
@@ -1060,13 +1061,14 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                <!-- Left Column (Text) -->
                <div class="relative z-10 p-8 md:p-12 lg:p-16">
-                  <span class="section-subheading-dark-bg">Take a video tour</span>
+                  <span class="section-subheading-dark-bg">{{ $videoTour->badge_text }}</span>
                   <h2 class="font-heading text-white">
-                     Watch the video for taking your decision easily.
+                     {{ $videoTour->title }}
                   </h2>
-                  <a href="#"
+                  @if($videoTour->button_text)
+                  <a href="{{ $videoTour->button_link ?? '#' }}"
                      class="inline-flex items-center font-semibold font-highlight text-zendo-gold hover:text-white transition-colors group">
-                     View all
+                     {{ $videoTour->button_text }}
                      <svg class="w-5 h-5 ml-2 transition-transform transform group-hover:translate-x-1"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -1074,6 +1076,7 @@
                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                      </svg>
                   </a>
+                  @endif
                </div>
                <!-- Right Column (Video/Image) -->
                <div class="relative z-10 p-4 md:p-8 lg:p-0 lg:-mr-12">
@@ -1083,33 +1086,48 @@
                         <span class="block w-2 h-2 bg-zendo-gold opacity-20 rounded-full"></span>
                      </template>
                   </div>
-                  <!-- Video Thumbnail -->
+                  <!-- Video/Thumbnail -->
                   <div class="relative rounded-r-lg overflow-hidden shadow-2xl z-10 w-full h-auto aspect-video">
-                     <img src="{{ asset('main/images/properties/morden-villa.png') }}"
-                        alt="Video Tour Thumbnail" class="w-full h-full object-cover">
-                     <!-- Play Button -->
-                     <a href="#" class="video-popup-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                           <path
-                              d="M7 6.27734V17.7227C7 18.4239 7.74953 18.8412 8.38883 18.4633L18.1754 12.7407C18.7774 12.388 18.7774 11.612 18.1754 11.2593L8.38883 5.53671C7.74953 5.15881 7 5.57613 7 6.27734Z">
-                           </path>
-                        </svg>
-                     </a>
+                     @if($videoTour->youtube_embed_url)
+                        <iframe src="{{ $videoTour->youtube_embed_url }}" class="w-full h-full border-0 rounded-r-lg"
+                           allowfullscreen loading="lazy"></iframe>
+                     @elseif($videoTour->video_path)
+                        <video controls class="w-full h-full object-cover rounded-r-lg"
+                           @if($videoTour->thumbnail_url) poster="{{ $videoTour->thumbnail_url }}" @endif>
+                           <source src="{{ asset($videoTour->video_path) }}" type="video/mp4">
+                        </video>
+                     @elseif($videoTour->thumbnail_url)
+                        <img src="{{ $videoTour->thumbnail_url }}"
+                           alt="{{ $videoTour->thumbnail_alt ?? $videoTour->title }}" class="w-full h-full object-cover">
+                        <!-- Play Button (decorative if no video) -->
+                        <a href="#" class="video-popup-button">
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                              <path
+                                 d="M7 6.27734V17.7227C7 18.4239 7.74953 18.8412 8.38883 18.4633L18.1754 12.7407C18.7774 12.388 18.7774 11.612 18.1754 11.2593L8.38883 5.53671C7.74953 5.15881 7 5.57613 7 6.27734Z">
+                              </path>
+                           </svg>
+                        </a>
+                     @else
+                        <img src="{{ asset('main/images/properties/morden-villa.png') }}"
+                           alt="Video Tour Thumbnail" class="w-full h-full object-cover">
+                     @endif
                   </div>
                </div>
             </div>
          </div>
       </div>
       <!-- "Have a question?" text -->
+      @if($videoTour->phone_number)
       <div class="mt-5 text-center lg:text-left">
          <p class="text-lg font-body text-gray-700">
-            Have a question? <a href="tel:+01234874854"
-               class="font-semibold text-zendo-navy hover:text-zendo-gold transition-colors font-highlight">+01234
-            874 854</a>
+            Have a question? <a href="tel:{{ preg_replace('/[^0-9+]/', '', $videoTour->phone_number) }}"
+               class="font-semibold text-zendo-navy hover:text-zendo-gold transition-colors font-highlight">{{ $videoTour->phone_number }}</a>
          </p>
       </div>
+      @endif
    </div>
 </section>
+@endif
 <!-- TESTIMONIALS SECTION -->
 <section class="bg-pattern-white py-24 animate-on-scroll fade-in-up">
    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">

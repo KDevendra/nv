@@ -251,7 +251,7 @@
         .about-banner-overlay {
             position: absolute;
             inset: 0;
-            background: rgb(0 0 0 / 62%);
+            background: linear-gradient(135deg, rgba(15, 32, 39, 0.88), rgba(32, 58, 67, 0.85), rgba(44, 83, 100, 0.82));
         }
 
         .about-banner-container {
