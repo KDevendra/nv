@@ -1162,9 +1162,9 @@
                 <div class="leftMedia">
                     <div class="carousel" data-carousel>
                         <div class="track" data-track>
-                            @foreach ($carouselSection->images_urls as $index => $imageUrl)
+                            @foreach ($carouselSection->images_with_alt ?? [] as $index => $image)
                                 <div class="slide">
-                                    <img src="{{ $imageUrl }}" alt="{{ $carouselSection->title }} {{ $index + 1 }}"
+                                    <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?: $carouselSection->title . ' ' . ($index + 1) }}"
                                         loading="lazy" />
                                 </div>
                             @endforeach
@@ -1753,14 +1753,14 @@
 
                 <div class="apw-propPerspective__media" aria-label="Property images">
                     <div class="apw-propPerspective__grid">
-                        @foreach ($perspectiveSection->images_urls as $index => $imageUrl)
+                        @foreach ($perspectiveSection->images_with_alt ?? [] as $index => $image)
                             @if ($index < 4)
                                 <a class="apw-propPerspective__card" href="#"
-                                    aria-label="Open property image {{ $index + 1 }}">
-                                    <img class="apw-propPerspective__img" src="{{ $imageUrl }}"
-                                        alt="Property view {{ $index + 1 }}" loading="lazy" />
+                                    aria-label="{{ $image['alt'] ?: 'Open property image ' . ($index + 1) }}">
+                                    <img class="apw-propPerspective__img" src="{{ $image['url'] }}"
+                                        alt="{{ $image['alt'] ?: 'Property view ' . ($index + 1) }}" loading="lazy" />
                                     <div class="apw-propPerspective__cap">
-                                        <div class="apw-propPerspective__capTitle">Property View {{ $index + 1 }}</div>
+                                        <div class="apw-propPerspective__capTitle">{{ $image['alt'] ?: 'Property View ' . ($index + 1) }}</div>
                                         <div class="apw-propPerspective__capSub">Premium quality</div>
                                     </div>
                                 </a>

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class PropertyTypeController extends Controller
 {
@@ -208,8 +209,15 @@ class PropertyTypeController extends Controller
         $prefix    = $sectionType;
         $sectionKey = $sectionType . '_section';
 
-        // Always process on update so text-only edits are saved.
-        // On create, skip if absolutely nothing was provided.
+        Log::channel('uploads')->info("=== handleSection [{$sectionKey}] ===", [
+            'property_type_id' => $propertyType->id,
+            'is_update'        => $isUpdate,
+            'has_files'        => $request->hasFile("{$prefix}_images"),
+            'file_count'       => $request->hasFile("{$prefix}_images") ? count($request->file("{$prefix}_images")) : 0,
+            'existing_images'  => $request->input("{$prefix}_existing_images", []),
+            'remove_images'    => $request->input("{$prefix}_remove_images", []),
+        ]);
+
         $hasAnyData = $request->filled("{$prefix}_title")
             || $request->filled("{$prefix}_subtitle")
             || $request->filled("{$prefix}_description")
@@ -220,10 +228,10 @@ class PropertyTypeController extends Controller
             || $request->hasFile("{$prefix}_images");
 
         if (!$isUpdate && !$hasAnyData) {
+            Log::channel('uploads')->info("Skipping {$sectionKey} — no data on create.");
             return;
         }
 
-        // Find existing section (both on create and update, to avoid duplicate-key errors)
         $section = $propertyType->propertyPageSections()
             ->where('section_key', $sectionKey)
             ->first();
@@ -232,48 +240,59 @@ class PropertyTypeController extends Controller
         $images = [];
 
         if ($isUpdate && $section && $section->images) {
-            // Start from the images already stored in the DB
-            $existingImages = $request->input("{$prefix}_existing_images", $section->images);
-            $removeImages   = $request->input("{$prefix}_remove_images", []);
+            $existingImages = $request->input("{$prefix}_existing_images", []);
+            $existingAlts = $request->input("{$prefix}_existing_images_alt", []);
+            $removeImages = $request->input("{$prefix}_remove_images", []);
 
-            foreach ($section->images as $storedImage) {
-                if (in_array($storedImage, $removeImages)) {
-                    // User explicitly ticked "remove" — delete from disk
-                    $filePath = public_path($storedImage);
+            foreach ($section->images as $index => $storedImage) {
+                $storedPath = is_array($storedImage) ? ($storedImage['path'] ?? '') : $storedImage;
+
+                if (in_array($storedPath, $removeImages)) {
+                    $filePath = public_path($storedPath);
                     if (file_exists($filePath)) {
                         unlink($filePath);
                     }
-                } elseif (in_array($storedImage, $existingImages)) {
-                    // Keep it
-                    $images[] = $storedImage;
+                } elseif (in_array($storedPath, $existingImages)) {
+                    $altIndex = array_search($storedPath, $existingImages);
+                    $images[] = [
+                        'path' => $storedPath,
+                        'alt' => $existingAlts[$altIndex] ?? (is_array($storedImage) ? ($storedImage['alt'] ?? '') : ''),
+                    ];
                 }
             }
         } elseif (!$isUpdate) {
-            // Fresh create — no existing images to worry about
             $images = [];
         } else {
-            // Update but section had no images yet — preserve whatever hidden inputs sent
-            $images = $request->input("{$prefix}_existing_images", []);
+            $existingImages = $request->input("{$prefix}_existing_images", []);
+            $existingAlts = $request->input("{$prefix}_existing_images_alt", []);
+            foreach ($existingImages as $idx => $path) {
+                $images[] = [
+                    'path' => $path,
+                    'alt' => $existingAlts[$idx] ?? '',
+                ];
+            }
         }
 
         // Upload new images
         if ($request->hasFile("{$prefix}_images")) {
+            $newAlts = $request->input("{$prefix}_images_alt", []);
             foreach ($request->file("{$prefix}_images") as $index => $image) {
                 $path = ImageHelper::storeWebp(
                     $image,
                     $propertyType->name,
                     $propertyType->id,
-                    "{$prefix}-" . ($index + 1),
+                    "{$prefix}-" . (count($images) + $index + 1),
                     'property-page-sections'
                 );
-                $images[] = $path;
+                $images[] = [
+                    'path' => $path,
+                    'alt' => $newAlts[$index] ?? '',
+                ];
             }
         }
 
         // ── Persist ─────────────────────────────────────────────────────────
         $sectionData = [
-            'property_type_id'       => $propertyType->id,
-            'section_key'            => $sectionKey,
             'title'                  => $request->input("{$prefix}_title"),
             'subtitle'               => $request->input("{$prefix}_subtitle"),
             'description'            => $request->input("{$prefix}_description"),
@@ -287,10 +306,26 @@ class PropertyTypeController extends Controller
             'order'                  => $sectionType === 'carousel' ? 1 : 2,
         ];
 
-        if ($section) {
-            $section->update($sectionData);
-        } else {
-            PropertyPageSection::create($sectionData);
+        try {
+            $saved = PropertyPageSection::updateOrCreate(
+                [
+                    'property_type_id' => $propertyType->id,
+                    'section_key'      => $sectionKey,
+                ],
+                $sectionData
+            );
+
+            Log::channel('uploads')->info("Section SAVED [{$sectionKey}]", [
+                'section_id'   => $saved->id,
+                'was_recently_created' => $saved->wasRecentlyCreated,
+                'images_count' => count($images),
+                'images_saved' => $saved->fresh()->images,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('uploads')->error("Failed to SAVE section [{$sectionKey}]", [
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 

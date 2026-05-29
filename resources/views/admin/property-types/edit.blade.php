@@ -289,9 +289,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                            @foreach($propertyType->carouselSection->images as $index => $image)
-                            <div class="relative group image-remove-wrapper" data-image="{{ $image }}">
-                                <img src="{{ asset($image) }}" alt="Carousel {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
+                            @foreach($propertyType->carouselSection->images_with_alt ?? [] as $index => $image)
+                            <div class="relative group image-remove-wrapper" data-image="{{ $image['path'] }}">
+                                <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?: 'Carousel ' . ($index + 1) }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
                                 <button type="button"
                                     onclick="toggleRemoveImage(this, 'carousel')"
                                     class="remove-btn absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -299,11 +299,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </button>
-                                <input type="hidden" name="carousel_existing_images[]" value="{{ $image }}" class="existing-input">
+                                <input type="hidden" name="carousel_existing_images[]" value="{{ $image['path'] }}" class="existing-input">
                                 <input type="hidden" name="carousel_remove_images[]" value="" class="remove-input" disabled>
                                 <div class="remove-overlay hidden absolute inset-0 bg-red-500 bg-opacity-60 rounded-lg flex items-center justify-center">
                                     <span class="text-white text-xs font-semibold">Will be removed</span>
                                 </div>
+                                <input type="text" name="carousel_existing_images_alt[]" value="{{ $image['alt'] }}"
+                                    class="mt-1 w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-zendo-gold"
+                                    placeholder="Alt tag">
                             </div>
                             @endforeach
                         </div>
@@ -315,6 +318,7 @@
                         <input type="file" name="carousel_images[]" id="carousel_images" multiple accept="image/*"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold">
                         <p class="mt-1 text-sm text-gray-500">Upload multiple images for the carousel (JPEG, PNG, WebP, max 2MB each)</p>
+                        <div id="carousel-new-alt-tags" class="mt-2 space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -387,9 +391,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                            @foreach($propertyType->perspectiveSection->images as $index => $image)
-                            <div class="relative group image-remove-wrapper" data-image="{{ $image }}">
-                                <img src="{{ asset($image) }}" alt="Perspective {{ $index + 1 }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
+                            @foreach($propertyType->perspectiveSection->images_with_alt ?? [] as $index => $image)
+                            <div class="relative group image-remove-wrapper" data-image="{{ $image['path'] }}">
+                                <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?: 'Perspective ' . ($index + 1) }}" class="w-full h-24 object-cover rounded-lg transition-opacity">
                                 <button type="button"
                                     onclick="toggleRemoveImage(this, 'perspective')"
                                     class="remove-btn absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -397,11 +401,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </button>
-                                <input type="hidden" name="perspective_existing_images[]" value="{{ $image }}" class="existing-input">
+                                <input type="hidden" name="perspective_existing_images[]" value="{{ $image['path'] }}" class="existing-input">
                                 <input type="hidden" name="perspective_remove_images[]" value="" class="remove-input" disabled>
                                 <div class="remove-overlay hidden absolute inset-0 bg-red-500 bg-opacity-60 rounded-lg flex items-center justify-center">
                                     <span class="text-white text-xs font-semibold">Will be removed</span>
                                 </div>
+                                <input type="text" name="perspective_existing_images_alt[]" value="{{ $image['alt'] }}"
+                                    class="mt-1 w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-zendo-gold"
+                                    placeholder="Alt tag">
                             </div>
                             @endforeach
                         </div>
