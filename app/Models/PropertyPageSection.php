@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PropertyPageSection extends Model
 {
@@ -49,6 +50,15 @@ class PropertyPageSection extends Model
         return $this->belongsTo(PropertyType::class);
     }
 
+    /**
+     * Section images stored in the dedicated table.
+     */
+    public function sectionImages(): HasMany
+    {
+        return $this->hasMany(PropertyPageSectionImage::class, 'property_page_section_id')
+            ->orderBy('sort_order');
+    }
+
     public static function getByKey($key)
     {
         return static::where('section_key', $key)->where('is_active', true)->first();
@@ -56,51 +66,36 @@ class PropertyPageSection extends Model
 
     public function getImageUrlAttribute()
     {
-        if ($this->images && isset($this->images[0])) {
-            $image = $this->images[0];
-            $path = is_array($image) ? ($image['path'] ?? '') : $image;
-            return asset($path);
+        $first = $this->sectionImages->first();
+        if ($first) {
+            return asset($first->image_path);
         }
         return null;
     }
 
     public function getImagesUrlsAttribute()
     {
-        if ($this->images && is_array($this->images)) {
-            return array_map(function($image) {
-                if (is_array($image) && isset($image['path'])) {
-                    return asset($image['path']);
-                }
-                return asset($image);
-            }, $this->images);
-        }
-        return [];
+        return $this->sectionImages->map(fn($img) => asset($img->image_path))->all();
     }
 
     /**
      * Get images with alt tags as array of [url, alt, path] items.
-     * Handles both old format (plain string) and new format ({path, alt}).
      */
     public function getImagesWithAltAttribute(): array
     {
-        if (!$this->images || !is_array($this->images) || empty($this->images)) {
-            return [];
-        }
+        return $this->sectionImages->map(fn($img) => [
+            'id'   => $img->id,
+            'url'  => asset($img->image_path),
+            'path' => $img->image_path,
+            'alt'  => $img->alt_tag ?? '',
+        ])->all();
+    }
 
-        return array_map(function($image) {
-            if (is_array($image) && isset($image['path'])) {
-                return [
-                    'url' => asset($image['path']),
-                    'path' => $image['path'],
-                    'alt' => $image['alt'] ?? '',
-                ];
-            }
-            // Old format: plain string path
-            return [
-                'url' => asset($image),
-                'path' => $image,
-                'alt' => '',
-            ];
-        }, $this->images);
+    /**
+     * Count of images (used by views for @if checks).
+     */
+    public function getImagesCountAttribute(): int
+    {
+        return $this->sectionImages->count();
     }
 }

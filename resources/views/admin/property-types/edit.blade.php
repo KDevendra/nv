@@ -285,7 +285,7 @@
                         </div>
                     </div>
                     
-                    @if($propertyType->carouselSection && $propertyType->carouselSection->images)
+                    @if($propertyType->carouselSection && $propertyType->carouselSection->sectionImages->count() > 0)
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
@@ -387,7 +387,7 @@
                         </div>
                     </div>
                     
-                    @if($propertyType->perspectiveSection && $propertyType->perspectiveSection->images)
+                    @if($propertyType->perspectiveSection && $propertyType->perspectiveSection->sectionImages->count() > 0)
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Images <span class="text-xs text-gray-400">(click × to mark for removal)</span></label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">

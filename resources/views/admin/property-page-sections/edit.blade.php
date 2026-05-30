@@ -167,15 +167,15 @@
             <div class="pt-4 border-t border-gray-100">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Images</h3>
 
-                @if($propertyPageSection->images && count($propertyPageSection->images) > 0)
+                @if($propertyPageSection->sectionImages->count() > 0)
                 <div class="mb-4">
                     <p class="text-sm text-gray-600 mb-2">Current images — click × to delete</p>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        @foreach($propertyPageSection->images_urls as $index => $imageUrl)
+                        @foreach($propertyPageSection->sectionImages as $img)
                         <div class="relative group">
-                            <img src="{{ $imageUrl }}" alt="Image {{ $index + 1 }}"
+                            <img src="{{ asset($img->image_path) }}" alt="{{ $img->alt_tag ?: 'Image' }}"
                                  class="w-full h-28 object-cover rounded-lg">
-                            <a href="#" onclick="event.preventDefault(); if(confirm('Delete this image?')) document.getElementById('delete-image-{{ $index }}').submit();"
+                            <a href="#" onclick="event.preventDefault(); if(confirm('Delete this image?')) document.getElementById('delete-image-{{ $img->id }}').submit();"
                                class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -251,14 +251,14 @@
         </form>
 
         {{-- Image delete forms (outside main form to avoid nesting) --}}
-        @if($propertyPageSection->images && count($propertyPageSection->images) > 0)
-            @foreach($propertyPageSection->images as $index => $image)
-            <form id="delete-image-{{ $index }}"
+        @if($propertyPageSection->sectionImages->count() > 0)
+            @foreach($propertyPageSection->sectionImages as $img)
+            <form id="delete-image-{{ $img->id }}"
                   action="{{ route('admin.property-page-sections.delete-image', $propertyPageSection) }}"
                   method="POST" style="display:none;">
                 @csrf
                 @method('DELETE')
-                <input type="hidden" name="image_index" value="{{ $index }}">
+                <input type="hidden" name="image_id" value="{{ $img->id }}">
             </form>
             @endforeach
         @endif

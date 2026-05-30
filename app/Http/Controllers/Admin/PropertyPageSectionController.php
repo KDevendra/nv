@@ -101,26 +101,29 @@ class PropertyPageSectionController extends Controller
             'order'                  => 'nullable|integer',
         ]);
 
-        // Preserve existing images; append new uploads
-        $images = $propertyPageSection->images ?? [];
-
+        // Append new uploads into the dedicated images table
         if ($request->hasFile('images')) {
+            $currentCount = $propertyPageSection->sectionImages()->count();
             foreach ($request->file('images') as $index => $image) {
                 $path = ImageHelper::storeWebp(
                     $image,
                     $propertyPageSection->section_key,
                     $propertyPageSection->id,
-                    'img-' . (count($images) + $index + 1),
+                    'img-' . ($currentCount + $index + 1) . '-' . time(),
                     'property-page-sections'
                 );
-                $images[] = $path;
+                $propertyPageSection->sectionImages()->create([
+                    'image_path' => $path,
+                    'alt_tag'    => null,
+                    'sort_order' => $currentCount + $index,
+                ]);
             }
         }
 
-        $validated['images']    = $images;
         $validated['features']  = array_values(array_filter($request->input('features', [])));
         $validated['badges']    = array_values(array_filter($request->input('badges', [])));
         $validated['is_active'] = $request->boolean('is_active');
+        unset($validated['images']);
 
         $propertyPageSection->update($validated);
 
@@ -145,16 +148,28 @@ class PropertyPageSectionController extends Controller
 
     public function deleteImage(Request $request, PropertyPageSection $propertyPageSection)
     {
+        // Support deletion by image ID (new) or by index (legacy)
+        $imageId = $request->input('image_id');
         $imageIndex = $request->input('image_index');
-        $images = $propertyPageSection->images ?? [];
 
-        if (isset($images[$imageIndex])) {
-            $filePath = public_path($images[$imageIndex]);
-            if (file_exists($filePath)) {
-                unlink($filePath);
+        if ($imageId) {
+            $image = $propertyPageSection->sectionImages()->find($imageId);
+            if ($image) {
+                $filePath = public_path($image->image_path);
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+                $image->delete();
             }
-            unset($images[$imageIndex]);
-            $propertyPageSection->update(['images' => array_values($images)]);
+        } elseif ($imageIndex !== null) {
+            $image = $propertyPageSection->sectionImages()->skip((int) $imageIndex)->first();
+            if ($image) {
+                $filePath = public_path($image->image_path);
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+                $image->delete();
+            }
         }
 
         return back()->with('success', 'Image deleted successfully.');

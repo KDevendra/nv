@@ -1156,7 +1156,7 @@
     </section>
 
     <!-- Carousel Section -->
-    @if ($carouselSection && $carouselSection->images && count($carouselSection->images) > 0)
+    @if ($carouselSection && $carouselSection->sectionImages->count() > 0)
         <section id="resi-listing-content">
             <div class="resi-lc-wrap">
                 <div class="leftMedia">
@@ -1716,7 +1716,7 @@
     </section>
 
     <!-- Perspective Section -->
-    @if ($perspectiveSection && $perspectiveSection->images && count($perspectiveSection->images) >= 4)
+    @if ($perspectiveSection && $perspectiveSection->sectionImages->count() >= 4)
         <section id="apw-propPerspective" class="apw-propPerspective">
             <div class="apw-propPerspective__wrap">
                 <div class="apw-propPerspective__content">

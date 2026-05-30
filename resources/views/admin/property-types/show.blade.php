@@ -170,12 +170,12 @@
                             @if($propertyType->carouselSection->title)
                                 <div><span class="font-medium text-gray-700">Title:</span> <span class="text-gray-600">{{ $propertyType->carouselSection->title }}</span></div>
                             @endif
-                            @if($propertyType->carouselSection->images && count($propertyType->carouselSection->images) > 0)
+                            @if($propertyType->carouselSection->sectionImages->count() > 0)
                                 <div>
                                     <span class="font-medium text-gray-700">Images:</span>
                                     <div class="grid grid-cols-4 gap-2 mt-2">
-                                        @foreach($propertyType->carouselSection->images as $image)
-                                            <img src="{{ Storage::url($image) }}" alt="Carousel" class="w-full h-20 object-cover rounded border border-gray-300">
+                                        @foreach($propertyType->carouselSection->images_with_alt as $image)
+                                            <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?: 'Carousel' }}" class="w-full h-20 object-cover rounded border border-gray-300">
                                         @endforeach
                                     </div>
                                 </div>
@@ -202,12 +202,12 @@
                             @if($propertyType->perspectiveSection->title)
                                 <div><span class="font-medium text-gray-700">Title:</span> <span class="text-gray-600">{{ $propertyType->perspectiveSection->title }}</span></div>
                             @endif
-                            @if($propertyType->perspectiveSection->images && count($propertyType->perspectiveSection->images) > 0)
+                            @if($propertyType->perspectiveSection->sectionImages->count() > 0)
                                 <div>
                                     <span class="font-medium text-gray-700">Images:</span>
                                     <div class="grid grid-cols-4 gap-2 mt-2">
-                                        @foreach($propertyType->perspectiveSection->images as $image)
-                                            <img src="{{ Storage::url($image) }}" alt="Perspective" class="w-full h-20 object-cover rounded border border-gray-300">
+                                        @foreach($propertyType->perspectiveSection->images_with_alt as $image)
+                                            <img src="{{ $image['url'] }}" alt="{{ $image['alt'] ?: 'Perspective' }}" class="w-full h-20 object-cover rounded border border-gray-300">
                                         @endforeach
                                     </div>
                                 </div>

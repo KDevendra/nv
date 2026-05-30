@@ -101,7 +101,12 @@ class PropertyTypeController extends Controller
 
     public function show(PropertyType $propertyType): View
     {
-        $propertyType->load(['serviceTypes', 'introSection', 'carouselSection', 'perspectiveSection']);
+        $propertyType->load([
+            'serviceTypes',
+            'introSection',
+            'carouselSection.sectionImages',
+            'perspectiveSection.sectionImages',
+        ]);
         return view('admin.property-types.show', compact('propertyType'));
     }
 
@@ -109,7 +114,13 @@ class PropertyTypeController extends Controller
     {
         $serviceTypes = ServiceType::active()->ordered()->get();
         $bhks = \App\Models\Bhk::active()->ordered()->get();
-        $propertyType->load(['serviceTypes', 'bhks', 'carouselSection', 'perspectiveSection', 'introSection']);
+        $propertyType->load([
+            'serviceTypes',
+            'bhks',
+            'carouselSection.sectionImages',
+            'perspectiveSection.sectionImages',
+            'introSection',
+        ]);
         return view('admin.property-types.edit', compact('propertyType', 'serviceTypes', 'bhks'));
     }
 
@@ -236,44 +247,44 @@ class PropertyTypeController extends Controller
             ->where('section_key', $sectionKey)
             ->first();
 
-        // ── Image handling ──────────────────────────────────────────────────
-        $images = [];
+        // ── Resolve which existing images to keep (with their alt tags) ──────
+        $keptImages = []; // [['path' => ..., 'alt' => ...], ...]
 
-        if ($isUpdate && $section && $section->images) {
-            $existingImages = $request->input("{$prefix}_existing_images", []);
-            $existingAlts = $request->input("{$prefix}_existing_images_alt", []);
-            $removeImages = $request->input("{$prefix}_remove_images", []);
+        $existingImages = $request->input("{$prefix}_existing_images", []);
+        $existingAlts   = $request->input("{$prefix}_existing_images_alt", []);
+        $removeImages   = $request->input("{$prefix}_remove_images", []);
 
-            foreach ($section->images as $index => $storedImage) {
-                $storedPath = is_array($storedImage) ? ($storedImage['path'] ?? '') : $storedImage;
+        if ($isUpdate && $section) {
+            foreach ($section->sectionImages as $img) {
+                $storedPath = $img->image_path;
 
                 if (in_array($storedPath, $removeImages)) {
+                    // Delete the physical file
                     $filePath = public_path($storedPath);
                     if (file_exists($filePath)) {
-                        unlink($filePath);
+                        @unlink($filePath);
                     }
+                    // Will be deleted from DB below (not in keptImages)
                 } elseif (in_array($storedPath, $existingImages)) {
                     $altIndex = array_search($storedPath, $existingImages);
-                    $images[] = [
+                    $keptImages[] = [
                         'path' => $storedPath,
-                        'alt' => $existingAlts[$altIndex] ?? (is_array($storedImage) ? ($storedImage['alt'] ?? '') : ''),
+                        'alt'  => $existingAlts[$altIndex] ?? $img->alt_tag ?? '',
                     ];
                 }
             }
-        } elseif (!$isUpdate) {
-            $images = [];
-        } else {
-            $existingImages = $request->input("{$prefix}_existing_images", []);
-            $existingAlts = $request->input("{$prefix}_existing_images_alt", []);
+        } elseif ($isUpdate) {
+            // Section row doesn't exist yet but hidden inputs may carry paths
             foreach ($existingImages as $idx => $path) {
-                $images[] = [
+                $keptImages[] = [
                     'path' => $path,
-                    'alt' => $existingAlts[$idx] ?? '',
+                    'alt'  => $existingAlts[$idx] ?? '',
                 ];
             }
         }
 
-        // Upload new images
+        // ── Upload new images ───────────────────────────────────────────────
+        $newImages = [];
         if ($request->hasFile("{$prefix}_images")) {
             $newAlts = $request->input("{$prefix}_images_alt", []);
             foreach ($request->file("{$prefix}_images") as $index => $image) {
@@ -281,17 +292,17 @@ class PropertyTypeController extends Controller
                     $image,
                     $propertyType->name,
                     $propertyType->id,
-                    "{$prefix}-" . (count($images) + $index + 1),
+                    "{$prefix}-" . (count($keptImages) + $index + 1) . '-' . time(),
                     'property-page-sections'
                 );
-                $images[] = [
+                $newImages[] = [
                     'path' => $path,
-                    'alt' => $newAlts[$index] ?? '',
+                    'alt'  => $newAlts[$index] ?? '',
                 ];
             }
         }
 
-        // ── Persist ─────────────────────────────────────────────────────────
+        // ── Persist section (text fields) ───────────────────────────────────
         $sectionData = [
             'title'                  => $request->input("{$prefix}_title"),
             'subtitle'               => $request->input("{$prefix}_subtitle"),
@@ -300,7 +311,6 @@ class PropertyTypeController extends Controller
             'button_link'            => $request->input("{$prefix}_button_link"),
             'secondary_button_text'  => $request->input("{$prefix}_secondary_button_text"),
             'secondary_button_link'  => $request->input("{$prefix}_secondary_button_link"),
-            'images'                 => $images,
             'features'               => $request->input("{$prefix}_features", []),
             'is_active'              => true,
             'order'                  => $sectionType === 'carousel' ? 1 : 2,
@@ -315,11 +325,24 @@ class PropertyTypeController extends Controller
                 $sectionData
             );
 
+            // ── Sync images into the dedicated table ────────────────────────
+            // Remove all current image rows, then re-insert in correct order.
+            $saved->sectionImages()->delete();
+
+            $allImages = array_merge($keptImages, $newImages);
+            $sortOrder = 0;
+            foreach ($allImages as $img) {
+                $saved->sectionImages()->create([
+                    'image_path' => $img['path'],
+                    'alt_tag'    => $img['alt'],
+                    'sort_order' => $sortOrder++,
+                ]);
+            }
+
             Log::channel('uploads')->info("Section SAVED [{$sectionKey}]", [
-                'section_id'   => $saved->id,
+                'section_id'           => $saved->id,
                 'was_recently_created' => $saved->wasRecentlyCreated,
-                'images_count' => count($images),
-                'images_saved' => $saved->fresh()->images,
+                'images_count'         => count($allImages),
             ]);
         } catch (\Throwable $e) {
             Log::channel('uploads')->error("Failed to SAVE section [{$sectionKey}]", [
