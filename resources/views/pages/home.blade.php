@@ -1205,8 +1205,15 @@
          <div class="blog-card card-item bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
             <a href="{{ route('blogs.show', $blog->slug) }}">
                <div class="overflow-hidden">
-                  <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->title }}"
-                     class="card-image w-full h-48 object-cover">
+                  @if($blog->featured_image && file_exists(public_path($blog->featured_image)))
+                     <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
+                        class="card-image w-full h-48 object-cover">
+                  @else
+                     <div class="w-full h-48 flex items-center justify-center p-4"
+                        style="background: linear-gradient(135deg, #0b2c3d 0%, #1a4a5e 50%, #b39359 100%);">
+                        <h4 class="text-white text-center font-heading text-base leading-snug">{{ $blog->title }}</h4>
+                     </div>
+                  @endif
                </div>
                <div class="p-6">
                   <h3
@@ -1415,7 +1422,7 @@
                </div>
                @endforelse
             </div>
-            <a href="#"
+            <a href="{{ url('blogs') }}"
                class="px-5 py-2.5 mt-8 rounded-full font-highlight font-semibold shadow-lg transform hover:scale-105 btn-anim btn-light-bg sm:hidden inline-block">
             See More
             </a>

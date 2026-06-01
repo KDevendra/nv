@@ -244,7 +244,8 @@ class HomeController extends Controller
         $relatedBlogs = Blog::active()->published()->where('id', '!=', $blog->id)->when($blog->category, function ($query) use ($blog) {
             $query->where('category', $blog->category);
         })->ordered()->limit(3)->get();
-        return view('pages.blog-detail', compact('blog', 'relatedBlogs'));
+        $recentBlogs = Blog::active()->published()->where('id', '!=', $blog->id)->latest('published_date')->limit(5)->get();
+        return view('pages.blog-detail', compact('blog', 'relatedBlogs', 'recentBlogs'));
     }
 
     public function privacyPolicy()

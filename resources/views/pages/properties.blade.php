@@ -1707,7 +1707,7 @@
                             </p>
                         </div>
                         <div class="apw-ctaRight">
-                            <a class="apw-ctaBtn" href="#contact">Get a Call Back</a>
+                            <a class="apw-ctaBtn" href="{{ route('contact') }}">Get a Call Back</a>
                         </div>
                     </div>
                 </main>

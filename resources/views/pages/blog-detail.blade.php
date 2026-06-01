@@ -99,10 +99,19 @@
                 <!-- Left Column - Blog Content -->
                 <div class="lg:col-span-2">
                     <!-- Featured Image -->
-                    @if ($blog->featured_image)
+                    @if ($blog->featured_image && file_exists(public_path($blog->featured_image)))
                         <div class="mb-8">
                             <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
                                 class="w-full h-auto rounded-lg shadow-xl">
+                        </div>
+                    @else
+                        <div class="mb-8 rounded-lg shadow-xl overflow-hidden">
+                            <div class="w-full h-64 flex items-center justify-center p-8"
+                                style="background: linear-gradient(135deg, #0b2c3d 0%, #1a4a5e 50%, #b39359 100%);">
+                                <h2 class="text-white text-center font-heading text-2xl md:text-3xl leading-snug">
+                                    {{ $blog->title }}
+                                </h2>
+                            </div>
                         </div>
                     @endif
 
@@ -180,6 +189,44 @@
                 <!-- Right Column - Inquiry Form -->
                 <div class="lg:col-span-1">
                     <div class="sticky top-24">
+                        <!-- Recent Posts -->
+                        @if (isset($recentBlogs) && $recentBlogs->count() > 0)
+                            <div class="bg-white rounded-lg shadow-xl p-6 mb-6 border border-gray-100">
+                                <h4 class="text-lg font-heading text-zendo-navy font-semibold mb-4">Recent Posts</h4>
+                                <div class="space-y-4">
+                                    @foreach ($recentBlogs as $recent)
+                                        <a href="{{ route('blogs.show', $recent->slug) }}" class="block group">
+                                            <div class="flex gap-3 items-start">
+                                                <div class="flex-shrink-0">
+                                                    @if($recent->featured_image && file_exists(public_path($recent->featured_image)))
+                                                        <img src="{{ $recent->featured_image_url }}"
+                                                            alt="{{ $recent->featured_image_alt ?? $recent->title }}"
+                                                            class="w-20 h-16 object-cover rounded-lg">
+                                                    @else
+                                                        <div class="w-20 h-16 rounded-lg flex items-center justify-center p-2"
+                                                            style="background: linear-gradient(135deg, #0b2c3d, #b39359);">
+                                                            <span class="text-white text-xs text-center leading-tight">{{ Str::limit($recent->title, 20) }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <span class="text-sm font-semibold font-heading text-zendo-navy group-hover:text-zendo-gold transition-colors line-clamp-2 leading-tight">
+                                                        {{ $recent->title }}
+                                                    </span>
+                                                    <p class="text-xs text-gray-500 font-body mt-1">
+                                                        {{ $recent->published_date ? $recent->published_date->format('M d, Y') : '' }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        @if (!$loop->last)
+                                            <div class="border-b border-gray-100"></div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
                         <!-- Inquiry Form Card -->
                         <div class="bg-white rounded-lg shadow-xl p-8 border border-gray-100">
                             <h3 class="text-2xl font-heading text-zendo-navy font-bold mb-2">Get In Touch</h3>
@@ -258,9 +305,16 @@
                                         <a href="{{ route('blogs.show', $relatedBlog->slug) }}" class="block group">
                                             <div class="flex gap-3 items-start">
                                                 <div class="flex-shrink-0">
-                                                    <img src="{{ $relatedBlog->featured_image_url }}"
-                                                        alt="{{ $relatedBlog->title }}"
-                                                        class="w-24 h-20 object-cover rounded-lg">
+                                                    @if($relatedBlog->featured_image && file_exists(public_path($relatedBlog->featured_image)))
+                                                        <img src="{{ $relatedBlog->featured_image_url }}"
+                                                            alt="{{ $relatedBlog->featured_image_alt ?? $relatedBlog->title }}"
+                                                            class="w-24 h-20 object-cover rounded-lg">
+                                                    @else
+                                                        <div class="w-24 h-20 rounded-lg flex items-center justify-center p-2"
+                                                            style="background: linear-gradient(135deg, #0b2c3d, #b39359);">
+                                                            <span class="text-white text-xs text-center leading-tight">{{ Str::limit($relatedBlog->title, 25) }}</span>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <span
