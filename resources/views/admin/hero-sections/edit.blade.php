@@ -72,7 +72,7 @@
                 <div class="p-4 border border-blue-200 rounded-lg bg-blue-50">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Current Video</label>
                     <video class="w-full max-w-md rounded-lg" controls>
-                        <source src="{{ asset('storage/' . $heroSection->video_path) }}" type="video/mp4">
+                        <source src="{{ asset($heroSection->video_path) }}" type="video/mp4">
                     </video>
                     <label class="flex items-center mt-3 text-sm text-red-600 cursor-pointer">
                         <input type="checkbox" name="remove_video" value="1" class="mr-2 rounded border-gray-300">
@@ -112,7 +112,7 @@
             <div>
                 <div class="p-4 border border-blue-200 rounded-lg bg-blue-50">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Current Poster Image</label>
-                    <img src="{{ asset('storage/' . $heroSection->poster_image) }}" alt="Poster" class="w-full max-w-md rounded-lg">
+                    <img src="{{ asset($heroSection->poster_image) }}" alt="Poster" class="w-full max-w-md rounded-lg">
                     <label class="flex items-center mt-3 text-sm text-red-600 cursor-pointer">
                         <input type="checkbox" name="remove_poster" value="1" class="mr-2 rounded border-gray-300">
                         Remove this poster

@@ -125,7 +125,7 @@
             <!-- Content -->
             <div class="flex flex-col justify-center items-center w-full px-12 relative z-10">
                 <div class="text-center mb-8 float-animation">
-                    <img src="{{ asset('main/images/ZENDO-Logo-Silver.png') }}" alt="ZENDO India" class="h-20 w-auto mx-auto mb-6">
+                    <img src="{{ asset('main/images/ZENDO-Logo-Silver.png') }}" alt="ZENDO INDIA" class="h-20 w-auto mx-auto mb-6">
                     <h1 class="text-4xl font-heading text-white mb-4">Welcome to ZendoIndia</h1>
                     <p class="text-xl text-gray-300 font-body leading-relaxed max-w-md">
                         Your trusted partner in finding the perfect property across India. 
@@ -155,7 +155,7 @@
         <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12">
             <!-- Mobile Logo -->
             <div class="lg:hidden mb-8">
-                <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO India" class="h-12 w-auto mx-auto">
+                <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO INDIA" class="h-12 w-auto mx-auto">
             </div>
 
             <!-- Form Container -->

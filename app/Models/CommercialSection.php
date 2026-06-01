@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class CommercialSection extends Model
 {
@@ -46,19 +45,29 @@ class CommercialSection extends Model
     public function getFormattedGalleryImagesAttribute()
     {
         $images = [];
-        
+
         // Add uploaded images first
         if ($this->uploaded_images) {
             foreach ($this->uploaded_images as $image) {
+                $path = $image['path'] ?? '';
+                // Handle both old (storage) and new (public/uploads) paths
+                if (str_starts_with($path, 'uploads/')) {
+                    $src = asset($path);
+                } elseif (str_starts_with($path, 'commercial-sections/')) {
+                    $src = asset('storage/' . $path);
+                } else {
+                    $src = asset($path);
+                }
+
                 $images[] = [
-                    'src' => asset('storage/' . $image['path']),
+                    'src' => $src,
                     'alt' => $image['alt'] ?? 'Commercial property image',
                     'label' => $image['label'] ?? 'Commercial project',
                     'type' => 'uploaded'
                 ];
             }
         }
-        
+
         // Add manual gallery images
         if ($this->gallery_images) {
             foreach ($this->gallery_images as $image) {
@@ -70,7 +79,7 @@ class CommercialSection extends Model
                 ];
             }
         }
-        
+
         return $images;
     }
 

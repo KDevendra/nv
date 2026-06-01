@@ -4,7 +4,7 @@
 
             <!-- Logo -->
             <a href="{{ route('home') }}" class="text-3xl font-heading">
-                <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO India Logo" class="h-10 w-auto header-logo-img">
+                <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO INDIA" class="h-10 w-auto header-logo-img">
             </a>
 
             <!-- Desktop Navigation -->
@@ -68,8 +68,8 @@
                 <a href="{{ route('blogs.index') }}" class="header-nav-link font-highlight font-medium">Blog/News</a>
                 <a href="{{ route('contact') }}" class="header-nav-link font-highlight font-medium">Contact Us</a>
 
-                <a href="74-94-01-01-01"
-                    class="header-button btn-anim ml-4 px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105">74-94-01-01-01</a>
+                <a href="tel:+917494010101"
+                    class="header-button btn-anim ml-4 px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105">+91 74-94-01-01-01</a>
             </nav>
 
             <!-- Mobile Menu Button -->
@@ -173,7 +173,7 @@
                     @endif
                 @endauth
             @else
-                <a href="74-94-01-01-01"
+                <a href="tel:+917494010101"
                     class="w-full text-center mt-2 px-5 py-3 rounded-full font-highlight font-semibold shadow-lg transition-all btn-anim btn-light-bg">
                     Connect Now
                 </a>

@@ -15,6 +15,7 @@ class City extends Model
         'slug',
         'description',
         'image',
+        'image_alt',
         'property_count',
         'link',
         'status',
@@ -48,12 +49,22 @@ class City extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->image) {
-            return asset('main/images/city/delhi.jpg'); // Default image
+            return asset('main/images/city/delhi.jpg');
         }
 
-        // If it's already a full path, return as is
-        if (Str::startsWith($this->image, ['http://', 'https://', '/'])) {
+        // If it's already a full URL
+        if (Str::startsWith($this->image, ['http://', 'https://'])) {
             return $this->image;
+        }
+
+        // If it starts with uploads/ (new format from ImageHelper)
+        if (Str::startsWith($this->image, 'uploads/')) {
+            return asset($this->image);
+        }
+
+        // If it's in the old storage format (cities/xxx)
+        if (Str::startsWith($this->image, 'cities/')) {
+            return asset('storage/' . $this->image);
         }
 
         // If it contains 'main/images/', return with asset()
@@ -61,13 +72,8 @@ class City extends Model
             return asset($this->image);
         }
 
-        // If it's uploaded file, return from storage
-        if (Str::startsWith($this->image, 'cities/')) {
-            return asset('storage/' . $this->image);
-        }
-
-        // Otherwise, assume it's just a filename and prepend the path
-        return asset('main/images/city/' . $this->image);
+        // Otherwise, assume it's just a filename
+        return asset($this->image);
     }
 
     /**

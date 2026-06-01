@@ -3,39 +3,31 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\ImageHelper;
 use App\Models\City;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CityController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $cities = City::orderBy('sort_order', 'asc')->paginate(10);
         return view('admin.cities.index', compact('cities'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.cities.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image_alt' => 'nullable|string|max:255',
             'property_count' => 'required|integer|min:0',
             'link' => 'nullable|string|max:255',
             'status' => 'boolean',
@@ -46,12 +38,14 @@ class CityController extends Controller
         $data['slug'] = Str::slug($request->name);
         $data['status'] = $request->has('status');
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . Str::slug($request->name) . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('cities', $imageName, 'public');
-            $data['image'] = $imagePath;
+            $data['image'] = ImageHelper::storeWebp(
+                $request->file('image'),
+                $request->name,
+                0,
+                'city',
+                'cities'
+            );
         }
 
         City::create($data);
@@ -60,31 +54,23 @@ class CityController extends Controller
             ->with('success', 'City created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(City $city)
     {
         return view('admin.cities.show', compact('city'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(City $city)
     {
         return view('admin.cities.edit', compact('city'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, City $city)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image_alt' => 'nullable|string|max:255',
             'property_count' => 'required|integer|min:0',
             'link' => 'nullable|string|max:255',
             'status' => 'boolean',
@@ -95,17 +81,22 @@ class CityController extends Controller
         $data['slug'] = Str::slug($request->name);
         $data['status'] = $request->has('status');
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($city->image && Str::startsWith($city->image, 'cities/')) {
-                Storage::disk('public')->delete($city->image);
+            // Delete old image
+            if ($city->image && Str::startsWith($city->image, 'uploads/')) {
+                $oldPath = public_path($city->image);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
 
-            $image = $request->file('image');
-            $imageName = time() . '_' . Str::slug($request->name) . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('cities', $imageName, 'public');
-            $data['image'] = $imagePath;
+            $data['image'] = ImageHelper::storeWebp(
+                $request->file('image'),
+                $request->name,
+                $city->id,
+                'city',
+                'cities'
+            );
         }
 
         $city->update($data);
@@ -114,14 +105,13 @@ class CityController extends Controller
             ->with('success', 'City updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(City $city)
     {
-        // Delete image if exists
-        if ($city->image && Str::startsWith($city->image, 'cities/')) {
-            Storage::disk('public')->delete($city->image);
+        if ($city->image && Str::startsWith($city->image, 'uploads/')) {
+            $path = public_path($city->image);
+            if (file_exists($path)) {
+                @unlink($path);
+            }
         }
 
         $city->delete();
@@ -130,9 +120,6 @@ class CityController extends Controller
             ->with('success', 'City deleted successfully.');
     }
 
-    /**
-     * Toggle the status of the specified resource.
-     */
     public function toggleStatus(City $city)
     {
         $city->update(['status' => !$city->status]);

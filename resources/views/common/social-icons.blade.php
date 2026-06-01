@@ -2,13 +2,13 @@
 <div class="sticky-contact" id="stickyContact" aria-label="Quick contact options">
 
     <!-- Toggle for mobile -->
-    <button class="sticky-toggle" id="stickyToggle"
+    {{-- <button class="sticky-toggle" id="stickyToggle"
         aria-label="Open contact options" type="button">
 
         <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 4h16v11H7.6L4 18.2V4zm2 2v8.1l1.8-1.1H18V6H6z" />
         </svg>
-    </button>
+    </button> --}}
 
     <!-- WhatsApp -->
     <a class="sticky-item wa"
@@ -32,7 +32,7 @@
 
     <!-- Call -->
     <a class="sticky-item call"
-        href="74-94-01-01-01"
+        href="tel:+917494010101"
         aria-label="Call now">
 
         <span class="icon">

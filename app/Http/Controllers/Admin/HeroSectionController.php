@@ -11,41 +11,39 @@ use Illuminate\View\View;
 
 class HeroSectionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): View
     {
         $heroSections = HeroSection::orderBy('sort_order', 'asc')->paginate(10);
         return view('admin.hero-sections.index', compact('heroSections'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): View
     {
         return view('admin.hero-sections.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'highlight_text' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'video_path' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:51200', // 50MB max
+            'video_path' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:102400',
             'poster_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'status' => 'boolean',
             'sort_order' => 'integer|min:0',
         ]);
 
-        // Handle video upload
+        // Handle video upload to public folder
         if ($request->hasFile('video_path')) {
-            $validated['video_path'] = $request->file('video_path')->store('hero/videos', 'public');
+            $file = $request->file('video_path');
+            $filename = 'hero-video-' . time() . '.' . $file->getClientOriginalExtension();
+            $dir = public_path('uploads/hero/videos');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+            $file->move($dir, $filename);
+            $validated['video_path'] = 'uploads/hero/videos/' . $filename;
         }
 
         // Handle poster image upload
@@ -59,32 +57,23 @@ class HeroSectionController extends Controller
             ->with('success', 'Hero Section created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(HeroSection $heroSection): View
     {
         return view('admin.hero-sections.show', compact('heroSection'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(HeroSection $heroSection): View
     {
         return view('admin.hero-sections.edit', compact('heroSection'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, HeroSection $heroSection): RedirectResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'highlight_text' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'video_path' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:51200',
+            'video_path' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:102400',
             'poster_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'remove_video' => 'nullable|boolean',
             'remove_poster' => 'nullable|boolean',
@@ -94,28 +83,48 @@ class HeroSectionController extends Controller
 
         // Handle video removal
         if ($request->remove_video && $heroSection->video_path) {
-            \Storage::disk('public')->delete($heroSection->video_path);
+            $oldPath = public_path($heroSection->video_path);
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
             $validated['video_path'] = null;
         }
 
         // Handle new video upload
         if ($request->hasFile('video_path')) {
+            // Delete old video
             if ($heroSection->video_path) {
-                \Storage::disk('public')->delete($heroSection->video_path);
+                $oldPath = public_path($heroSection->video_path);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
-            $validated['video_path'] = $request->file('video_path')->store('hero/videos', 'public');
+            $file = $request->file('video_path');
+            $filename = 'hero-video-' . $heroSection->id . '-' . time() . '.' . $file->getClientOriginalExtension();
+            $dir = public_path('uploads/hero/videos');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+            $file->move($dir, $filename);
+            $validated['video_path'] = 'uploads/hero/videos/' . $filename;
         }
 
         // Handle poster removal
         if ($request->remove_poster && $heroSection->poster_image) {
-            \Storage::disk('public')->delete($heroSection->poster_image);
+            $oldPath = public_path($heroSection->poster_image);
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
             $validated['poster_image'] = null;
         }
 
         // Handle new poster upload
         if ($request->hasFile('poster_image')) {
             if ($heroSection->poster_image) {
-                \Storage::disk('public')->delete($heroSection->poster_image);
+                $oldPath = public_path($heroSection->poster_image);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
             $validated['poster_image'] = ImageHelper::storeWebp($request->file('poster_image'), $validated['title'], $heroSection->id, 'poster', 'hero/posters');
         }
@@ -126,30 +135,28 @@ class HeroSectionController extends Controller
             ->with('success', 'Hero Section updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(HeroSection $heroSection): RedirectResponse
     {
-        // Delete video if exists
         if ($heroSection->video_path) {
-            \Storage::disk('public')->delete($heroSection->video_path);
+            $path = public_path($heroSection->video_path);
+            if (file_exists($path)) {
+                @unlink($path);
+            }
         }
 
-        // Delete poster if exists
         if ($heroSection->poster_image) {
-            \Storage::disk('public')->delete($heroSection->poster_image);
+            $path = public_path($heroSection->poster_image);
+            if (file_exists($path)) {
+                @unlink($path);
+            }
         }
-        
+
         $heroSection->delete();
 
         return redirect()->route('admin.hero-sections.index')
             ->with('success', 'Hero Section deleted successfully.');
     }
 
-    /**
-     * Toggle the status of the specified resource.
-     */
     public function toggleStatus(HeroSection $heroSection): RedirectResponse
     {
         $heroSection->update(['status' => !$heroSection->status]);

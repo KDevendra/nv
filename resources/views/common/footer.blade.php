@@ -4,7 +4,7 @@
             
             <!-- Column 1: About -->
             <div>
-                 <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO India Logo" class="h-10 w-auto mb-4">
+                 <img src="{{ asset('main/images/zendo.png') }}" alt="ZENDO INDIA" class="h-10 w-auto mb-4">
                 <p class="text-gray-400 font-body text-sm leading-relaxed mb-6">
                     Redefining excellence in every aspect of real estate operations. Your trusted partner in finding the perfect property in India.
                 </p>
@@ -34,7 +34,7 @@
                     </li>
                      <li class="flex items-center">
                        <img src="{{ asset('main/icons/phone.svg') }}" alt="Phone" class="w-5 h-5 mr-3 flex-shrink-0 text-zendo-gold"> 
-                        <a href="74-94-01-01-01" class="text-gray-400 font-body text-sm footer-link transition-colors">74-94-01-01-01</a>
+                        <a href="tel:+917494010101" class="text-gray-400 font-body text-sm footer-link transition-colors">+91 74-94-01-01-01</a>
                     </li>
                      <li class="flex items-center">
                          <img src="{{ asset('main/icons/email.svg') }}" alt="Email" class="w-5 h-5 mr-3 flex-shrink-0 text-zendo-gold"> 

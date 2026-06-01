@@ -91,7 +91,7 @@
                             @foreach($commercialSection->uploaded_images as $image)
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <div class="aspect-w-16 aspect-h-9 mb-3">
-                                    <img src="{{ asset('storage/' . $image['path']) }}" alt="{{ $image['alt'] }}" 
+                                    <img src="{{ asset($image['path']) }}" alt="{{ $image['alt'] }}" 
                                          class="w-full h-32 object-cover rounded-lg">
                                 </div>
                                 <div class="space-y-1">

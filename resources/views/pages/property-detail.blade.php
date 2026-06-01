@@ -1237,7 +1237,7 @@
                             <div>
                                 <div class="sgdxp-contact-label">Call Us</div>
                                 <div class="sgdxp-contact-details">
-                                    <p class="sgdxp-call-number">+91 97323 00007</p>
+                                    <p class="sgdxp-call-number">+91 74-94-01-01-01</p>
                                 </div>
                             </div>
                         </div>
@@ -1566,7 +1566,7 @@
                     <details class="nr-faq-item">
                         <summary>How do I request pricing or a site visit?</summary>
                         <div class="nr-faq-body">You can request a callback using the form on this page or contact our
-                            sales team directly at +91 97323 00007.</div>
+                            sales team directly at +91 74-94-01-01-01.</div>
                     </details>
                 @endforelse
             </div>

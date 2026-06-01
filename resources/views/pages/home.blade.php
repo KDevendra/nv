@@ -9,12 +9,12 @@
    <div class="absolute inset-0 z-0">
       @if($heroSection->video_path)
       <video class="w-full h-full object-cover brightness-75" autoplay muted loop playsinline
-      @if($heroSection->poster_image) poster="{{ asset('storage/' . $heroSection->poster_image) }}" @endif>
-      <source src="{{ asset('storage/' . $heroSection->video_path) }}" type="video/mp4">
+      @if($heroSection->poster_image) poster="{{ asset($heroSection->poster_image) }}" @endif>
+      <source src="{{ asset($heroSection->video_path) }}" type="video/mp4">
       Your browser does not support the video tag.
       </video>
       @elseif($heroSection->poster_image)
-      <img src="{{ asset('storage/' . $heroSection->poster_image) }}" alt="{{ $heroSection->title }}" class="w-full h-full object-cover brightness-75">
+      <img src="{{ asset($heroSection->poster_image) }}" alt="{{ $heroSection->title }}" class="w-full h-full object-cover brightness-75">
       @endif
    </div>
    <!-- Content Container -->
@@ -277,7 +277,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
          <!-- Left Column (Image) -->
          <div class="relative flex items-center justify-center">
-            <img src="{{ asset('main/images/zendo-india-about.webp') }}" alt="Zendo India Properties"
+            <img src="{{ asset('main/images/zendo-india-about.webp') }}" alt="ZENDO INDIA Properties"
                class="relative z-10 w-full max-w-lg rounded-lg transition-transform duration-300 ease-in-out hover:scale-105">
          </div>
          <!-- Right Column (Features) -->
@@ -745,7 +745,7 @@
             <!-- City Card: {{ $city->name }} -->
             <a href="{{ $city->link }}"
                class="city-card group relative {{ $colSpan }} h-80 rounded-lg overflow-hidden shadow-lg">
-               <img src="{{ $city->image_url }}" alt="Properties in {{ $city->name }}"
+               <img src="{{ $city->image_url }}" alt="{{ $city->image_alt ?? 'Properties in ' . $city->name }}"
                   class="city-image w-full h-full object-cover">
                <div class="overlay absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                <div class="absolute bottom-0 left-0 p-6">
@@ -1249,7 +1249,7 @@
          <p class="lux-content">Luxury residences located in top neighbourhoods with world-class amenities and
             premium lifestyle experiences.
          </p>
-         <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d" alt="property"
+         <img src="{{ asset('main/images/bg/photo-22.jpg') }}" alt="property"
             class="lux-left-image">
       </div>
       <!-- RIGHT FORM -->
