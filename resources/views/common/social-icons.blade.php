@@ -177,26 +177,44 @@
         .sticky-contact {
             top: auto;
             bottom: 18px;
+            right: 8px;
             transform: none;
+            gap: 8px;
+        }
+
+        .sticky-contact .sticky-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+        }
+
+        .sticky-item .icon {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+        }
+
+        .sticky-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sticky-item.wa svg {
+            width: 22px;
+            height: 22px;
         }
 
         .sticky-toggle {
             display: grid;
             place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
         }
 
-        .sticky-contact .sticky-item {
-            width: 56px;
-            height: 56px;
-            opacity: 0;
-            transform: translateY(10px);
-            pointer-events: none;
-        }
-
-        .sticky-contact.is-open .sticky-item {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
+        .sticky-toggle svg {
+            width: 18px;
+            height: 18px;
         }
     }
 

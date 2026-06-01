@@ -52,7 +52,7 @@
                             <a href="{{ route('calculators.emi-calculator') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">EMI Calculator</a>
                             <a href="{{ route('calculators.acre-to-bigha') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Acre to Bigha</a>
                             <a href="{{ route('calculators.acre-to-hectare') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Acre to Hectare</a>
-                            <a href="{{ route('calculators.acre-to-squaremeter') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Acre to Square Meter</a>
+                            {{-- <a href="{{ route('calculators.acre-to-squaremeter') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Acre to Square Meter</a> --}}
                             <a href="{{ route('calculators.cent-to-square-feet') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Cent to Square Feet</a>
                             <a href="{{ route('calculators.cent-to-square-meter') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Cent to Square Meter</a>
                             <a href="{{ route('calculators.length-calculator') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">Length Calculator</a>

@@ -174,7 +174,7 @@
 
         .abt-value-grid {
             display: grid;
-            grid-template-columns: 25% 50% 25%;
+            grid-template-columns: 200px 1fr;
             gap: 40px;
         }
 
@@ -284,12 +284,6 @@
                         </p>
                     </div>
                 </div>
-                <!-- RIGHT ICON BOX -->
-                <div class="abt-value-iconbox">
-                    <div class="abt-icon-card">
-                        <img id="abtIconImage" src="{{ $aboutPage->values_who_we_are_image_url ?? 'https://cdn-icons-png.flaticon.com/512/992/992651.png' }}" alt="Icon">
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -328,20 +322,28 @@
         });
     </script>
     <!-- logo section -->
-    <!-- CLIENTS SECTION -->
+    <!-- CLIENTS SECTION - Auto Scrolling Carousel -->
     <section class="clients-section">
         <div class="clients-container">
             <h2 class="clients-headings">Our Clients</h2>
-            <div class="clients-grid">
-                @forelse($clients as $client)
-                    <div class="client-item">
-                        <img src="{{ $client->logo_url }}" alt="{{ $client->name }}">
-                    </div>
-                @empty
-                    <div class="client-item" style="grid-column: 1 / -1; text-align: center;">
-                        <p class="text-gray-600">No clients added yet.</p>
-                    </div>
-                @endforelse
+            <div class="clients-carousel-wrapper">
+                <div class="clients-carousel-track">
+                    @forelse($clients as $client)
+                        <div class="client-slide">
+                            <img src="{{ $client->logo_url }}" alt="{{ $client->name }}">
+                        </div>
+                    @empty
+                        <p class="text-gray-600" style="padding:20px;">No clients added yet.</p>
+                    @endforelse
+                    {{-- Duplicate for seamless infinite scroll --}}
+                    @if($clients->count() > 0)
+                        @foreach($clients as $client)
+                            <div class="client-slide">
+                                <img src="{{ $client->logo_url }}" alt="{{ $client->name }}">
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
             </div>
         </div>
     </section>
@@ -350,6 +352,7 @@
         .clients-section {
             padding: 80px 0;
             background: white;
+            overflow: hidden;
         }
 
         .clients-container {
@@ -365,64 +368,72 @@
             margin-bottom: 40px !important;
         }
 
-        .clients-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+        .clients-carousel-wrapper {
+            overflow: hidden;
+            position: relative;
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
 
-        .client-item {
-            padding: 35px 20px;
+        .clients-carousel-track {
+            display: flex;
+            gap: 40px;
+            animation: clientsScroll 25s linear infinite;
+            width: max-content;
+        }
+
+        .clients-carousel-track:hover {
+            animation-play-state: paused;
+        }
+
+        .client-slide {
+            flex-shrink: 0;
+            width: 180px;
+            height: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-right: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
+            padding: 15px 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .client-item img {
+        .client-slide:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .client-slide img {
             max-width: 100%;
-            max-height: 90px;
+            max-height: 60px;
             object-fit: contain;
-            filter: drop-shadow(0px 0px 0px #000);
         }
 
-        .clients-grid .client-item:nth-child(5n) {
-            border-right: none;
-        }
-
-        .clients-grid .client-item:nth-last-child(-n+5) {
-            border-bottom: none;
-        }
-
-        @media (max-width: 992px) {
-            .clients-grid {
-                grid-template-columns: repeat(3, 1fr);
+        @keyframes clientsScroll {
+            0% {
+                transform: translateX(0);
             }
-
-            .clients-grid .client-item:nth-child(3n) {
-                border-right: none;
-            }
-
-            .clients-grid .client-item:nth-last-child(-n+3) {
-                border-bottom: none;
+            100% {
+                transform: translateX(-50%);
             }
         }
 
-        @media (max-width: 600px) {
-            .clients-grid {
-                grid-template-columns: repeat(2, 1fr);
+        @media (max-width: 768px) {
+            .client-slide {
+                width: 140px;
+                height: 80px;
+                padding: 10px 15px;
             }
 
-            .client-item img {
-                max-width: 90px;
+            .client-slide img {
+                max-height: 45px;
             }
 
-            .clients-grid .client-item:nth-child(2n) {
-                border-right: none;
-            }
-
-            .clients-grid .client-item:nth-last-child(-n+2) {
-                border-bottom: none;
+            .clients-carousel-track {
+                gap: 24px;
+                animation-duration: 18s;
             }
         }
     </style>

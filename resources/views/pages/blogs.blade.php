@@ -97,9 +97,18 @@
             @forelse($blogs as $blog)
                 <div class="blog-card bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
                     <a href="{{ route('blogs.show', $blog->slug) }}">
-                        <div class="overflow-hidden">
-                            <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
-                                 class="w-full h-56 object-cover hover:scale-110 transition-transform duration-300">
+                        <div class="overflow-hidden relative">
+                            @if($blog->featured_image && file_exists(public_path($blog->featured_image)))
+                                <img src="{{ $blog->featured_image_url }}" alt="{{ $blog->featured_image_alt ?? $blog->title }}"
+                                     class="w-full h-56 object-cover hover:scale-110 transition-transform duration-300">
+                            @else
+                                <div class="w-full h-56 flex items-center justify-center p-6"
+                                     style="background: linear-gradient(135deg, #0b2c3d 0%, #1a4a5e 50%, #b39359 100%);">
+                                    <h4 class="text-white text-center font-heading text-xl leading-snug" style="font-size:20px !important;">
+                                        {{ $blog->title }}
+                                    </h4>
+                                </div>
+                            @endif
                         </div>
                         <div class="p-6">
                             @if($blog->category)

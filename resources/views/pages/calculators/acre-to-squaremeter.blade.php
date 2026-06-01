@@ -10,6 +10,61 @@
 .about-breadcrumb a{color:#fff;text-decoration:none;font-weight:500}
 .about-breadcrumb p{margin:0;opacity:.8}
 @media(max-width:767px){.about-banner-heading{font-size:32px}.about-banner-section{padding:130px 0 60px}}
+
+#apw-calcHubV2{padding:40px 20px 16px;overflow:hidden}
+#apw-calcHubV2 .apw-calcHubV2__wrap{max-width:1200px;margin:0 auto}
+#apw-calcHubV2 .apw-calcHubV2__layout{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:20px;align-items:start}
+#apw-calcHubV2 .apw-calcHubV2__head{text-align:left;margin-bottom:14px;padding:0 2px}
+#apw-calcHubV2 .apw-calcHubV2__title{color:#0b2c3d;font-size:35px !important;line-height:1.15;margin:0 0 8px;letter-spacing:.2px;font-weight:900}
+#apw-calcHubV2 .apw-calcHubV2__sub{margin:0;color:rgba(11,44,61,.75);font-size:16.5px;line-height:1.6;max-width:760px}
+#apw-calcHubV2 .apw-calcCardV2{position:relative;border-radius:22px;overflow:hidden;border:1px solid rgba(11,44,61,.18);background-image:url("https://zendoindia.com/new-home/zendo/assets/images/bg/form-b.jpg");background-size:cover;background-position:center;background-repeat:no-repeat}
+#apw-calcHubV2 .apw-calcCardV2::before{content:"";position:absolute;inset:0;background:rgb(11 44 61/63%);z-index:0}
+#apw-calcHubV2 .apw-calcCardV2::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,44,61,.20),rgba(11,44,61,.35));z-index:0}
+#apw-calcHubV2 .apw-calcCardV2__grid,#apw-calcHubV2 .apw-calcFormV2{position:relative;z-index:1}
+#apw-calcHubV2 .apw-calcCardV2__grid{display:block}
+#apw-calcHubV2 .apw-calcFormV2{padding:22px 20px}
+#apw-calcHubV2 .apw-fieldV2{margin-bottom:12px}
+#apw-calcHubV2 .apw-inputV2{width:100%;padding:18px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:15px;outline:none;transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease,background .18s ease;min-width:0}
+#apw-calcHubV2 .apw-inputV2::placeholder{color:rgba(255,255,255,.72)}
+#apw-calcHubV2 .apw-inputV2:focus{border-color:rgba(255,255,255,.55);box-shadow:0 0 0 4px rgba(11,44,61,.22);transform:translateY(-1px);background:rgba(255,255,255,.18)}
+#apw-calcHubV2 .apw-rowV2{display:grid;grid-template-columns:1fr 50%;gap:10px;align-items:stretch}
+#apw-calcHubV2 .apw-selectWrapV2{position:relative}
+#apw-calcHubV2 .apw-floatV2{position:relative;min-width:0}
+#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num{padding-top:20px}
+#apw-calcHubV2 .apw-floatLabelV2{position:absolute;left:12px;top:50%;font-size:13px;font-weight:900;color:rgba(255,255,255,.86);pointer-events:none;padding:0 4px;border-radius:6px}
+#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num:focus+.apw-floatLabelV2,#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num:not(:placeholder-shown)+.apw-floatLabelV2{top:-10px;transform:none;font-size:13.5px;color:white;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);width:17%;padding:2px 10px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.18)}
+#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num[readonly]{cursor:not-allowed;opacity:1;background:rgba(255,255,255,.12)}
+#apw-calcHubV2 select.apw-inputV2--unit{padding-right:44px;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:18px 18px;background-position:calc(100% - 14px) 50%}
+#apw-calcHubV2 select.apw-inputV2--unit option{color:#0b2c3d;background:#fff}
+#apw-calcHubV2 .apw-helpV2{display:block;margin-top:6px;color:rgba(255,255,255,.92);font-size:14px;line-height:1.4}
+#apw-calcHubV2 .apw-swapMidV2{display:flex;justify-content:center;margin:15px 0}
+#apw-calcHubV2 .apw-swapBtnV2{width:46px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;color:#fff;display:inline-flex;align-items:center;justify-content:center;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;user-select:none}
+#apw-calcHubV2 .apw-swapBtnV2:hover{transform:translateY(-1px);box-shadow:0 14px 34px rgba(11,44,61,.18);background:rgba(255,255,255,.18)}
+#apw-calcHubV2 .apw-swapBtnV2:active{transform:translateY(1px)}
+#apw-calcHubV2 .apw-alertV2{font-size:12.5px;color:#fff;font-weight:900;margin:8px 0 2px;text-shadow:0 2px 10px rgba(11,44,61,.25)}
+@media(min-width:768px){#apw-calcHubV2 .apw-actionsV2{display:flex;gap:10px}#apw-calcHubV2 .apw-actionsV2 .apw-btnV2{flex:1 1 50%;width:50%}}
+@media(max-width:767px){#apw-calcHubV2 .apw-actionsV2 .apw-btnV2{width:100%;margin-bottom:5px}}
+#apw-calcHubV2 .apw-btnV2{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;border:1px solid transparent;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease;user-select:none;white-space:nowrap}
+#apw-calcHubV2 .apw-btnV2:active{transform:translateY(1px)}
+#apw-calcHubV2 .apw-btnV2--primary{background:#b39359;color:#fff;border-color:rgba(255,255,255,.28);box-shadow:0 14px 30px rgba(11,44,61,.20)}
+#apw-calcHubV2 .apw-btnV2--primary:hover{box-shadow:0 18px 42px rgba(11,44,61,.28);transform:translateY(-1px)}
+#apw-calcHubV2 .apw-btnV2--ghost{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#apw-calcHubV2 .apw-btnV2--ghost:hover{background:rgba(255,255,255,.18);transform:translateY(-1px)}
+#apw-calcHubV2 .apw-disclaimerV2{margin-top:0;font-size:12px;opacity:1;line-height:1.5}
+#apw-calcHubV2 .apw-disclaimerV2--light{color:rgba(255,255,255,.90);margin-top:12px}
+#apw-calcHubV2 .apw-sideCardV2{background:#fff;border-radius:12px;border:1px solid rgba(11,44,61,.12);box-shadow:0 14px 34px rgba(11,44,61,.06);overflow:hidden;position:sticky;top:18px}
+#apw-calcHubV2 .apw-sideCardV2__top{padding:18px 16px;border-bottom:1px solid rgba(11,44,61,.10);background:radial-gradient(circle at 10% 10%,rgba(179,147,89,.12),transparent 55%)}
+#apw-calcHubV2 .apw-sideCardV2__title{margin:0 0 6px;color:#0b2c3d;font-size:22px;font-weight:900;font-family:'forum'}
+#apw-calcHubV2 .apw-sideCardV2__hint{margin:0;color:rgba(11,44,61,.72);font-size:13px;line-height:1.5}
+#apw-calcHubV2 .apw-sideNavV2{padding:12px;display:flex;flex-direction:column;gap:10px}
+#apw-calcHubV2 .apw-sideNavV2__item{display:flex;align-items:center;padding:12px;border-radius:14px;background:#fcfaf5;border:1px solid rgba(11,44,61,.14);text-decoration:none;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#apw-calcHubV2 .apw-sideNavV2__item:hover{transform:translateY(-1px);border-color:rgba(179,147,89,.55);box-shadow:0 12px 26px rgba(11,44,61,.08)}
+#apw-calcHubV2 .apw-sideNavV2__item.is-active{background:rgba(179,147,89,.12);border-color:rgba(179,147,89,.40)}
+#apw-calcHubV2 .apw-sideNavV2__icon{margin-right:10px;flex-shrink:0}
+#apw-calcHubV2 .apw-sideNavV2__text{font-weight:900;color:#0b2c3d;font-size:14px;letter-spacing:.2px}
+#apw-calcHubV2 .apw-selectWrapV2 .apw-floatLabelV2--unit{top:-10px;transform:none;font-size:13.5px;color:#fff;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:2px 10px;border-radius:8px;width:17%;box-shadow:0 4px 14px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.18)}
+@media(max-width:980px){#apw-calcHubV2 .apw-calcHubV2__layout{grid-template-columns:1fr}#apw-calcHubV2 .apw-sideCardV2{position:static}}
+@media(max-width:640px){#apw-calcHubV2{padding:18px 14px}#apw-calcHubV2 .apw-calcHubV2__sub{font-size:14.5px}#apw-calcHubV2 .apw-calcFormV2{padding:28px 10px}#apw-calcHubV2 .apw-rowV2{grid-template-columns:1fr 150px;gap:8px}#apw-calcHubV2 .apw-inputV2{padding:17px 10px;font-size:14.5px}#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num{padding-top:18px}#apw-calcHubV2 .apw-calcHubV2__side{display:none}#apw-calcHubV2 .apw-floatV2 .apw-inputV2--num:not(:placeholder-shown)+.apw-floatLabelV2{top:-10px;transform:none;font-size:13px;color:white;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);padding:2px 10px;width:40%;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.18)}#apw-calcHubV2 .apw-selectWrapV2 .apw-floatLabelV2--unit{top:-10px;transform:none;font-size:13.5px;color:#fff;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:2px 10px;border-radius:8px;width:40% !important;box-shadow:0 4px 14px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.18)}#apw-calcHubV2 .apw-calcHubV2__title{font-size:25px !important}}
 </style>
 
 <section class="about-banner-section">
@@ -27,12 +82,12 @@
 
 <section id="apw-calcHubV2" class="apw-calcHubV2">
   <div class="apw-calcHubV2__wrap">
-    <header class="apw-calcHubV2__head">
+    <div class="apw-calcHubV2__head">
       <h2 class="apw-calcHubV2__title">Acre to Square Meter Converter</h2>
       <p class="apw-calcHubV2__sub">
         Enter value, choose units, and convert instantly.
       </p>
-    </header>
+    </div>
 
     <div class="apw-calcHubV2__layout">
 

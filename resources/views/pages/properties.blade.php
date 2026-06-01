@@ -1716,7 +1716,7 @@
     </section>
 
     <!-- Perspective Section -->
-    @if ($perspectiveSection && $perspectiveSection->sectionImages->count() >= 4)
+    @if ($perspectiveSection && $perspectiveSection->sectionImages->count() > 0)
         <section id="apw-propPerspective" class="apw-propPerspective">
             <div class="apw-propPerspective__wrap">
                 <div class="apw-propPerspective__content">

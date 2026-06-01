@@ -109,7 +109,15 @@
                                         {{ strtoupper($info->title) }}
                                     </h3>
                                     <p class="text-gray-600 font-body text-sm leading-relaxed">
-                                        {{ $info->content }}
+                                        @if(Str::contains(strtolower($info->section_key), ['phone', 'contact', 'call', 'mobile']))
+                                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $info->content) }}" class="text-gray-600 hover:text-zendo-gold transition-colors">{{ $info->content }}</a>
+                                        @elseif(Str::contains(strtolower($info->section_key), ['email', 'mail']))
+                                            <a href="mailto:{{ trim($info->content) }}" class="text-gray-600 hover:text-zendo-gold transition-colors">{{ $info->content }}</a>
+                                        @elseif(Str::contains(strtolower($info->section_key), ['address', 'office', 'location']))
+                                            <a href="https://maps.google.com/?q={{ urlencode($info->content) }}" target="_blank" class="text-gray-600 hover:text-zendo-gold transition-colors">{{ $info->content }}</a>
+                                        @else
+                                            {{ $info->content }}
+                                        @endif
                                     </p>
                                 </div>
                             </div>

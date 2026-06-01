@@ -357,6 +357,7 @@
             display: grid;
             grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
             gap: 24px;
+            align-items: stretch;
         }
 
         .sgdxp-image-card {
@@ -369,14 +370,16 @@
 
         .sgdxp-image-wrapper {
             position: relative;
-            padding-top: 62%;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            max-height: 480px;
             overflow: hidden;
             line-height: 0;
+            border-radius: 18px;
         }
 
         .sgdxp-image-wrapper img {
-            position: absolute;
-            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -997,8 +1000,9 @@
                 style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:#ef4444;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(239,68,68,0.3);transition:all 0.2s ease;z-index:10;"
                 onmouseover="this.style.background='#dc2626';this.style.transform='scale(1.1)'"
                 onmouseout="this.style.background='#ef4444';this.style.transform='scale(1)'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round">
-                    <path d="M18 6L6 18M6 6l12 12"/>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                    stroke-linecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
             </button>
             <div class="inquiry-popup-header">
@@ -1098,7 +1102,8 @@
 
                 <div class="popup-form-group">
                     <label class="popup-form-label">Email Address</label>
-                    <input type="email" name="email" class="popup-form-input" placeholder="Enter your email (optional)">
+                    <input type="email" name="email" class="popup-form-input"
+                        placeholder="Enter your email (optional)">
                 </div>
 
                 <div class="popup-form-group">
@@ -1177,10 +1182,10 @@
         </div>
 
         <div id="sgdxp-main">
-            <div class="">
-                <div class="">
+            <div class="sgdxp-image-card">
+                <div class="sgdxp-image-wrapper">
                     @if ($property->images->count() > 0)
-                        <img src="{{ asset($property->images->first()->image_path) }}" style="box-shadow: 0 14px 35px rgba(0, 0, 0, .07);border-radius: 5px;"
+                        <img src="{{ asset($property->images->first()->image_path) }}"
                             alt="{{ $property->images->first()->alt_tag ?? $property->title }}">
                     @else
                         <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=70"
@@ -1205,9 +1210,11 @@
                             <div>
                                 <div class="sgdxp-contact-label">Our Office</div>
                                 <div class="sgdxp-contact-details">
-                                    <p>Tapasya Corp Heights, Tower B,</p>
-                                    <p>Sector 126, Noida,</p>
-                                    <p>Uttar Pradesh 201303</p>
+                                    <a href="https://maps.google.com/?q=Tapasya+Corp+Heights+Tower+B+Sector+126+Noida" target="_blank" style="color:#e6edf8;text-decoration:none;">
+                                        <p>Tapasya Corp Heights, Tower B,</p>
+                                        <p>Sector 126, Noida,</p>
+                                        <p>Uttar Pradesh 201303</p>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -1222,7 +1229,7 @@
                             <div>
                                 <div class="sgdxp-contact-label">Email Us</div>
                                 <div class="sgdxp-contact-details">
-                                    <p>info@zendoindia.com</p>
+                                    <a href="mailto:info@zendoindia.com" style="color:#e6edf8;text-decoration:none;">info@zendoindia.com</a>
                                 </div>
                             </div>
                         </div>
@@ -1237,7 +1244,7 @@
                             <div>
                                 <div class="sgdxp-contact-label">Call Us</div>
                                 <div class="sgdxp-contact-details">
-                                    <p class="sgdxp-call-number">+91 74-94-01-01-01</p>
+                                    <a href="tel:+917494010101" class="sgdxp-call-number" style="color:#e6edf8;text-decoration:none;">+91 74-94-01-01-01</a>
                                 </div>
                             </div>
                         </div>
@@ -1247,25 +1254,6 @@
                 <div class="sgdxp-request-btn">
                     <button type="button" id="open-callback-modal-btn">Request Callback</button>
                 </div>
-
-                {{-- Video inside contact card --}}
-                @if($property->youtube_url || $property->video_path)
-                <div style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1);">
-                    <h3 style="font-size:15px;font-weight:600;color:#f4e1bc;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;">Property Video</h3>
-                    @if($property->youtube_url)
-                        @php preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $property->youtube_url, $pm); $ytId = $pm[1] ?? null; @endphp
-                        @if($ytId)
-                        <div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;">
-                            <iframe style="width:100%;height:100%;border:0;" src="https://www.youtube.com/embed/{{ $ytId }}" allowfullscreen loading="lazy"></iframe>
-                        </div>
-                        @endif
-                    @elseif($property->video_path)
-                        <video controls style="width:100%;border-radius:12px;">
-                            <source src="{{ asset('storage/'.$property->video_path) }}" type="video/mp4">
-                        </video>
-                    @endif
-                </div>
-                @endif
             </aside>
 
         </div>
@@ -1403,6 +1391,31 @@
 
             <!-- Request Callback Form -->
             <aside class="sg2-form-card">
+                {{-- Video inside contact card --}}
+                @if ($property->youtube_url || $property->video_path)
+                    <div style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1);">
+                        <h3
+                            style="font-size:15px;font-weight:600;color:#f4e1bc;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;">
+                            Property Video</h3>
+                        @if ($property->youtube_url)
+                            @php
+                                preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $property->youtube_url, $pm);
+                                $ytId = $pm[1] ?? null;
+                            @endphp
+                            @if ($ytId)
+                                <div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;">
+                                    <iframe style="width:100%;height:100%;border:0;"
+                                        src="https://www.youtube.com/embed/{{ $ytId }}" allowfullscreen
+                                        loading="lazy"></iframe>
+                                </div>
+                            @endif
+                        @elseif($property->video_path)
+                            <video controls style="width:100%;border-radius:12px;">
+                                <source src="{{ asset('storage/' . $property->video_path) }}" type="video/mp4">
+                            </video>
+                        @endif
+                    </div>
+                @endif
                 <h2 class="sg2-form-title">Request a Callback</h2>
                 <p class="sg2-form-subtext">Share your details and our team will call you with floor plans, pricing and
                     exclusive offers.</p>
@@ -1466,7 +1479,8 @@
                     @if ($property->images->count() > 0)
                         @foreach ($property->images as $image)
                             <div class="sg-slide">
-                                <img src="{{ asset($image->image_path) }}" alt="{{ $image->alt_tag ?? $property->title }}">
+                                <img src="{{ asset($image->image_path) }}"
+                                    alt="{{ $image->alt_tag ?? $property->title }}">
                             </div>
                         @endforeach
                     @else
