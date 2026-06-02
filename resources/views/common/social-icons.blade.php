@@ -232,7 +232,9 @@
     const stickyToggle = document.getElementById('stickyToggle');
     const stickyContact = document.getElementById('stickyContact');
 
-    stickyToggle.addEventListener('click', () => {
-        stickyContact.classList.toggle('is-open');
-    });
+    if (stickyToggle) {
+        stickyToggle.addEventListener('click', () => {
+            stickyContact.classList.toggle('is-open');
+        });
+    }
 </script>
