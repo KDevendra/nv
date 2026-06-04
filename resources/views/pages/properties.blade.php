@@ -1844,239 +1844,178 @@
         </div>
     </section>
 @endsection
-
 @section('scripts')
-    <script>
-        // Carousel functionality
-        (function() {
-            const root = document.querySelector("[data-carousel]");
-            if (!root) return;
+<script>
+    // ─── Carousel ────────────────────────────────────────────────────────────────
+    (function () {
+        const root = document.querySelector("[data-carousel]");
+        if (!root) return;
 
-            const track = root.querySelector("[data-track]");
-            const slides = Array.from(track.children);
-            const prevBtn = root.querySelector("[data-prev]");
-            const nextBtn = root.querySelector("[data-next]");
-            const dotsWrap = root.querySelector("[data-dots]");
+        const track    = root.querySelector("[data-track]");
+        const slides   = Array.from(track.children);
+        const prevBtn  = root.querySelector("[data-prev]");
+        const nextBtn  = root.querySelector("[data-next]");
+        const dotsWrap = root.querySelector("[data-dots]");
 
-            let index = 0;
-            let timer = null;
+        let index = 0, timer = null;
 
-            function buildDots() {
-                dotsWrap.innerHTML = "";
-                slides.forEach((_, i) => {
-                    const b = document.createElement("button");
-                    b.className = "dot";
-                    b.type = "button";
-                    b.setAttribute("aria-label", `Go to slide ${i + 1}`);
-                    b.addEventListener("click", () => goTo(i));
-                    dotsWrap.appendChild(b);
-                });
-            }
-
-            function updateDots() {
-                const dots = dotsWrap.querySelectorAll(".dot");
-                dots.forEach((d, i) => d.setAttribute("aria-current", i === index ? "true" : "false"));
-            }
-
-            function goTo(i) {
-                index = (i + slides.length) % slides.length;
-                track.style.transform = `translateX(-${index * 100}%)`;
-                updateDots();
-                restartAutoplay();
-            }
-
-            function next() {
-                goTo(index + 1);
-            }
-
-            function prev() {
-                goTo(index - 1);
-            }
-
-            function startAutoplay() {
-                stopAutoplay();
-                timer = setInterval(next, 3500);
-            }
-
-            function stopAutoplay() {
-                if (timer) clearInterval(timer);
-                timer = null;
-            }
-
-            function restartAutoplay() {
-                startAutoplay();
-            }
-
-            nextBtn.addEventListener("click", next);
-            prevBtn.addEventListener("click", prev);
-
-            root.addEventListener("mouseenter", stopAutoplay);
-            root.addEventListener("mouseleave", startAutoplay);
-
-            let startX = 0,
-                dx = 0,
-                dragging = false;
-
-            root.addEventListener("touchstart", (e) => {
-                dragging = true;
-                startX = e.touches[0].clientX;
-                dx = 0;
-                stopAutoplay();
-            }, {
-                passive: true
+        function buildDots() {
+            dotsWrap.innerHTML = "";
+            slides.forEach((_, i) => {
+                const b = document.createElement("button");
+                b.className = "dot";
+                b.type = "button";
+                b.setAttribute("aria-label", `Go to slide ${i + 1}`);
+                b.addEventListener("click", () => goTo(i));
+                dotsWrap.appendChild(b);
             });
+        }
 
-            root.addEventListener("touchmove", (e) => {
-                if (!dragging) return;
-                dx = e.touches[0].clientX - startX;
-            }, {
-                passive: true
-            });
+        function updateDots() {
+            dotsWrap.querySelectorAll(".dot")
+                .forEach((d, i) => d.setAttribute("aria-current", i === index ? "true" : "false"));
+        }
 
-            root.addEventListener("touchend", () => {
-                dragging = false;
-                if (Math.abs(dx) > 40) {
-                    dx < 0 ? next() : prev();
-                } else {
-                    restartAutoplay();
-                }
-            });
+        function goTo(i) {
+            index = (i + slides.length) % slides.length;
+            track.style.transform = `translateX(-${index * 100}%)`;
+            updateDots();
+            restartAutoplay();
+        }
 
-            buildDots();
-            goTo(0);
-            startAutoplay();
-        })();
+        function next() { goTo(index + 1); }
+        function prev() { goTo(index - 1); }
 
-        // BHK Chip Buttons
-        document.querySelectorAll('.apw-chip').forEach(chip => {
-            chip.addEventListener('click', function() {
-                // Remove active class from all chips
-                document.querySelectorAll('.apw-chip').forEach(c => c.classList.remove('is-active'));
+        function startAutoplay()   { stopAutoplay(); timer = setInterval(next, 3500); }
+        function stopAutoplay()    { if (timer) clearInterval(timer); timer = null; }
+        function restartAutoplay() { startAutoplay(); }
 
-                // Add active class to clicked chip
-                this.classList.add('is-active');
+        nextBtn.addEventListener("click", next);
+        prevBtn.addEventListener("click", prev);
+        root.addEventListener("mouseenter", stopAutoplay);
+        root.addEventListener("mouseleave", startAutoplay);
 
-                // Update hidden input value
-                const bhkValue = this.getAttribute('data-bhk');
-                document.getElementById('apw-bhkHidden').value = bhkValue;
+        let startX = 0, dx = 0, dragging = false;
+        root.addEventListener("touchstart", e => { dragging = true; startX = e.touches[0].clientX; dx = 0; stopAutoplay(); }, { passive: true });
+        root.addEventListener("touchmove",  e => { if (!dragging) return; dx = e.touches[0].clientX - startX; }, { passive: true });
+        root.addEventListener("touchend",   () => { dragging = false; Math.abs(dx) > 40 ? (dx < 0 ? next() : prev()) : restartAutoplay(); });
 
-                // Submit form
-                document.getElementById('apw-resiFilterForm').submit();
-            });
-        });
+        buildDots();
+        goTo(0);
+        startAutoplay();
+    })();
 
-        // Update BHK filter when property type changes
-document.getElementById('property_type_id').addEventListener('change', function () {
+    // ─── BHK Filter ──────────────────────────────────────────────────────────────
 
-    const propertyTypeId = this.value;
-
-    const bhkContainer = document.querySelector('.apw-chipRow');
-
-    const bhkSection = document.getElementById('bhk-section');
+    // Single source of truth — pre-populate from current request value (server-rendered)
+    let selectedBhkId = '{{ request('bhk_id') }}';
 
     const bhkHiddenInput = document.getElementById('apw-bhkHidden');
+    const bhkSection     = document.getElementById('bhk-section');
 
-    // Loading
-    bhkContainer.innerHTML =
-        '<span style="color:#b39359;">Loading...</span>';
+    /**
+     * Wire click listeners onto every .apw-chip currently in the DOM.
+     * Called once on page load (for server-rendered chips) and again
+     * after renderBhkChips() rebuilds them via fetch.
+     */
+    function wireChipListeners() {
+        document.querySelectorAll('.apw-chip').forEach(chip => {
+            // Remove any existing listener first (clone-replace trick)
+            const fresh = chip.cloneNode(true);
+            chip.parentNode.replaceChild(fresh, chip);
 
-    fetch('{{ route("api.bhks-by-property-type") }}?property_type_id=' + propertyTypeId)
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            // Clear old buttons
-            bhkContainer.innerHTML = '';
-
-            // Hide entire BHK section if no data
-            if (!data.success || !data.bhks || data.bhks.length === 0) {
-
-                bhkSection.style.display = 'none';
-
-                bhkHiddenInput.value = '';
-
-                return;
-            }
-
-            // Show BHK section
-            bhkSection.style.display = 'block';
-
-            // ===== ALL Button =====
-            const allBtn = document.createElement('button');
-
-            allBtn.type = 'button';
-
-            allBtn.className = 'apw-chip is-active';
-
-            allBtn.setAttribute('data-bhk', '');
-
-            allBtn.textContent = 'All';
-
-            allBtn.addEventListener('click', function () {
-
-                document.querySelectorAll('.apw-chip')
-                    .forEach(c => c.classList.remove('is-active'));
-
+            fresh.addEventListener('click', function () {
+                document.querySelectorAll('.apw-chip').forEach(c => c.classList.remove('is-active'));
                 this.classList.add('is-active');
-
-                bhkHiddenInput.value = '';
-
-                document.getElementById('apw-resiFilterForm').submit();
+                selectedBhkId        = this.getAttribute('data-bhk') ?? '';
+                bhkHiddenInput.value = selectedBhkId;
             });
+        });
+    }
 
-            bhkContainer.appendChild(allBtn);
+    /**
+     * Rebuild the chip row from a fresh BHK array (after property-type change).
+     * Resets the BHK selection to "All".
+     */
+    function renderBhkChips(bhks) {
+        const chipRow = document.querySelector('.apw-chipRow');
+        chipRow.innerHTML = '';
 
-            // ===== Dynamic BHK Buttons =====
-            data.bhks.forEach(bhk => {
-
-                const btn = document.createElement('button');
-
-                btn.type = 'button';
-
-                btn.className = 'apw-chip';
-
-                btn.setAttribute('data-bhk', bhk.id);
-
-                btn.textContent = bhk.name;
-
-                btn.addEventListener('click', function () {
-
-                    document.querySelectorAll('.apw-chip')
-                        .forEach(c => c.classList.remove('is-active'));
-
-                    this.classList.add('is-active');
-
-                    bhkHiddenInput.value = bhk.id;
-
-                    document.getElementById('apw-resiFilterForm').submit();
-                });
-
-                bhkContainer.appendChild(btn);
-            });
-
-            // Reset hidden field
-            bhkHiddenInput.value = '';
-        })
-
-        .catch(error => {
-
-            console.error('Error fetching BHKs:', error);
-
+        if (!bhks || bhks.length === 0) {
             bhkSection.style.display = 'none';
+            selectedBhkId        = '';
+            bhkHiddenInput.value = '';
+            return;
+        }
 
-            bhkContainer.innerHTML =
-                '<span style="color:#dc2626;">Error loading BHKs</span>';
-        });
-});
+        bhkSection.style.display = 'block';
 
-        // Auto-submit form on filter change (except property_type_id which is handled above)
-        document.querySelectorAll('#apw-resiFilterForm select').forEach(select => {
-            if (select.id !== 'property_type_id') {
-                select.addEventListener('change', function() {
-                    document.getElementById('apw-resiFilterForm').submit();
-                });
-            }
+        // ALL button
+        const allBtn = document.createElement('button');
+        allBtn.type      = 'button';
+        allBtn.className = 'apw-chip is-active';   // always "All" after a type change
+        allBtn.setAttribute('data-bhk', '');
+        allBtn.textContent = 'All';
+        chipRow.appendChild(allBtn);
+
+        // Dynamic BHK buttons
+        bhks.forEach(bhk => {
+            const btn = document.createElement('button');
+            btn.type      = 'button';
+            btn.className = 'apw-chip';
+            btn.setAttribute('data-bhk', String(bhk.id));
+            btn.textContent = bhk.name;
+            chipRow.appendChild(btn);
         });
-    </script>
+
+        // Reset selection to "All" when property type changes
+        selectedBhkId        = '';
+        bhkHiddenInput.value = '';
+
+        // Wire up the freshly created chips
+        wireChipListeners();
+    }
+
+    // Wire server-rendered chips immediately on page load
+    wireChipListeners();
+
+    // ─── Property Type → fetch fresh BHK list ────────────────────────────────────
+    document.getElementById('property_type_id').addEventListener('change', function () {
+        const propertyTypeId = this.value;
+        const chipRow        = document.querySelector('.apw-chipRow');
+
+        // Show loading state
+        selectedBhkId        = '';
+        bhkHiddenInput.value = '';
+        chipRow.innerHTML    = '<span style="color:#b39359;font-size:13px;">Loading…</span>';
+
+        fetch('{{ route("api.bhks-by-property-type") }}?property_type_id=' + propertyTypeId)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.bhks || data.bhks.length === 0) {
+                    bhkSection.style.display = 'none';
+                    chipRow.innerHTML        = '';
+                    return;
+                }
+                renderBhkChips(data.bhks);
+            })
+            .catch(err => {
+                console.error('BHK fetch error:', err);
+                bhkSection.style.display = 'none';
+                chipRow.innerHTML = '<span style="color:#dc2626;font-size:13px;">Error loading BHKs</span>';
+            });
+    });
+
+    // ─── Apply Filters button ─────────────────────────────────────────────────────
+    // Use the one INSIDE the form only (not the empty-state reset button)
+    const applyBtn = document.querySelector('#apw-resiFilterForm .apw-filterApply');
+    applyBtn.type = 'button'; // prevent native form submit; we control it here
+
+    applyBtn.addEventListener('click', function () {
+        // Always sync hidden input right before submit
+        bhkHiddenInput.value = selectedBhkId;
+        document.getElementById('apw-resiFilterForm').submit();
+    });
+
+</script>
 @endsection
