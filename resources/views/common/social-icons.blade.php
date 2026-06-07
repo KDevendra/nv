@@ -89,6 +89,7 @@
         padding-right: 16px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
         transition: all .3s ease;
+        background: #0B2C3D;
     }
 
     /* Hover Expand */
@@ -101,6 +102,19 @@
         .sticky-item:hover .label {
             opacity: 1;
             transform: translateX(0);
+        }
+        
+        /* Show brand colors on hover */
+        .sticky-item.wa:hover {
+            background: #25D366;
+        }
+
+        .sticky-item.call:hover {
+            background: #3B82F6;
+        }
+
+        .sticky-item.email:hover {
+            background: #111827;
         }
     }
 
@@ -140,17 +154,9 @@
         transition: all .25s ease;
     }
 
-    /* Colors */
-    .sticky-item.wa {
-        background: #25D366;
-    }
-
-    .sticky-item.call {
-        background: #3B82F6;
-    }
-
-    .sticky-item.email {
-        background: #111827;
+    /* Colors - Default theme color */
+    .sticky-item {
+        background: #0B2C3D;
     }
 
     /* Toggle Button */

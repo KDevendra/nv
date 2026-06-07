@@ -35,7 +35,7 @@
         .about-banner-heading {
             font-size: 48px;
             font-weight: 700;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .about-breadcrumb {
@@ -43,6 +43,7 @@
             align-items: center;
             gap: 8px;
             font-size: 16px;
+            margin-top: 12px;
         }
 
         .about-breadcrumb a {
@@ -92,8 +93,8 @@
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Section Header -->
             <div class="text-center mb-16">
-                <span class="section-subheading">Our Company</span>
-                <h2 class="font-heading text-zendo-navy">{{ $aboutPage->section_subtitle ?? 'Building Trust, Delivering Excellence' }}
+                <span class="section-subheading" style="font-weight: 600; color: #9a7a3e;">Our Company</span>
+                <h2 class="font-heading text-zendo-navy" style="font-family: 'Nunito Sans', sans-serif !important; font-weight: 700 !important;">{{ $aboutPage->section_subtitle ?? 'Building Trust, Delivering Excellence' }}
                 </h2>
             </div>
             <!-- Feature Grid -->
@@ -110,7 +111,7 @@
                         @endif
                     </div>
                     <h3 class="text-xl font-semibold font-heading text-zendo-navy mb-3">
-                        {{ $aboutPage->who_we_are_title ?? 'Who we are' }}</h3>
+                        {{ $aboutPage->who_we_are_title ?? 'Who We Are' }}</h3>
                     <p class="text-gray-600 font-body leading-relaxed">
                         {{ $aboutPage->who_we_are_description ?? 'Aliquam dictum elit vitae mauris facilisis at dictum urna dignissim donec vel lectus vel felis.' }}
                     </p>
@@ -489,10 +490,9 @@
             <!-- Left Content -->
             <div>
                 <span class="section-subheading-dark-bg">Get Inquiry</span>
-                <h2 class="md:text-5xl font-heading text-white">Your Luxurious Escape Awaits — Reserve Today</h2>
+                <h2 class="md:text-5xl font-heading text-white">Find Your Perfect Property — Connect with Our Advisors Today</h2>
                 <p class="text-lg text-gray-300 font-body max-w-2xl mx-auto">
-                    Step into a world of refined elegance and timeless comfort. Secure your unforgettable stay at our luxury
-                    hotel – it's just an inquiry away.
+                    Partner with ZENDO Private Limited to find your ideal space. Secure your property requirements across industrial warehousing, warehouse land, factories, 3PL company tie-ups, commercial land, shops, agricultural land, or premium residential plots and flats—it's just an inquiry away.
                 </p>
             </div>
 
@@ -535,8 +535,16 @@
                     </div>
                     <div>
                         <label for="requirement-2" class="sr-only">Requirement</label>
-                        <input type="text" name="message" id="requirement-2" class="inquiry-form-input w-full"
-                            placeholder="Requirement" required>
+                        <select name="message" id="requirement-2" class="inquiry-form-input w-full" required>
+                            <option value="">Select Requirement</option>
+                            <option value="Warehouse Leasing">Warehouse Leasing</option>
+                            <option value="Warehouse/Industrial Land">Warehouse/Industrial Land</option>
+                            <option value="Factories & Manufacturing Setups">Factories & Manufacturing Setups</option>
+                            <option value="3PL Company Tie-up">3PL Company Tie-up</option>
+                            <option value="Residential Plot / Flat">Residential Plot / Flat</option>
+                            <option value="Commercial Land / Shop">Commercial Land / Shop</option>
+                            <option value="Agricultural Land">Agricultural Land</option>
+                        </select>
                     </div>
                     <div>
                         <button type="submit"

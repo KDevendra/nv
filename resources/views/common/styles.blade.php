@@ -63,6 +63,17 @@
     header {
          transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
+    
+    /* Header alignment fix */
+    header .flex.items-center {
+        align-items: center !important;
+    }
+    
+    header nav {
+        display: flex;
+        align-items: center;
+    }
+    
     .header-nav-link, .header-button {
         font-family: 'Raleway', sans-serif;
         font-weight: 700;
@@ -192,26 +203,26 @@
 
     /* Subheading Style */
     .section-subheading {
-       font-family: 'Forum', cursive;
+       font-family: 'Raleway', sans-serif;
        font-style: normal; 
-       color: #B39359;  
-       font-size: 1.466em;
+       color: #9a7a3e;  
+       font-size: 0.875rem;
        line-height: 1.5em; 
        display: inline-block;
-       font-weight: 400;
-       text-transform: none;
-       letter-spacing: 0;
+       font-weight: 600;
+       text-transform: uppercase;
+       letter-spacing: 0.12em;
     }
      .section-subheading-dark-bg {
-       font-family: 'Forum', cursive; 
+       font-family: 'Raleway', sans-serif;
        font-style: normal; 
        color: #B39359;  
-       font-size: 1.466em;
+       font-size: 0.875rem;
        line-height: 1.5em;
        display: inline-block;
-       font-weight: 400;
-       text-transform: none;
-       letter-spacing: 0;
+       font-weight: 600;
+       text-transform: uppercase;
+       letter-spacing: 0.12em;
      }
      
      /* Hero h1 margins */
@@ -436,6 +447,27 @@
         outline: none;
         border-color: #B39359;
         background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Dropdown select styling within inquiry form */
+    select.inquiry-form-input {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.8)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+        cursor: pointer;
+    }
+    
+    select.inquiry-form-input option {
+        background-color: #0b2c3d;
+        color: #ffffff;
+        font-size: 1rem;
+    }
+    
+    select.inquiry-form-input option:first-child {
+        color: rgba(255, 255, 255, 0.6);
     }
 
     /* FAQ Section */

@@ -69,7 +69,7 @@
                 <a href="{{ route('contact') }}" class="header-nav-link font-highlight font-medium">Contact Us</a>
 
                 <a href="tel:+917494010101"
-                    class="header-button btn-anim ml-4 px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105">+91 74-94-01-01-01</a>
+                    class="header-button btn-anim ml-4 mr-4 px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105">+91 74-94-01-01-01</a>
             </nav>
 
             <!-- Mobile Menu Button -->
