@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FieldDashboardController;
+use App\Http\Controllers\FieldProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\FieldOfficer\PropertyEntryController as FieldOfficerPropertyEntryController;
+use App\Http\Controllers\SupplyHead\PropertyEntryController as SupplyHeadPropertyEntryController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TestimonialController;
@@ -38,6 +42,7 @@ use App\Http\Controllers\Admin\PrivacyPolicyController;
 use App\Http\Controllers\Admin\TermsConditionController;
 use App\Http\Controllers\Admin\SeoMetaController;
 use App\Http\Controllers\Admin\VideoTourController;
+use App\Http\Controllers\Admin\PropertyEntryReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -101,6 +106,32 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
     
+    // Field Role Dashboard (supply_head & field_officer)
+    Route::get('/field/dashboard', [FieldDashboardController::class, 'index'])->name('field.dashboard');
+
+    // Field Profile (supply_head & field_officer)
+    Route::get('/field/profile', [FieldProfileController::class, 'edit'])->name('field.profile.edit');
+    Route::patch('/field/profile', [FieldProfileController::class, 'update'])->name('field.profile.update');
+    Route::put('/field/profile/password', [FieldProfileController::class, 'updatePassword'])->name('field.profile.password');
+
+    // Field Officer — Property Entries
+    Route::prefix('field')->name('field.')->group(function () {
+        Route::resource('properties', FieldOfficerPropertyEntryController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update', 'show']);
+    });
+
+    // Supply Head — Property Entries
+    Route::prefix('supply-head')->name('supplyhead.')->group(function () {
+        Route::get('properties', [SupplyHeadPropertyEntryController::class, 'index'])->name('properties.index');
+        Route::get('properties/{property}', [SupplyHeadPropertyEntryController::class, 'show'])->name('properties.show');
+        Route::post('properties/{property}/action', [SupplyHeadPropertyEntryController::class, 'action'])->name('properties.action');
+        Route::post('properties/{property}/toggle-resubmit', [SupplyHeadPropertyEntryController::class, 'toggleResubmit'])->name('properties.toggle-resubmit');
+        
+        // Field-by-field reviews
+        Route::post('properties/{property}/review-field', [SupplyHeadPropertyEntryController::class, 'reviewField'])->name('properties.review-field');
+        Route::post('properties/{property}/mark-all-correct', [SupplyHeadPropertyEntryController::class, 'markAllCorrect'])->name('properties.mark-all-correct');
+    });
+    
     // Dashboard Analytics API
     Route::get('/api/dashboard/visitor-analytics', [DashboardController::class, 'getVisitorAnalytics'])->middleware('permission')->name('dashboard.analytics');
     
@@ -111,6 +142,7 @@ Route::middleware('auth')->group(function () {
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('permission')->group(function () {
         Route::resource('users', UserController::class);
+        Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
         // Role Permissions
         Route::get('role-permissions', [RolePermissionController::class, 'index'])->name('role-permissions.index');
@@ -238,6 +270,11 @@ Route::middleware('auth')->group(function () {
         // Video Tour Section
         Route::get('video-tour', [VideoTourController::class, 'edit'])->name('video-tour.edit');
         Route::put('video-tour', [VideoTourController::class, 'update'])->name('video-tour.update');
+
+        // Property Entry Report
+        Route::get('property-entry-report', [PropertyEntryReportController::class, 'index'])->name('property-entry-report.index');
+        Route::get('property-entry-report/export', [PropertyEntryReportController::class, 'export'])->name('property-entry-report.export');
+        Route::get('property-entry-report/{entry}', [PropertyEntryReportController::class, 'show'])->name('property-entry-report.show');
     });
 });
 

@@ -40,8 +40,8 @@
             <!-- Basic Information -->
             <div class="pt-6 border-t border-gray-200">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Basic Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                         <input type="text" 
                                name="name" 
@@ -55,7 +55,7 @@
                         @enderror
                     </div>
 
-                    <div class="md:col-span-2">
+                    <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                         <input type="email" 
                                name="email" 
@@ -69,16 +69,56 @@
                         @enderror
                     </div>
 
-                    <div class="md:col-span-2">
+                    <div>
                         <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                         <select name="role" id="role"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('role') border-red-500 @enderror"
-                                required>
-                            <option value="super_admin" {{ old('role', $user->role) === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
-                            <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="staff" {{ old('role', $user->role) === 'staff' ? 'selected' : '' }}>Staff</option>
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('role') border-red-500 @enderror select2-role"
+                                required onchange="toggleSupplyHeadField()">
+                            @foreach(App\Models\User::ROLES as $value => $label)
+                                <option value="{{ $value }}" {{ old('role', $user->role) === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                         @error('role')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="md:col-span-3" id="supply-head-field" style="display: none;">
+                        <label for="supply_head_id" class="block text-sm font-medium text-gray-700 mb-2">Assign to Supply Head *</label>
+                        <select name="supply_head_id" id="supply_head_id"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('supply_head_id') border-red-500 @enderror select2-supply-head">
+                            <option value="">Select Supply Head</option>
+                            @foreach($supplyHeads as $head)
+                                <option value="{{ $head->id }}" {{ old('supply_head_id', $user->supply_head_id) == $head->id ? 'selected' : '' }}>
+                                    {{ $head->name }} ({{ $head->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Field officers must be assigned to a supply head</p>
+                        @error('supply_head_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Status -->
+            <div class="pt-6 border-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">User Status</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" 
+                                   name="is_active" 
+                                   value="1"
+                                   {{ old('is_active', $user->is_active) ? 'checked' : '' }}
+                                   class="w-4 h-4 text-zendo-gold border-gray-300 rounded focus:ring-zendo-gold focus:ring-2">
+                            <span class="ml-2 text-sm font-medium text-gray-700">Active User</span>
+                        </label>
+                        <p class="mt-1 text-xs text-gray-500">Inactive users cannot login to the system</p>
+                        @error('is_active')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -86,7 +126,7 @@
             </div>
 
             <!-- Change Password -->
-            <div class="pt-6 border-t border-gray-200">
+            <div class="pt-1">
                 <h3 class="text-base font-semibold text-gray-900 mb-2">Change Password</h3>
                 <p class="text-sm text-gray-600 mb-4">Leave blank to keep current password</p>
                 
@@ -149,4 +189,71 @@
 @endCanDo
     </div>
 </div>
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+.select2-container .select2-selection--single {
+    height: 42px;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px;
+    padding-left: 12px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+}
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+</style>
+
+<script>
+function toggleSupplyHeadField() {
+    const roleSelect = document.getElementById('role');
+    const supplyHeadField = document.getElementById('supply-head-field');
+    const supplyHeadSelect = document.getElementById('supply_head_id');
+    
+    if (roleSelect.value === 'field_officer') {
+        supplyHeadField.style.display = 'block';
+        supplyHeadSelect.required = true;
+    } else {
+        supplyHeadField.style.display = 'none';
+        supplyHeadSelect.required = false;
+        $('#supply_head_id').val('').trigger('change');
+    }
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    // Initialize Select2 for role dropdown
+    $('.select2-role').select2({
+        placeholder: 'Select a role',
+        allowClear: false,
+        width: '100%'
+    });
+    
+    // Initialize Select2 for supply head dropdown
+    $('.select2-supply-head').select2({
+        placeholder: 'Search and select supply head',
+        allowClear: true,
+        width: '100%'
+    });
+    
+    // Initial toggle
+    toggleSupplyHeadField();
+    
+    // Listen for role change
+    $('#role').on('change', function() {
+        toggleSupplyHeadField();
+    });
+});
+</script>
 @endsection

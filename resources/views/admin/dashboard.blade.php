@@ -158,6 +158,52 @@ Welcome back, {{ Auth::user()->name }}! Here's what's happening with your real e
     </div>
 </div>
 
+<!-- Property Entry Quick Stats -->
+@php
+    $peTotal     = App\Models\PropertyEntry::count();
+    $pePending   = App\Models\PropertyEntry::where('status', 'submitted')->count();
+    $peVerified  = App\Models\PropertyEntry::where('status', 'verified')->count();
+    $peRecheck   = App\Models\PropertyEntry::where('status', 'recheck')->count();
+@endphp
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-zendo-navy font-heading">Property Entry Report</h3>
+            <p class="text-sm text-gray-500 mt-0.5">Field officer submissions overview</p>
+        </div>
+        <a href="{{ route('admin.property-entry-report.index') }}"
+            class="inline-flex items-center px-4 py-2 bg-zendo-navy text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-all shadow">
+            View Full Report
+            <svg class="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100">
+        <div class="p-5 text-center">
+            <p class="text-2xl font-bold text-zendo-navy">{{ $peTotal }}</p>
+            <p class="text-xs font-medium text-gray-500 mt-1">Total Entries</p>
+        </div>
+        <div class="p-5 text-center">
+            <a href="{{ route('admin.property-entry-report.index', ['status' => 'submitted']) }}" class="block hover:bg-blue-50 rounded-lg transition-colors -m-2 p-2">
+                <p class="text-2xl font-bold text-blue-600">{{ $pePending }}</p>
+                <p class="text-xs font-medium text-gray-500 mt-1">Pending Review</p>
+                @if($pePending > 0)
+                    <span class="inline-block mt-1 text-xs text-blue-600 font-medium">Review now →</span>
+                @endif
+            </a>
+        </div>
+        <div class="p-5 text-center">
+            <p class="text-2xl font-bold text-green-600">{{ $peVerified }}</p>
+            <p class="text-xs font-medium text-gray-500 mt-1">Verified</p>
+        </div>
+        <div class="p-5 text-center">
+            <p class="text-2xl font-bold text-orange-500">{{ $peRecheck }}</p>
+            <p class="text-xs font-medium text-gray-500 mt-1">Needs Recheck</p>
+        </div>
+    </div>
+</div>
+
 <!-- Charts and Tables Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
     <!-- Recent Consultations -->

@@ -28,6 +28,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+
+        // Redirect supply heads and field officers to their dedicated dashboard
+        if (in_array($user->role, ['supply_head', 'field_officer'])) {
+            return redirect()->intended(route('field.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

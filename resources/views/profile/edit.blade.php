@@ -40,7 +40,7 @@
     </div>
 
     <!-- Delete Account Card -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-red-500">
+    {{-- <div class="bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-red-500">
         <div class="px-6 py-4 bg-red-50 border-b border-red-200">
             <h2 class="text-xl font-heading text-red-700 font-semibold">Delete Account</h2>
             <p class="text-sm text-red-600 mt-1">Once your account is deleted, all of its resources and data will be permanently deleted.</p>
@@ -48,6 +48,6 @@
         <div class="p-6">
             @include('profile.partials.delete-user-form')
         </div>
-    </div>
+    </div> --}}
 </div>
 @endsection

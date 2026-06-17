@@ -19,9 +19,10 @@ class User extends Authenticatable
      * @var list<string>
      */
     const ROLES = [
-        'super_admin' => 'Super Admin',
-        'admin'       => 'Admin',
-        'staff'       => 'Staff',
+        'super_admin'   => 'Super Admin',
+        'admin'         => 'Admin',
+        'supply_head'   => 'Supply Head',
+        'field_officer' => 'Field Officer',
     ];
 
     protected $fillable = [
@@ -29,6 +30,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'supply_head_id',
+        'is_active',
     ];
 
     /**
@@ -51,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -74,5 +78,77 @@ class User extends Authenticatable
     public function hasPermission(string $permission): bool
     {
         return in_array($permission, $this->getPermissions());
+    }
+
+    /**
+     * Get the supply head that this field officer reports to.
+     */
+    public function supplyHead()
+    {
+        return $this->belongsTo(User::class, 'supply_head_id');
+    }
+
+    /**
+     * Get all field officers under this supply head.
+     */
+    public function fieldOfficers()
+    {
+        return $this->hasMany(User::class, 'supply_head_id');
+    }
+
+    /**
+     * Get all property entries created by this field officer.
+     */
+    public function propertyEntries()
+    {
+        return $this->hasMany(\App\Models\PropertyEntry::class, 'field_officer_id');
+    }
+
+    /**
+     * Check if this user is a supply head.
+     */
+    public function isSupplyHead(): bool
+    {
+        return $this->role === 'supply_head';
+    }
+
+    /**
+     * Check if this user is a field officer.
+     */
+    public function isFieldOfficer(): bool
+    {
+        return $this->role === 'field_officer';
+    }
+
+    /**
+     * Get all supply heads for dropdown options.
+     */
+    public static function getSupplyHeads()
+    {
+        return self::where('role', 'supply_head')->get();
+    }
+
+    /**
+     * Check if the user is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * Activate the user.
+     */
+    public function activate()
+    {
+        return $this->update(['is_active' => true]);
+    }
+
+    /**
+     * Deactivate the user.
+     */
+    public function deactivate()
+    {
+        return $this->update(['is_active' => false]);
     }
 }

@@ -22,6 +22,72 @@
             @endCanDo
         </div>
 
+        <!-- Filters Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <!-- Search -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="search" name="search" value="{{ request('search') }}"
+                            placeholder="Name or email..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-zendo-gold focus:border-zendo-gold">
+                    </div>
+                    
+                    <!-- Role Filter -->
+                    <div>
+                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                        <select id="role" name="role"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-zendo-gold focus:border-zendo-gold select2-filter-role">
+                            <option value="">All Roles</option>
+                            @foreach(App\Models\User::ROLES as $value => $label)
+                                <option value="{{ $value }}" {{ request('role') === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Supply Head Filter -->
+                    <div>
+                        <label for="supply_head_id" class="block text-sm font-medium text-gray-700 mb-2">Supply Head</label>
+                        <select id="supply_head_id" name="supply_head_id"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-zendo-gold focus:border-zendo-gold select2-filter-supply">
+                            <option value="">All Supply Heads</option>
+                            @foreach($supplyHeads as $head)
+                                <option value="{{ $head->id }}" {{ request('supply_head_id') == $head->id ? 'selected' : '' }}>
+                                    {{ $head->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="status" name="status"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-zendo-gold focus:border-zendo-gold select2-filter-status">
+                            <option value="">All Status</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Filter Actions -->
+                    <div class="flex items-end space-x-2">
+                        <button type="submit"
+                            class="px-4 py-2 bg-zendo-gold text-white font-semibold rounded-lg hover:bg-opacity-90 transition-colors">
+                            Filter
+                        </button>
+                        <a href="{{ route('admin.users.index') }}"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition-colors">
+                            Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
         <!-- Success/Error Messages -->
         @if (session('success'))
             <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
@@ -47,6 +113,8 @@
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Reports To</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -78,32 +146,40 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $roleLabels = [
-                                            'super_admin' => 'Super Admin',
-                                            'admin' => 'Admin',
-                                            'staff' => 'Staff',
-                                        ];
                                         $roleColors = [
                                             'super_admin' => 'bg-purple-100 text-purple-800',
                                             'admin' => 'bg-blue-100 text-blue-800',
-                                            'staff' => 'bg-gray-100 text-gray-800',
+                                            'supply_head' => 'bg-green-100 text-green-800',
+                                            'field_officer' => 'bg-orange-100 text-orange-800',
                                         ];
                                     @endphp
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800' }}">
-                                        {{ $roleLabels[$user->role] ?? $user->role }}
+                                        {{ App\Models\User::ROLES[$user->role] ?? $user->role }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if ($user->email_verified_at)
+                                    @if($user->isFieldOfficer() && $user->supplyHead)
+                                        <div class="text-sm text-gray-900">{{ $user->supplyHead->name }}</div>
+                                        <div class="text-xs text-gray-500">{{ $user->supplyHead->email }}</div>
+                                    @elseif($user->isSupplyHead())
+                                        <div class="text-sm text-gray-600">
+                                            {{ $user->fieldOfficers->count() }} Field Officer(s)
+                                        </div>
+                                    @else
+                                        <div class="text-sm text-gray-400">-</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($user->is_active)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Verified
+                                            Active
                                         </span>
                                     @else
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            Unverified
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Inactive
                                         </span>
                                     @endif
                                 </td>
@@ -132,6 +208,27 @@
                                             </svg>
                                         </a>
                                         @endCanDo
+                                        @if ($user->id !== auth()->id() || !$user->is_active)
+                                            @canDo('users.edit')
+                                            <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" 
+                                                    class="text-{{ $user->is_active ? 'orange' : 'green' }}-600 hover:text-{{ $user->is_active ? 'orange' : 'green' }}-900 transition-colors"
+                                                    title="{{ $user->is_active ? 'Deactivate' : 'Activate' }} User">
+                                                    @if($user->is_active)
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12"></path>
+                                                        </svg>
+                                                    @else
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                    @endif
+                                                </button>
+                                            </form>
+                                            @endCanDo
+                                        @endif
                                         @if ($user->id !== auth()->id())
                                             @canDo('users.delete')
                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
@@ -157,7 +254,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                     <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -199,36 +296,42 @@
                                 <p class="text-sm text-gray-600 mb-2">{{ $user->email }}</p>
                                 <div class="flex items-center space-x-2 mb-2">
                                     @php
-                                        $roleLabels = [
-                                            'super_admin' => 'Super Admin',
-                                            'admin' => 'Admin',
-                                            'staff' => 'Staff',
-                                        ];
                                         $roleColors = [
                                             'super_admin' => 'bg-purple-100 text-purple-800',
                                             'admin' => 'bg-blue-100 text-blue-800',
-                                            'staff' => 'bg-gray-100 text-gray-800',
+                                            'supply_head' => 'bg-green-100 text-green-800',
+                                            'field_officer' => 'bg-orange-100 text-orange-800',
                                         ];
                                     @endphp
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800' }}">
-                                        {{ $roleLabels[$user->role] ?? $user->role }}
+                                        {{ App\Models\User::ROLES[$user->role] ?? $user->role }}
                                     </span>
                                 </div>
+                                
+                                @if($user->isFieldOfficer() && $user->supplyHead)
+                                    <div class="text-sm text-gray-600 mb-2">
+                                        Reports to: <span class="font-medium">{{ $user->supplyHead->name }}</span>
+                                    </div>
+                                @elseif($user->isSupplyHead())
+                                    <div class="text-sm text-gray-600 mb-2">
+                                        Manages {{ $user->fieldOfficers->count() }} field officer(s)
+                                    </div>
+                                @endif
                                 <div class="flex items-center space-x-4 text-xs text-gray-500">
                                     <span>{{ $user->created_at->format('M d, Y') }}</span>
                                 </div>
                             </div>
                         </div>
-                        @if ($user->email_verified_at)
+                        @if($user->is_active)
                             <span
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Verified
+                                Active
                             </span>
                         @else
                             <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                Unverified
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Inactive
                             </span>
                         @endif
                     </div>
@@ -256,6 +359,29 @@
                             Edit
                         </a>
                         @endCanDo
+                        @if ($user->id !== auth()->id() || !$user->is_active)
+                            @canDo('users.edit')
+                            <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm text-{{ $user->is_active ? 'orange' : 'green' }}-600 hover:text-{{ $user->is_active ? 'orange' : 'green' }}-800 transition-colors"
+                                    title="{{ $user->is_active ? 'Deactivate' : 'Activate' }} User">
+                                    @if($user->is_active)
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18 12M6 6l12 12"></path>
+                                        </svg>
+                                        Deactivate
+                                    @else
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Activate
+                                    @endif
+                                </button>
+                            </form>
+                            @endCanDo
+                        @endif
                         @if ($user->id !== auth()->id())
                             @canDo('users.delete')
                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline"
@@ -305,4 +431,52 @@
             </div>
         @endif
     </div>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-left: 12px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.2);
+    }
+    </style>
+
+    <script>
+    $(document).ready(function() {
+        // Initialize Select2 for filter dropdowns
+        $('.select2-filter-role').select2({
+            placeholder: 'All Roles',
+            allowClear: true,
+            width: '100%'
+        });
+        
+        $('.select2-filter-supply').select2({
+            placeholder: 'All Supply Heads',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('.select2-filter-status').select2({
+            placeholder: 'All Status',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+    </script>
 @endsection

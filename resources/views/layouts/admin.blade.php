@@ -485,6 +485,35 @@
                         </div>
                     @endif
 
+                    <!-- Property Entry Report -->
+                    @if (in_array('dashboard.view', $navPerms))
+                        <a href="{{ route('admin.property-entry-report.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.property-entry-report.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Property Entry Report</span>
+                            @php $pendingEntries = App\Models\PropertyEntry::where('status', 'submitted')->count(); @endphp
+                            @if($pendingEntries > 0)
+                                <span x-show="!sidebarCollapsed"
+                                    class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 min-w-[18px] h-4 justify-center">
+                                    {{ $pendingEntries }}
+                                </span>
+                                <span x-show="sidebarCollapsed"
+                                    class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-blue-500"></span>
+                            @endif
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                Property Entry Report
+                            </div>
+                        </a>
+                    @endif
+
                     <!-- Property Management Dropdown -->
                     @if (in_array('properties.view', $navPerms) ||
                             in_array('service-types.view', $navPerms) ||

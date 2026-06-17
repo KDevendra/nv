@@ -48,19 +48,19 @@
                         </div>
                     </div>
                     <div>
-                        @if($user->email_verified_at)
+                        @if($user->is_active)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
-                                Verified
+                                Active
                             </span>
                         @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                 </svg>
-                                Unverified
+                                Inactive
                             </span>
                         @endif
                     </div>
@@ -70,7 +70,7 @@
             <!-- Basic Information -->
             <div class="pt-6 border-t border-gray-200">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Basic Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <p class="text-sm text-gray-600 mb-1">Full Name</p>
                         <p class="text-base font-medium text-gray-900">{{ $user->name }}</p>
@@ -86,34 +86,78 @@
                     <div>
                         <p class="text-sm text-gray-600 mb-1">Role</p>
                         @php
-                            $roleLabels = ['super_admin' => 'Super Admin', 'admin' => 'Admin', 'staff' => 'Staff'];
-                            $roleColors = ['super_admin' => 'bg-purple-100 text-purple-800', 'admin' => 'bg-blue-100 text-blue-800', 'staff' => 'bg-gray-100 text-gray-800'];
+                            $roleColors = [
+                                'super_admin' => 'bg-purple-100 text-purple-800',
+                                'admin' => 'bg-blue-100 text-blue-800',
+                                'supply_head' => 'bg-green-100 text-green-800',
+                                'field_officer' => 'bg-orange-100 text-orange-800',
+                            ];
                         @endphp
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800' }}">
-                            {{ $roleLabels[$user->role] ?? $user->role }}
+                            {{ App\Models\User::ROLES[$user->role] ?? $user->role }}
                         </span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Email Status</p>
+                        <p class="text-sm text-gray-600 mb-1">Account Status</p>
                         <div class="mt-1">
-                            @if($user->email_verified_at)
+                            @if($user->is_active)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Verified on {{ $user->email_verified_at->format('M d, Y') }}
+                                    Active
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    Not Verified
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Inactive
                                 </span>
                             @endif
                         </div>
                     </div>
+                    @if($user->isFieldOfficer() && $user->supplyHead)
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Reports To</p>
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-2">
+                                    <span class="text-white text-xs font-semibold">{{ substr($user->supplyHead->name, 0, 1) }}</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ $user->supplyHead->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $user->supplyHead->email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
+
+            @if($user->isSupplyHead() && $user->fieldOfficers->count() > 0)
+                <!-- Field Officers Section -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4">Field Officers ({{ $user->fieldOfficers->count() }})</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($user->fieldOfficers as $officer)
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-white text-sm font-semibold">{{ substr($officer->name, 0, 1) }}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">{{ $officer->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $officer->email }}</p>
+                                </div>
+                                <a href="{{ route('admin.users.show', $officer) }}" class="text-zendo-gold hover:text-yellow-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- Account Information -->
             <div class="pt-6 border-t border-gray-200">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Account Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <p class="text-sm text-gray-600 mb-1">Member Since</p>
                         <p class="text-base font-medium text-gray-900">{{ $user->created_at->format('F d, Y') }}</p>
@@ -121,6 +165,18 @@
                     <div>
                         <p class="text-sm text-gray-600 mb-1">Last Updated</p>
                         <p class="text-base font-medium text-gray-900">{{ $user->updated_at->format('F d, Y \a\t g:i A') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Account Status</p>
+                        @if($user->is_active)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Inactive
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>

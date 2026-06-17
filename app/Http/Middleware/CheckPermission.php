@@ -283,6 +283,11 @@ class CheckPermission
 
         // Dashboard analytics API
         'dashboard.analytics'                   => 'dashboard.view',
+
+        // Property Entry Report (admin)
+        'admin.property-entry-report.index'     => 'dashboard.view',
+        'admin.property-entry-report.export'    => 'dashboard.view',
+        'admin.property-entry-report.show'      => 'dashboard.view',
     ];
 
     public function handle(Request $request, Closure $next): Response

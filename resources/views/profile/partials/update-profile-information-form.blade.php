@@ -1,7 +1,3 @@
-<form id="send-verification" method="post" action="{{ route('verification.send') }}">
-    @csrf
-</form>
-
 <form method="post" action="{{ route('profile.update') }}" class="space-y-6">
     @csrf
     @method('patch')
@@ -22,34 +18,12 @@
     </div>
 
     <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-        <input type="email" 
-               name="email" 
-               id="email" 
-               value="{{ old('email', $user->email) }}"
-               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('email') border-red-500 @enderror"
-               required 
-               autocomplete="username">
-        @error('email')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-
-        @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-            <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p class="text-sm text-yellow-800">
-                    Your email address is unverified.
-                    <button form="send-verification" class="underline text-yellow-700 hover:text-yellow-900 font-medium">
-                        Click here to re-send the verification email.
-                    </button>
-                </p>
-
-                @if (session('status') === 'verification-link-sent')
-                    <p class="mt-2 text-sm text-green-600 font-medium">
-                        A new verification link has been sent to your email address.
-                    </p>
-                @endif
-            </div>
-        @endif
+        <label class="block text-sm font-medium text-gray-700 mb-2">Email (Username)</label>
+        <input type="text"
+               value="{{ $user->email }}"
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+               disabled>
+        <p class="mt-1 text-xs text-gray-400">Email is your username and cannot be changed.</p>
     </div>
 
     <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
