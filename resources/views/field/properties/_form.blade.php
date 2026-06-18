@@ -16,7 +16,7 @@
     
     // Helper to display field remark (supply head's comment)
     $rmk = fn(string $k) => isset($fieldRemarks[$k]) && $fieldRemarks[$k]
-        ? '<div class="mt-1 px-2 py-1.5 bg-red-50 border border-red-200 rounded"><p class="text-[10px] font-semibold text-red-700 mb-0.5">⚠ Supply Head Remark:</p><p class="text-xs text-red-800">' . e($fieldRemarks[$k]) . '</p></div>'
+        ? '<div class="mt-1"><p class="text-[10px] font-semibold text-red-700 mb-0.5"></p><p class="text-xs text-red-800">⚠ ' . e($fieldRemarks[$k]) . '</p></div>'
         : '';
 
     // Pre-compute per-section server error counts for the red badge
@@ -90,7 +90,8 @@
             <label class="{{ $lc }}">Full Address / Name of Property {!! $ast('name_full_address') !!}</label>
             <textarea name="name_full_address" rows="2" {{ $req('name_full_address') }} class="{{ $ic }}">{{ $v('name_full_address') }}</textarea>
             @error('name_full_address')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('name_full_address') !!}
+ </div>
         @endif
 
         @if($fc('village')->keep_field)
@@ -98,6 +99,7 @@
             <label class="{{ $lc }}">Village {!! $ast('village') !!}</label>
             <input type="text" name="village" value="{{ $v('village') }}" {{ $req('village') }} class="{{ $ic }}">
             @error('village')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+            {!! $rmk('village') !!}
         </div>
         @endif
 
@@ -106,7 +108,8 @@
             <label class="{{ $lc }}">Tehsil {!! $ast('tehsil') !!}</label>
             <input type="text" name="tehsil" value="{{ $v('tehsil') }}" {{ $req('tehsil') }} class="{{ $ic }}">
             @error('tehsil')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('tehsil') !!}
+ </div>
         @endif
 
         @if($fc('district')->keep_field)
@@ -114,7 +117,8 @@
             <label class="{{ $lc }}">District {!! $ast('district') !!}</label>
             <input type="text" name="district" value="{{ $v('district') }}" {{ $req('district') }} class="{{ $ic }}">
             @error('district')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('district') !!}
+ </div>
         @endif
 
         @if($fc('state')->keep_field)
@@ -122,7 +126,8 @@
             <label class="{{ $lc }}">State {!! $ast('state') !!}</label>
             <input type="text" name="state" value="{{ $v('state') }}" {{ $req('state') }} class="{{ $ic }}">
             @error('state')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('state') !!}
+ </div>
         @endif
 
         @if($fc('country')->keep_field)
@@ -130,7 +135,8 @@
             <label class="{{ $lc }}">Country {!! $ast('country') !!}</label>
             <input type="text" name="country" value="{{ $v('country') ?: 'India' }}" {{ $req('country') }} class="{{ $ic }}">
             @error('country')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('country') !!}
+ </div>
         @endif
 
         @if($fc('postal_address_pin')->keep_field)
@@ -138,7 +144,8 @@
             <label class="{{ $lc }}">PIN Code {!! $ast('postal_address_pin') !!}</label>
             <input type="text" name="postal_address_pin" value="{{ $v('postal_address_pin') }}" {{ $req('postal_address_pin') }} class="{{ $ic }}">
             @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('postal_address_pin') !!}
+ </div>
         @endif
 
         @if($fc('nearest_city')->keep_field)
@@ -146,7 +153,8 @@
             <label class="{{ $lc }}">Nearest City {!! $ast('nearest_city') !!}</label>
             <input type="text" name="nearest_city" value="{{ $v('nearest_city') }}" {{ $req('nearest_city') }} class="{{ $ic }}">
             @error('nearest_city')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('nearest_city') !!}
+ </div>
         @endif
 
         @if($fc('nearest_highway')->keep_field)
@@ -154,7 +162,8 @@
             <label class="{{ $lc }}">Road Connectivity / Nearest Highway {!! $ast('nearest_highway') !!}</label>
             <input type="text" name="nearest_highway" value="{{ $v('nearest_highway') }}" {{ $req('nearest_highway') }} class="{{ $ic }}">
             @error('nearest_highway')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('nearest_highway') !!}
+ </div>
         @endif
 
         @if($fc('nearest_railway_station')->keep_field)
@@ -162,7 +171,8 @@
             <label class="{{ $lc }}">Nearest Railway Station {!! $ast('nearest_railway_station') !!}</label>
             <input type="text" name="nearest_railway_station" value="{{ $v('nearest_railway_station') }}" {{ $req('nearest_railway_station') }} class="{{ $ic }}">
             @error('nearest_railway_station')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('nearest_railway_station') !!}
+ </div>
         @endif
 
         @if($fc('nearest_airport')->keep_field)
@@ -170,7 +180,8 @@
             <label class="{{ $lc }}">Nearest Airport {!! $ast('nearest_airport') !!}</label>
             <input type="text" name="nearest_airport" value="{{ $v('nearest_airport') }}" {{ $req('nearest_airport') }} class="{{ $ic }}">
             @error('nearest_airport')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('nearest_airport') !!}
+ </div>
         @endif
 
         @if($fc('owner_contact_name')->keep_field)
@@ -178,7 +189,8 @@
             <label class="{{ $lc }}">Owner Name {!! $ast('owner_contact_name') !!}</label>
             <input type="text" name="owner_contact_name" value="{{ $v('owner_contact_name') }}" {{ $req('owner_contact_name') }} class="{{ $ic }}">
             @error('owner_contact_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('owner_contact_name') !!}
+ </div>
         @endif
 
         @if($fc('owner_contact_phone')->keep_field)
@@ -186,7 +198,8 @@
             <label class="{{ $lc }}">Owner Contact Number {!! $ast('owner_contact_phone') !!}</label>
             <input type="text" name="owner_contact_phone" value="{{ $v('owner_contact_phone') }}" {{ $req('owner_contact_phone') }} class="{{ $ic }}">
             @error('owner_contact_phone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('owner_contact_phone') !!}
+ </div>
         @endif
 
         @if($fc('owner_email')->keep_field)
@@ -194,7 +207,8 @@
             <label class="{{ $lc }}">Owner E-mail {!! $ast('owner_email') !!}</label>
             <input type="email" name="owner_email" value="{{ $v('owner_email') }}" {{ $req('owner_email') }} class="{{ $ic }}">
             @error('owner_email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('owner_email') !!}
+ </div>
         @endif
 
     </div>
@@ -218,7 +232,8 @@
                 @endforeach
             </select>
             @error('tenure')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('tenure') !!}
+ </div>
         @endif
 
         @if($fc('approved_land_use')->keep_field)
@@ -231,7 +246,8 @@
                 @endforeach
             </select>
             @error('approved_land_use')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('approved_land_use') !!}
+ </div>
         @endif
 
         @if($fc('fire_noc')->keep_field)
@@ -244,7 +260,8 @@
                 @endforeach
             </select>
             @error('fire_noc')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('fire_noc') !!}
+ </div>
         @endif
 
         @if($fc('clu_conversion_status')->keep_field)
@@ -252,7 +269,8 @@
             <label class="{{ $lc }}">CLU / Conversion Status {!! $ast('clu_conversion_status') !!}</label>
             <input type="text" name="clu_conversion_status" value="{{ $v('clu_conversion_status') }}" {{ $req('clu_conversion_status') }} class="{{ $ic }}">
             @error('clu_conversion_status')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('clu_conversion_status') !!}
+ </div>
         @endif
 
         @if($fc('pollution_noc')->keep_field)
@@ -265,7 +283,8 @@
                 @endforeach
             </select>
             @error('pollution_noc')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('pollution_noc') !!}
+ </div>
         @endif
 
         @if($fc('pollution_category')->keep_field)
@@ -273,7 +292,8 @@
             <label class="{{ $lc }}">Pollution Category {!! $ast('pollution_category') !!}</label>
             <input type="text" name="pollution_category" value="{{ $v('pollution_category') }}" {{ $req('pollution_category') }}  class="{{ $ic }}">
             @error('pollution_category')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('pollution_category') !!}
+ </div>
         @endif
 
         @if($fc('occupancy_certificate')->keep_field)
@@ -286,7 +306,8 @@
                 @endforeach
             </select>
             @error('occupancy_certificate')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('occupancy_certificate') !!}
+ </div>
         @endif
 
     </div>
@@ -303,61 +324,81 @@
         @if($fc('plot_area')->keep_field)
         <div><label class="{{ $lc }}">Plot Area — as per CLU (sq ft) {!! $ast('plot_area') !!}</label>
             <input type="number" step="0.01" min="0" name="plot_area" value="{{ $v('plot_area') }}" {{ $req('plot_area') }} class="{{ $ic }}">
-            @error('plot_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('plot_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('plot_area') !!}
+ </div>
         @endif
 
         @if($fc('built_up_area')->keep_field)
         <div><label class="{{ $lc }}">Built-up Area (sq ft) {!! $ast('built_up_area') !!}</label>
             <input type="number" step="0.01" min="0" name="built_up_area" value="{{ $v('built_up_area') }}" {{ $req('built_up_area') }} class="{{ $ic }}">
-            @error('built_up_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('built_up_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('built_up_area') !!}
+ </div>
         @endif
 
         @if($fc('carpet_area')->keep_field)
         <div><label class="{{ $lc }}">Carpet Area (sq ft) {!! $ast('carpet_area') !!}</label>
             <input type="number" step="0.01" min="0" name="carpet_area" value="{{ $v('carpet_area') }}" {{ $req('carpet_area') }} class="{{ $ic }}">
-            @error('carpet_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('carpet_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('carpet_area') !!}
+ </div>
         @endif
 
         @if($fc('available_area')->keep_field)
         <div><label class="{{ $lc }}">Available Area (sq ft) {!! $ast('available_area') !!}</label>
             <input type="number" step="0.01" min="0" name="available_area" value="{{ $v('available_area') }}" {{ $req('available_area') }} class="{{ $ic }}">
-            @error('available_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('available_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('available_area') !!}
+ </div>
         @endif
 
         @if($fc('clear_height_highest')->keep_field)
         <div><label class="{{ $lc }}">Clear Height — Highest (ft) {!! $ast('clear_height_highest') !!}</label>
             <input type="number" step="0.01" min="0" name="clear_height_highest" value="{{ $v('clear_height_highest') }}" {{ $req('clear_height_highest') }} class="{{ $ic }}">
-            @error('clear_height_highest')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('clear_height_highest')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('clear_height_highest') !!}
+ </div>
         @endif
 
         @if($fc('clear_height_side')->keep_field)
         <div><label class="{{ $lc }}">Clear Height — Side Wall (ft) {!! $ast('clear_height_side') !!}</label>
             <input type="number" step="0.01" min="0" name="clear_height_side" value="{{ $v('clear_height_side') }}" {{ $req('clear_height_side') }} class="{{ $ic }}">
-            @error('clear_height_side')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('clear_height_side')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('clear_height_side') !!}
+ </div>
         @endif
 
         @if($fc('shed_width')->keep_field)
         <div><label class="{{ $lc }}">Shed Width (ft) {!! $ast('shed_width') !!}</label>
             <input type="number" step="0.01" min="0" name="shed_width" value="{{ $v('shed_width') }}" {{ $req('shed_width') }} class="{{ $ic }}">
-            @error('shed_width')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('shed_width')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('shed_width') !!}
+ </div>
         @endif
 
         @if($fc('shed_length')->keep_field)
         <div><label class="{{ $lc }}">Shed Length (ft) {!! $ast('shed_length') !!}</label>
             <input type="number" step="0.01" min="0" name="shed_length" value="{{ $v('shed_length') }}" {{ $req('shed_length') }} class="{{ $ic }}">
-            @error('shed_length')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('shed_length')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('shed_length') !!}
+ </div>
         @endif
 
         @if($fc('number_of_floors')->keep_field)
         <div><label class="{{ $lc }}">Number of Floors {!! $ast('number_of_floors') !!}</label>
             <input type="number" min="0" name="number_of_floors" value="{{ $v('number_of_floors') }}" {{ $req('number_of_floors') }} class="{{ $ic }}">
-            @error('number_of_floors')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('number_of_floors')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('number_of_floors') !!}
+ </div>
         @endif
 
         @if($fc('fsi_far')->keep_field)
         <div><label class="{{ $lc }}">FSI / FAR {!! $ast('fsi_far') !!}</label>
             <input type="text" name="fsi_far" value="{{ $v('fsi_far') }}" {{ $req('fsi_far') }} class="{{ $ic }}">
-            @error('fsi_far')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('fsi_far')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('fsi_far') !!}
+ </div>
         @endif
 
     </div>
@@ -455,13 +496,17 @@
         @if($fc('no_of_offices')->keep_field)
         <div><label class="{{ $lc }}">No. of Offices {!! $ast('no_of_offices') !!}</label>
             <input type="number" min="0" name="no_of_offices" value="{{ $v('no_of_offices') }}" {{ $req('no_of_offices') }} class="{{ $ic }}">
-            @error('no_of_offices')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('no_of_offices')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('no_of_offices') !!}
+ </div>
         @endif
 
         @if($fc('office_sizes')->keep_field)
         <div><label class="{{ $lc }}">Office Sizes {!! $ast('office_sizes') !!}</label>
             <input type="text" name="office_sizes" value="{{ $v('office_sizes') }}" {{ $req('office_sizes') }} class="{{ $ic }}">
-            @error('office_sizes')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('office_sizes')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('office_sizes') !!}
+ </div>
         @endif
 
         @if($fc('canteen')->keep_field)
@@ -471,13 +516,17 @@
                 <option value="1" {{ $bv('canteen') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('canteen') === 0 && $bv('canteen') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('canteen')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('canteen')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('canteen') !!}
+ </div>
         @endif
 
         @if($fc('canteen_size')->keep_field)
         <div><label class="{{ $lc }}">Canteen Size {!! $ast('canteen_size') !!}</label>
             <input type="text" name="canteen_size" value="{{ $v('canteen_size') }}" {{ $req('canteen_size') }} class="{{ $ic }}">
-            @error('canteen_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('canteen_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('canteen_size') !!}
+ </div>
         @endif
 
         @if($fc('stp_plant')->keep_field)
@@ -487,31 +536,41 @@
                 <option value="1" {{ $bv('stp_plant') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('stp_plant') === 0 && $bv('stp_plant') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('stp_plant')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('stp_plant')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('stp_plant') !!}
+ </div>
         @endif
 
         @if($fc('stp_capacity')->keep_field)
         <div><label class="{{ $lc }}">STP Capacity {!! $ast('stp_capacity') !!}</label>
             <input type="text" name="stp_capacity" value="{{ $v('stp_capacity') }}" {{ $req('stp_capacity') }} class="{{ $ic }}">
-            @error('stp_capacity')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('stp_capacity')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('stp_capacity') !!}
+ </div>
         @endif
 
         @if($fc('washrooms')->keep_field)
         <div><label class="{{ $lc }}">No. of Washrooms {!! $ast('washrooms') !!}</label>
             <input type="number" min="0" name="washrooms" value="{{ $v('washrooms') }}" {{ $req('washrooms') }} class="{{ $ic }}">
-            @error('washrooms')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('washrooms')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('washrooms') !!}
+ </div>
         @endif
 
         @if($fc('no_of_urinals')->keep_field)
         <div><label class="{{ $lc }}">No. of Urinals {!! $ast('no_of_urinals') !!}</label>
             <input type="number" min="0" name="no_of_urinals" value="{{ $v('no_of_urinals') }}" {{ $req('no_of_urinals') }} class="{{ $ic }}">
-            @error('no_of_urinals')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('no_of_urinals')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('no_of_urinals') !!}
+ </div>
         @endif
 
         @if($fc('no_of_closets')->keep_field)
         <div><label class="{{ $lc }}">No. of Closets {!! $ast('no_of_closets') !!}</label>
             <input type="number" min="0" name="no_of_closets" value="{{ $v('no_of_closets') }}" {{ $req('no_of_closets') }} class="{{ $ic }}">
-            @error('no_of_closets')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('no_of_closets')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('no_of_closets') !!}
+ </div>
         @endif
 
         @if($fc('female_washroom')->keep_field)
@@ -521,7 +580,9 @@
                 <option value="1" {{ $bv('female_washroom') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('female_washroom') === 0 && $bv('female_washroom') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('female_washroom')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('female_washroom')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('female_washroom') !!}
+ </div>
         @endif
 
         @if($fc('driver_rest_room')->keep_field)
@@ -531,7 +592,9 @@
                 <option value="1" {{ $bv('driver_rest_room') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('driver_rest_room') === 0 && $bv('driver_rest_room') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('driver_rest_room')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('driver_rest_room')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('driver_rest_room') !!}
+ </div>
         @endif
 
         @if($fc('mezzanine')->keep_field)
@@ -541,19 +604,25 @@
                 <option value="1" {{ $bv('mezzanine') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('mezzanine') === 0 && $bv('mezzanine') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('mezzanine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('mezzanine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('mezzanine') !!}
+ </div>
         @endif
 
         @if($fc('mezzanine_size')->keep_field)
         <div><label class="{{ $lc }}">Mezzanine Size {!! $ast('mezzanine_size') !!}</label>
             <input type="text" name="mezzanine_size" value="{{ $v('mezzanine_size') }}" {{ $req('mezzanine_size') }} class="{{ $ic }}">
-            @error('mezzanine_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('mezzanine_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('mezzanine_size') !!}
+ </div>
         @endif
 
         @if($fc('structure_type')->keep_field)
         <div><label class="{{ $lc }}">Structure Type {!! $ast('structure_type') !!}</label>
             <input type="text" name="structure_type" value="{{ $v('structure_type') }}" {{ $req('structure_type') }}  class="{{ $ic }}">
-            @error('structure_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('structure_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('structure_type') !!}
+ </div>
         @endif
 
         @if($fc('flooring_type')->keep_field)
@@ -564,7 +633,9 @@
                     <option value="{{ $o }}" {{ $sel('flooring_type',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('flooring_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('flooring_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('flooring_type') !!}
+ </div>
         @endif
 
         @if($fc('ventilation_lighting')->keep_field)
@@ -575,19 +646,25 @@
                     <option value="{{ $o }}" {{ $sel('ventilation_lighting',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('ventilation_lighting')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('ventilation_lighting')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('ventilation_lighting') !!}
+ </div>
         @endif
 
         @if($fc('insulation_roof')->keep_field)
         <div><label class="{{ $lc }}">Roof Insulation {!! $ast('insulation_roof') !!}</label>
             <input type="text" name="insulation_roof" value="{{ $v('insulation_roof') }}" {{ $req('insulation_roof') }} class="{{ $ic }}">
-            @error('insulation_roof')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('insulation_roof')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('insulation_roof') !!}
+ </div>
         @endif
 
         @if($fc('insulation_side')->keep_field)
         <div><label class="{{ $lc }}">Side Insulation {!! $ast('insulation_side') !!}</label>
             <input type="text" name="insulation_side" value="{{ $v('insulation_side') }}" {{ $req('insulation_side') }} class="{{ $ic }}">
-            @error('insulation_side')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('insulation_side')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('insulation_side') !!}
+ </div>
         @endif
 
         @if($fc('fire_sprinkler')->keep_field)
@@ -598,7 +675,9 @@
                     <option value="{{ $o }}" {{ $sel('fire_sprinkler',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('fire_sprinkler')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('fire_sprinkler')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('fire_sprinkler') !!}
+ </div>
         @endif
 
         @if($fc('scrap_yard')->keep_field)
@@ -608,13 +687,17 @@
                 <option value="1" {{ $bv('scrap_yard') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('scrap_yard') === 0 && $bv('scrap_yard') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('scrap_yard')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('scrap_yard')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('scrap_yard') !!}
+ </div>
         @endif
 
         @if($fc('no_of_companies_same_premise')->keep_field)
         <div><label class="{{ $lc }}">No. of Companies in Same Premise {!! $ast('no_of_companies_same_premise') !!}</label>
             <input type="number" min="0" name="no_of_companies_same_premise" value="{{ $v('no_of_companies_same_premise') }}" {{ $req('no_of_companies_same_premise') }} class="{{ $ic }}">
-            @error('no_of_companies_same_premise')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('no_of_companies_same_premise')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('no_of_companies_same_premise') !!}
+ </div>
         @endif
 
         @if($fc('extension_possible')->keep_field)
@@ -624,7 +707,9 @@
                 <option value="1" {{ $bv('extension_possible') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('extension_possible') === 0 && $bv('extension_possible') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('extension_possible')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('extension_possible')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('extension_possible') !!}
+ </div>
         @endif
 
     </div>
@@ -645,12 +730,16 @@
                     <option value="{{ $o }}" {{ $sel('dock_type',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('dock_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('dock_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('dock_type') !!}
+ </div>
         @endif
         @if($fc('dock_height')->keep_field)
         <div><label class="{{ $lc }}">Dock Height (ft) {!! $ast('dock_height') !!}</label>
             <input type="number" step="0.01" min="0" name="dock_height" value="{{ $v('dock_height') }}" {{ $req('dock_height') }} class="{{ $ic }}">
-            @error('dock_height')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('dock_height')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('dock_height') !!}
+ </div>
         @endif
         @if($fc('truck_movement')->keep_field)
         <div><label class="{{ $lc }}">Truck Movement {!! $ast('truck_movement') !!}</label>
@@ -660,12 +749,16 @@
                     <option value="{{ $o }}" {{ $sel('truck_movement',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('truck_movement')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('truck_movement')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('truck_movement') !!}
+ </div>
         @endif
         @if($fc('office_cabin_area')->keep_field)
         <div><label class="{{ $lc }}">Office / Cabin Area (sq ft) {!! $ast('office_cabin_area') !!}</label>
             <input type="number" step="0.01" min="0" name="office_cabin_area" value="{{ $v('office_cabin_area') }}" {{ $req('office_cabin_area') }} class="{{ $ic }}">
-            @error('office_cabin_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('office_cabin_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('office_cabin_area') !!}
+ </div>
         @endif
     </div>
 </div>
@@ -680,12 +773,16 @@
         @if($fc('power_sanctioned_kva')->keep_field)
         <div><label class="{{ $lc }}">Power Sanctioned (KVA) {!! $ast('power_sanctioned_kva') !!}</label>
             <input type="number" step="0.01" min="0" name="power_sanctioned_kva" value="{{ $v('power_sanctioned_kva') }}" {{ $req('power_sanctioned_kva') }} class="{{ $ic }}">
-            @error('power_sanctioned_kva')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('power_sanctioned_kva')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('power_sanctioned_kva') !!}
+ </div>
         @endif
         @if($fc('discom_name')->keep_field)
         <div><label class="{{ $lc }}">DISCOM Name {!! $ast('discom_name') !!}</label>
             <input type="text" name="discom_name" value="{{ $v('discom_name') }}" {{ $req('discom_name') }} class="{{ $ic }}">
-            @error('discom_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('discom_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('discom_name') !!}
+ </div>
         @endif
         @if($fc('water_source')->keep_field)
         <div><label class="{{ $lc }}">Water Source {!! $ast('water_source') !!}</label>
@@ -695,12 +792,16 @@
                     <option value="{{ $o }}" {{ $sel('water_source',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('water_source')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('water_source')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('water_source') !!}
+ </div>
         @endif
         @if($fc('water_tank_capacity')->keep_field)
         <div><label class="{{ $lc }}">Water Tank Capacity {!! $ast('water_tank_capacity') !!}</label>
             <input type="text" name="water_tank_capacity" value="{{ $v('water_tank_capacity') }}" {{ $req('water_tank_capacity') }}  class="{{ $ic }}">
-            @error('water_tank_capacity')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('water_tank_capacity')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('water_tank_capacity') !!}
+ </div>
         @endif
         @if($fc('fire_fighting_system')->keep_field)
         <div><label class="{{ $lc }}">Fire Fighting System {!! $ast('fire_fighting_system') !!}</label>
@@ -710,7 +811,9 @@
                     <option value="{{ $o }}" {{ $sel('fire_fighting_system',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('fire_fighting_system')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('fire_fighting_system')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('fire_fighting_system') !!}
+ </div>
         @endif
         @if($fc('solar')->keep_field)
         <div><label class="{{ $lc }}">Solar {!! $ast('solar') !!}</label>
@@ -719,7 +822,9 @@
                 <option value="1" {{ $bv('solar') === 1 ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ $bv('solar') === 0 && $bv('solar') !== '' ? 'selected' : '' }}>No</option>
             </select>
-            @error('solar')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('solar')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('solar') !!}
+ </div>
         @endif
     </div>
 </div>
@@ -739,34 +844,46 @@
                     <option value="{{ $o }}" {{ $sel('deal_type',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('deal_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('deal_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('deal_type') !!}
+ </div>
         @endif
         @if($fc('expected_rent')->keep_field)
         <div><label class="{{ $lc }}">Expected Rent (₹/sq ft/month) {!! $ast('expected_rent') !!}</label>
             <input type="number" step="0.01" min="0" name="expected_rent" value="{{ $v('expected_rent') }}" {{ $req('expected_rent') }} class="{{ $ic }}">
-            @error('expected_rent')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('expected_rent')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('expected_rent') !!}
+ </div>
         @endif
         @if($fc('expected_sale_price')->keep_field)
         <div><label class="{{ $lc }}">Expected Sale Price (₹) {!! $ast('expected_sale_price') !!}</label>
             <input type="number" step="0.01" min="0" name="expected_sale_price" value="{{ $v('expected_sale_price') }}" {{ $req('expected_sale_price') }} class="{{ $ic }}">
-            @error('expected_sale_price')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('expected_sale_price')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('expected_sale_price') !!}
+ </div>
         @endif
         @if($fc('security_deposit_months')->keep_field)
         <div><label class="{{ $lc }}">Security Deposit (months) {!! $ast('security_deposit_months') !!}</label>
             <input type="number" step="0.1" min="0" max="60" name="security_deposit_months" value="{{ $v('security_deposit_months') }}" {{ $req('security_deposit_months') }} class="{{ $ic }}">
-            @error('security_deposit_months')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('security_deposit_months')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('security_deposit_months') !!}
+ </div>
         @endif
         @if($fc('lock_in_years')->keep_field)
         <div><label class="{{ $lc }}">Lock-in Period (years) {!! $ast('lock_in_years') !!}</label>
             <input type="number" step="0.1" min="0" max="99" name="lock_in_years" value="{{ $v('lock_in_years') }}" {{ $req('lock_in_years') }} class="{{ $ic }}">
-            @error('lock_in_years')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('lock_in_years')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('lock_in_years') !!}
+ </div>
         @endif
         @if($fc('available_from')->keep_field)
         <div><label class="{{ $lc }}">Available From Date {!! $ast('available_from') !!}</label>
             <input type="date" name="available_from" {{ $req('available_from') }}
                 value="{{ old('available_from', ($entry && $entry->available_from) ? $entry->available_from->format('Y-m-d') : '') }}"
                 class="{{ $ic }}">
-            @error('available_from')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('available_from')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('available_from') !!}
+ </div>
         @endif
     </div>
 </div>
@@ -781,12 +898,16 @@
         @if($fc('approach_road_width')->keep_field)
         <div><label class="{{ $lc }}">Approach Road Width (ft) {!! $ast('approach_road_width') !!}</label>
             <input type="number" step="0.01" min="0" name="approach_road_width" value="{{ $v('approach_road_width') }}" {{ $req('approach_road_width') }} class="{{ $ic }}">
-            @error('approach_road_width')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('approach_road_width')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('approach_road_width') !!}
+ </div>
         @endif
         @if($fc('top_neighbouring_companies')->keep_field)
         <div class="sm:col-span-2"><label class="{{ $lc }}">Top Neighbouring Companies {!! $ast('top_neighbouring_companies') !!}</label>
             <textarea name="top_neighbouring_companies" rows="2" {{ $req('top_neighbouring_companies') }} class="{{ $ic }}">{{ $v('top_neighbouring_companies') }}</textarea>
-            @error('top_neighbouring_companies')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('top_neighbouring_companies')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('top_neighbouring_companies') !!}
+ </div>
         @endif
         @if($fc('flood_risk')->keep_field)
         <div><label class="{{ $lc }}">Flood / Water-Logging Risk {!! $ast('flood_risk') !!}</label>
@@ -796,7 +917,9 @@
                     <option value="{{ $o }}" {{ $sel('flood_risk',$o) }}>{{ $o }}</option>
                 @endforeach
             </select>
-            @error('flood_risk')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('flood_risk')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('flood_risk') !!}
+ </div>
         @endif
     </div>
 </div>
@@ -811,17 +934,23 @@
         @if($fc('nearest_hospital_km')->keep_field)
         <div><label class="{{ $lc }}">Nearest Hospital (km) {!! $ast('nearest_hospital_km') !!}</label>
             <input type="number" step="0.01" min="0" name="nearest_hospital_km" value="{{ $v('nearest_hospital_km') }}" {{ $req('nearest_hospital_km') }} class="{{ $ic }}">
-            @error('nearest_hospital_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('nearest_hospital_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('nearest_hospital_km') !!}
+ </div>
         @endif
         @if($fc('nearest_fire_station_km')->keep_field)
         <div><label class="{{ $lc }}">Nearest Fire Station (km) {!! $ast('nearest_fire_station_km') !!}</label>
             <input type="number" step="0.01" min="0" name="nearest_fire_station_km" value="{{ $v('nearest_fire_station_km') }}" {{ $req('nearest_fire_station_km') }} class="{{ $ic }}">
-            @error('nearest_fire_station_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('nearest_fire_station_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('nearest_fire_station_km') !!}
+ </div>
         @endif
         @if($fc('nearest_police_station_km')->keep_field)
         <div><label class="{{ $lc }}">Nearest Police Station (km) {!! $ast('nearest_police_station_km') !!}</label>
             <input type="number" step="0.01" min="0" name="nearest_police_station_km" value="{{ $v('nearest_police_station_km') }}" {{ $req('nearest_police_station_km') }} class="{{ $ic }}">
-            @error('nearest_police_station_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            @error('nearest_police_station_km')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+ {!! $rmk('nearest_police_station_km') !!}
+ </div>
         @endif
     </div>
 </div>
@@ -875,7 +1004,8 @@
             <label class="{{ $lc }}">Remarks / Observations {!! $ast('remarks') !!}</label>
             <textarea name="remarks" rows="3" {{ $req('remarks') }} class="{{ $ic }}">{{ $v('remarks') }}</textarea>
             @error('remarks')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-        </div>
+ {!! $rmk('remarks') !!}
+ </div>
         @endif
     </div>
 </div>

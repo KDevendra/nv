@@ -155,16 +155,16 @@
                 <div class="px-5 py-3 border-b border-gray-100" style="background-color: #f0f4f5;">
                     <div class="flex items-center justify-between text-sm mb-1.5">
                         <span class="text-gray-700 font-medium">Review Progress</span>
-                        <span class="text-gray-600 font-medium" x-text="reviewStats.reviewed + ' / ' + reviewStats.total + ' fields reviewed'"></span>
+                        <span class="text-gray-600 font-medium" x-text="$store.review.reviewed + ' / ' + $store.review.total + ' fields reviewed'"></span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-                            :style="'width:' + reviewStats.percentage + '%'"></div>
+                            :style="'width:' + $store.review.percentage + '%'"></div>
                     </div>
                     <div class="flex gap-4 mt-2 text-xs">
-                        <span class="text-green-700"><span class="font-bold" x-text="reviewStats.correct"></span> correct</span>
-                        <span class="text-red-700"><span class="font-bold" x-text="reviewStats.incorrect"></span> incorrect</span>
-                        <span class="text-gray-500"><span class="font-bold" x-text="reviewStats.pending"></span> pending</span>
+                        <span class="text-green-700"><span class="font-bold" x-text="$store.review.correct"></span> correct</span>
+                        <span class="text-red-700"><span class="font-bold" x-text="$store.review.incorrect"></span> incorrect</span>
+                        <span class="text-gray-500"><span class="font-bold" x-text="$store.review.pending"></span> pending</span>
                     </div>
                 </div>
             </div>
@@ -225,116 +225,148 @@
 
             {{-- Collapsible Sections --}}
             @foreach($sections as $section)
-                <div x-data="{ open: true }" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+                @php
+                    // Get section field names for Alpine tracking
+                    $sectionFieldNames = collect($section['fields'])->map(fn($fn) => $fieldsByName->get($fn))->filter()->pluck('name')->toArray();
+                @endphp
+                <div x-data="sectionCounter(@js($sectionFieldNames))" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
                     {{-- Section Toggle Header --}}
                     <button @click="open = !open" type="button"
-                        class="w-full flex items-center justify-between px-5 py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all"
+                        class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all gap-2 sm:gap-0"
                         style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm" style="background-color: #0b2c3d;">{{ $section['key'] }}</div>
-                            <h3 class="text-lg font-semibold text-gray-800">{{ $section['title'] }}</h3>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" style="background-color: #0b2c3d;">{{ $section['key'] }}</div>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-800">{{ $section['title'] }}</h3>
                         </div>
-                        <svg class="w-6 h-6 text-gray-500 transition-transform" :class="{ 'rotate-180': open }"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
+                        <div class="flex items-center gap-2 ml-11 sm:ml-0">
+                            <span x-show="correct > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                <span x-text="correct"></span>
+                            </span>
+                            <span x-show="incorrect > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span x-text="incorrect"></span>
+                            </span>
+                            <span class="text-xs text-gray-500 font-medium" x-text="reviewed + '/' + total"></span>
+                            <svg class="w-5 h-5 text-gray-500 transition-transform flex-shrink-0" :class="{ 'rotate-180': open }"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
                     </button>
 
                     {{-- Section Table --}}
                     <div x-show="open" x-collapse>
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100">
-                                    <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/4">Field</th>
-                                    <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Value</th>
-                                    <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-52">Review</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @foreach($section['fields'] as $fn)
-                                    @php $field = $fieldsByName->get($fn); @endphp
-                                    @if($field)
-                                        <tr x-data="fieldRow(@js($field))"
-                                            :class="status === false ? 'bg-red-50' : (status === true ? 'bg-green-50/30' : '')"
-                                            class="transition-colors">
-                                            {{-- Field --}}
-                                            <td class="px-5 py-3 text-sm font-medium text-gray-700 align-top">{{ $field['label'] }}</td>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-100">
+                                        <th class="px-3 sm:px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/4">Field</th>
+                                        <th class="px-3 sm:px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Value</th>
+                                        <th class="px-3 sm:px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-40 sm:w-52">Review</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50">
+                                    @foreach($section['fields'] as $fn)
+                                        @php $field = $fieldsByName->get($fn); @endphp
+                                        @if($field)
+                                            <tr x-data="fieldRow(@js($field))"
+                                                :class="status === false ? 'bg-red-50' : (status === true ? 'bg-green-50/30' : '')"
+                                                class="transition-colors">
+                                                {{-- Field --}}
+                                                <td class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium text-gray-700 align-top">{{ $field['label'] }}</td>
 
-                                            {{-- Value + remark when incorrect --}}
-                                            <td class="px-5 py-3 text-sm text-gray-900 align-top">
-                                                <span class="break-words">{{ $field['value'] ?: '—' }}</span>
-                                                <template x-if="status === false && field.remark">
-                                                    <p class="mt-1 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + field.remark"></p>
-                                                </template>
-                                            </td>
+                                                {{-- Value + remark when incorrect --}}
+                                                <td class="px-3 sm:px-5 py-3 text-xs sm:text-sm text-gray-900 align-top">
+                                                    <span class="break-words">{{ $field['value'] ?: '—' }}</span>
+                                                    <template x-if="status === false && remark">
+                                                        <p class="mt-1 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + remark"></p>
+                                                    </template>
+                                                </td>
 
-                                            {{-- Review: checkboxes → remark input (inline) --}}
-                                            <td class="px-5 py-3 align-top">
-                                                {{-- Checkbox toggles --}}
-                                                <div x-show="!remarking" class="flex items-center gap-3">
-                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="markCorrect">
-                                                        <span :class="status === true ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'"
-                                                            class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
-                                                            <svg x-show="status === true" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                                            </svg>
-                                                        </span>
-                                                        <span :class="status === true ? 'text-green-700 font-semibold' : 'text-gray-500'" class="text-xs">Correct</span>
-                                                    </label>
-                                                    <span class="text-gray-200 select-none">|</span>
-                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="startRemark">
-                                                        <span :class="status === false ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
-                                                            class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
-                                                            <svg x-show="status === false" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
-                                                            </svg>
-                                                        </span>
-                                                        <span :class="status === false ? 'text-red-700 font-semibold' : 'text-gray-500'" class="text-xs">Incorrect</span>
-                                                    </label>
-                                                </div>
+                                                {{-- Review: checkboxes → remark input (inline) --}}
+                                                <td class="px-3 sm:px-5 py-3 align-top">
+                                                    {{-- Checkbox toggles --}}
+                                                    <div x-show="!remarking" class="flex items-center gap-2 sm:gap-3">
+                                                        <label class="inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none" @click.prevent="markCorrect">
+                                                            <span :class="status === true ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'"
+                                                                class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                                <svg x-show="status === true" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                                </svg>
+                                                            </span>
+                                                            <span :class="status === true ? 'text-green-700 font-semibold' : 'text-gray-500'" class="text-xs hidden sm:inline">Correct</span>
+                                                        </label>
+                                                        <span class="text-gray-200 select-none hidden sm:inline">|</span>
+                                                        <label class="inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none" @click.prevent="startRemark">
+                                                            <span :class="status === false ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
+                                                                class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                                <svg x-show="status === false" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                                                                </svg>
+                                                            </span>
+                                                            <span :class="status === false ? 'text-red-700 font-semibold' : 'text-gray-500'" class="text-xs hidden sm:inline">Incorrect</span>
+                                                        </label>
+                                                    </div>
 
-                                                {{-- Remark input (replaces checkboxes when active) --}}
-                                                <div x-show="remarking" class="flex items-center gap-1.5">
-                                                    <input type="text" x-model="remark"
-                                                        placeholder="Remark (required)…"
-                                                        @keydown.enter="saveIncorrect"
-                                                        @keydown.escape="cancelRemark"
-                                                        x-ref="remarkInput"
-                                                        class="w-36 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-400 focus:border-transparent">
-                                                    <button @click="saveIncorrect" type="button"
-                                                        class="px-2 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 flex-shrink-0">Save</button>
-                                                    <button @click="cancelRemark" type="button"
-                                                        class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded hover:bg-gray-200 flex-shrink-0">Cancel</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
+                                                    {{-- Remark input (replaces checkboxes when active) --}}
+                                                    <div x-show="remarking" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-1.5">
+                                                        <input type="text" x-model="pendingRemark"
+                                                            placeholder="Remark (required)…"
+                                                            @keydown.enter="saveIncorrect"
+                                                            @keydown.escape="cancelRemark"
+                                                            x-ref="remarkInput"
+                                                            class="flex-1 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-400 focus:border-transparent">
+                                                        <button @click="saveIncorrect" type="button"
+                                                            class="px-2 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 flex-shrink-0">Save</button>
+                                                        <button @click="cancelRemark" type="button"
+                                                            class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded hover:bg-gray-200 flex-shrink-0">Cancel</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             @endforeach
 
             {{-- Section J — Photographs (reviewable) --}}
-            <div x-data="{ open: true }" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            @php
+                $photoFieldNames = $photoReviews->map(fn($p) => $p['name'])->toArray();
+            @endphp
+            <div x-data="sectionCounter(@js($photoFieldNames))" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
                 <button @click="open = !open" type="button"
-                    class="w-full flex items-center justify-between px-5 py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all"
+                    class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all gap-2 sm:gap-0"
                     style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm" style="background-color: #0b2c3d;">J</div>
-                        <h3 class="text-lg font-semibold text-gray-800">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" style="background-color: #0b2c3d;">J</div>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-800">
                             Photographs
                             <span class="text-sm text-gray-500 font-normal ml-2">({{ $property->photos->count() }}/{{ $photoReviews->count() }} uploaded)</span>
                         </h3>
                     </div>
-                    <svg class="w-6 h-6 text-gray-500 transition-transform" :class="{ 'rotate-180': open }"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
+                    <div class="flex items-center gap-2 ml-11 sm:ml-0">
+                        <span x-show="correct > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            <span x-text="correct"></span>
+                        </span>
+                        <span x-show="incorrect > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span x-text="incorrect"></span>
+                        </span>
+                        <span class="text-xs text-gray-500 font-medium" x-text="reviewed + '/' + total"></span>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform flex-shrink-0" :class="{ 'rotate-180': open }"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
                 </button>
                 <div x-show="open" x-collapse>
-                    <table class="min-w-full">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-100">
                                 <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/4">Slot</th>
@@ -374,8 +406,8 @@
                                             </div>
                                         @endif
                                         {{-- Remark shown below image when incorrect --}}
-                                        <template x-if="status === false && field.remark">
-                                            <p class="mt-1.5 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + field.remark"></p>
+                                        <template x-if="status === false && remark">
+                                            <p class="mt-1.5 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + remark"></p>
                                         </template>
                                     </td>
 
@@ -403,7 +435,7 @@
                                             </label>
                                         </div>
                                         <div x-show="remarking" class="flex items-center gap-1.5">
-                                            <input type="text" x-model="remark"
+                                            <input type="text" x-model="pendingRemark"
                                                 placeholder="Remark (required)…"
                                                 @keydown.enter="saveIncorrect"
                                                 @keydown.escape="cancelRemark"
@@ -419,6 +451,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
@@ -426,17 +459,37 @@
 
         {{-- Alpine.js scripts --}}
         <script>
+        // ── Central reactive store: single source of truth for all field statuses ──
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('review', {
+                statuses: @js(
+                    $fields->values()
+                        ->concat($photoReviews->map(fn($p) => ['name' => $p['name'], 'label' => $p['label'], 'value' => $p['url'], 'is_correct' => $p['is_correct'], 'remark' => $p['remark']]))
+                        ->mapWithKeys(fn($f) => [$f['name'] => ['is_correct' => $f['is_correct'], 'remark' => $f['remark'] ?? null]])
+                ),
+                set(name, isCorrect, remark) {
+                    this.statuses[name] = { is_correct: isCorrect, remark };
+                },
+                countFor(names) {
+                    let c = 0, i = 0;
+                    names.forEach(n => {
+                        const s = this.statuses[n];
+                        if (s?.is_correct === true) c++;
+                        else if (s?.is_correct === false) i++;
+                    });
+                    return { correct: c, incorrect: i, reviewed: c + i };
+                },
+                get total()    { return Object.keys(this.statuses).length; },
+                get correct()  { return Object.values(this.statuses).filter(s => s.is_correct === true).length; },
+                get incorrect(){ return Object.values(this.statuses).filter(s => s.is_correct === false).length; },
+                get reviewed() { return this.correct + this.incorrect; },
+                get pending()  { return this.total - this.reviewed; },
+                get percentage(){ return this.total ? Math.round(this.reviewed / this.total * 100) : 0; },
+            });
+        });
+
         function fieldReview() {
             return {
-                fields: @js($fields->values()->concat($photoReviews->map(fn($p) => ['name' => $p['name'], 'label' => $p['label'], 'value' => $p['url'], 'is_correct' => $p['is_correct'], 'remark' => $p['remark']]))),
-                reviewStats: { total: 0, reviewed: 0, correct: 0, incorrect: 0, pending: 0, percentage: 0 },
-                init() { this.updateStats(); },
-                updateStats() {
-                    const c = this.fields.filter(f => f.is_correct === true).length;
-                    const i = this.fields.filter(f => f.is_correct === false).length;
-                    const t = this.fields.length;
-                    this.reviewStats = { total: t, correct: c, incorrect: i, reviewed: c + i, pending: t - c - i, percentage: t ? Math.round((c + i) / t * 100) : 0 };
-                },
                 async markAllCorrect() {
                     if (!confirm('Mark all fields and photos as correct?')) return;
                     const r = await fetch('{{ route('supplyhead.properties.mark-all-correct', $property) }}', {
@@ -446,22 +499,38 @@
                 }
             };
         }
+
+        function sectionCounter(fieldNames) {
+            return {
+                fieldNames,
+                open: true,
+                get correct()  { return this.$store.review.countFor(this.fieldNames).correct; },
+                get incorrect(){ return this.$store.review.countFor(this.fieldNames).incorrect; },
+                get reviewed() { return this.$store.review.countFor(this.fieldNames).reviewed; },
+                get total()    { return this.fieldNames.length; },
+            };
+        }
+
         function fieldRow(field) {
             return {
-                field, status: field.is_correct, remark: field.remark || '', remarking: false,
+                field,
+                get status() { return this.$store.review.statuses[this.field.name]?.is_correct ?? null; },
+                get remark() { return this.$store.review.statuses[this.field.name]?.remark ?? ''; },
+                remarking: false,
+                pendingRemark: '',
                 startRemark() {
+                    this.pendingRemark = this.remark || '';
                     this.remarking = true;
                     this.$nextTick(() => this.$refs.remarkInput?.focus());
                 },
                 cancelRemark() {
                     this.remarking = false;
-                    this.remark = this.field.remark || '';
-                    this.status = this.field.is_correct;
+                    this.pendingRemark = '';
                 },
                 async markCorrect() { await this.saveReview(true, null); },
                 async saveIncorrect() {
-                    if (!this.remark.trim()) { alert('Remark is required for incorrect fields'); return; }
-                    await this.saveReview(false, this.remark);
+                    if (!this.pendingRemark.trim()) { alert('Remark is required for incorrect fields'); return; }
+                    await this.saveReview(false, this.pendingRemark);
                 },
                 async saveReview(isCorrect, remark) {
                     const r = await fetch('{{ route('supplyhead.properties.review-field', $property) }}', {
@@ -470,13 +539,10 @@
                         body: JSON.stringify({ field_name: this.field.name, field_label: this.field.label, field_value: this.field.value, is_correct: isCorrect, remark })
                     });
                     if (r.ok) {
-                        this.status = isCorrect;
-                        this.field.is_correct = isCorrect;
-                        this.field.remark = remark;
+                        // Update the central store — all counters update automatically
+                        this.$store.review.set(this.field.name, isCorrect, remark);
                         this.remarking = false;
-                        // Bubble up to update progress bar
-                        const parent = this.$el.closest('[x-data*="fieldReview"]');
-                        if (parent && parent._x_dataStack) parent._x_dataStack[0].updateStats();
+                        this.pendingRemark = '';
                     }
                 }
             };

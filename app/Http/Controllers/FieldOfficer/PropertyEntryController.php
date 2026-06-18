@@ -68,7 +68,8 @@ class PropertyEntryController extends Controller
 
         $slots        = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
-        return view('field.properties.create', compact('slots', 'fieldConfigs'));
+        $fieldRemarks = []; // No remarks on create
+        return view('field.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks'));
     }
 
     // ── Store ─────────────────────────────────────────────────────────────────
