@@ -6,18 +6,24 @@
     <div class="space-y-6">
         @if($user->role === 'supply_head')
             {{-- Supply Head: property submission counters --}}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
                 @php
                     $shStats = [
-                        ['label' => 'Total', 'value' => $counters['total'] ?? 0, 'cls' => 'bg-gray-100 text-gray-700', 'b' => 'border-gray-200', 'status' => ''],
-                        ['label' => 'Pending Review', 'value' => $counters['pending'] ?? 0, 'cls' => 'bg-blue-50 text-blue-700', 'b' => 'border-blue-100', 'status' => 'submitted'],
-                        ['label' => 'Verified', 'value' => $counters['verified'] ?? 0, 'cls' => 'bg-green-50 text-green-700', 'b' => 'border-green-100', 'status' => 'verified'],
-                        ['label' => 'Rejected', 'value' => $counters['rejected'] ?? 0, 'cls' => 'bg-red-50 text-red-700', 'b' => 'border-red-100', 'status' => 'rejected'],
-                        ['label' => 'Recheck', 'value' => $counters['recheck'] ?? 0, 'cls' => 'bg-orange-50 text-orange-700', 'b' => 'border-orange-200', 'status' => 'recheck'],
+                        ['label' => 'Total',        'value' => $counters['total']      ?? 0, 'cls' => 'bg-gray-100 text-gray-700',   'b' => 'border-gray-200',  'status' => ''],
+                        ['label' => 'Pending Review','value' => $counters['pending']    ?? 0, 'cls' => 'bg-blue-50 text-blue-700',    'b' => 'border-blue-100',  'status' => 'submitted'],
+                        ['label' => 'Verified',     'value' => $counters['verified']   ?? 0, 'cls' => 'bg-green-50 text-green-700',  'b' => 'border-green-100', 'status' => 'verified'],
+                        ['label' => 'Rejected',     'value' => $counters['rejected']   ?? 0, 'cls' => 'bg-red-50 text-red-700',      'b' => 'border-red-100',   'status' => 'rejected'],
+                        ['label' => 'Recheck',      'value' => $counters['recheck']    ?? 0, 'cls' => 'bg-orange-50 text-orange-700','b' => 'border-orange-200','status' => 'recheck'],
+                        ['label' => 'Not Opened',   'value' => $counters['not_opened'] ?? 0, 'cls' => 'bg-purple-50 text-purple-700','b' => 'border-purple-200','status' => 'not_opened'],
                     ];
                 @endphp
                 @foreach($shStats as $stat)
-                    <a href="{{ route('supplyhead.properties.index', $stat['status'] ? ['status' => $stat['status']] : []) }}"
+                    @php
+                        $href = $stat['status'] === 'not_opened'
+                            ? route('supplyhead.properties.index', ['not_opened' => '1'])
+                            : route('supplyhead.properties.index', $stat['status'] ? ['status' => $stat['status']] : []);
+                    @endphp
+                    <a href="{{ $href }}"
                         class="bg-white rounded-xl border {{ $stat['b'] }} p-4 text-center shadow-sm hover:shadow transition-shadow block">
                         <div class="text-2xl font-heading font-bold {{ $stat['cls'] }} rounded-lg py-1">{{ $stat['value'] }}</div>
                         <div class="text-xs text-gray-500 mt-1 font-medium">{{ $stat['label'] }}</div>
@@ -26,58 +32,96 @@
             </div>
 
             {{-- Team Performance Chart (Supply Head only) --}}
-            @if($user->role === 'supply_head' && isset($officerStats) && $officerStats->isNotEmpty())
+            @if(isset($officerStats) && $officerStats->isNotEmpty())
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-heading font-semibold text-zendo-navy">Team Performance Overview</h3>
-                        <a href="{{ route('supplyhead.properties.index') }}" class="text-sm text-blue-600 hover:underline">Manage
-                            Submissions →</a>
+                        <a href="{{ route('supplyhead.properties.index') }}" class="text-sm text-blue-600 hover:underline">Manage Submissions →</a>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {{-- Chart --}}
-                        <div class="relative">
-                            <canvas id="teamPerformanceChart" width="400" height="300"></canvas>
-                        </div>
+                    {{-- Full-width chart --}}
+                    <div class="w-full" style="height: 280px;">
+                        <canvas id="teamPerformanceChart"></canvas>
+                    </div>
 
-                        {{-- Officer Details --}}
-                        <div class="space-y-3">
-                            @foreach($officerStats as $officer)
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="font-medium text-gray-900 truncate">{{ $officer['name'] }}</h4>
-                                        <span class="text-sm font-bold text-gray-600">{{ $officer['total'] }} entries</span>
-                                    </div>
-                                    <div class="grid grid-cols-5 gap-1 text-xs">
-                                        @if($officer['draft'] > 0)
-                                            <div class="bg-gray-300 text-gray-800 px-2 py-1 rounded text-center">
-                                                D: {{ $officer['draft'] }}
-                                            </div>
-                                        @endif
-                                        @if($officer['submitted'] > 0)
-                                            <div class="bg-blue-300 text-blue-800 px-2 py-1 rounded text-center">
-                                                P: {{ $officer['submitted'] }}
-                                            </div>
-                                        @endif
-                                        @if($officer['verified'] > 0)
-                                            <div class="bg-green-300 text-green-800 px-2 py-1 rounded text-center">
-                                                V: {{ $officer['verified'] }}
-                                            </div>
-                                        @endif
-                                        @if($officer['rejected'] > 0)
-                                            <div class="bg-red-300 text-red-800 px-2 py-1 rounded text-center">
-                                                R: {{ $officer['rejected'] }}
-                                            </div>
-                                        @endif
-                                        @if($officer['recheck'] > 0)
-                                            <div class="bg-orange-300 text-orange-800 px-2 py-1 rounded text-center">
-                                                RC: {{ $officer['recheck'] }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+                    {{-- Officer table below chart --}}
+                    <div class="mt-6 overflow-x-auto rounded-lg border border-gray-100">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Officer</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-blue-500 uppercase tracking-wider">Pending</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-green-500 uppercase tracking-wider">Verified</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-red-500 uppercase tracking-wider">Rejected</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-orange-500 uppercase tracking-wider">Recheck</th>
+                                    <th class="px-4 py-2.5 text-center text-xs font-semibold text-purple-500 uppercase tracking-wider">Not Opened</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @foreach($officerStats as $i => $officer)
+                                    <tr class="{{ $i % 2 === 0 ? 'bg-white' : 'bg-gray-50/60' }} hover:bg-blue-50 transition-colors">
+                                        <td class="px-4 py-3 font-medium text-gray-900">
+                                            <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id']]) }}"
+                                                class="text-blue-600 hover:text-blue-800 hover:underline font-semibold">
+                                                {{ $officer['name'] }}
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-3 text-center font-bold text-gray-700">{{ $officer['total'] }}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($officer['submitted'] > 0)
+                                                <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id'], 'status' => 'submitted']) }}"
+                                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold hover:bg-blue-200">
+                                                    {{ $officer['submitted'] }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-300">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($officer['verified'] > 0)
+                                                <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id'], 'status' => 'verified']) }}"
+                                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold hover:bg-green-200">
+                                                    {{ $officer['verified'] }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-300">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($officer['rejected'] > 0)
+                                                <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id'], 'status' => 'rejected']) }}"
+                                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold hover:bg-red-200">
+                                                    {{ $officer['rejected'] }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-300">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($officer['recheck'] > 0)
+                                                <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id'], 'status' => 'recheck']) }}"
+                                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold hover:bg-orange-200">
+                                                    {{ $officer['recheck'] }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-300">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($officer['not_opened'] > 0)
+                                                <a href="{{ route('supplyhead.properties.index', ['field_officer' => $officer['id'], 'not_opened' => '1']) }}"
+                                                    class="inline-flex items-center justify-center min-w-[1.75rem] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold hover:bg-purple-200">
+                                                    {{ $officer['not_opened'] }}
+                                                </a>
+                                            @else
+                                                <span class="text-gray-300">—</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -86,76 +130,35 @@
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
                         const ctx = document.getElementById('teamPerformanceChart').getContext('2d');
-
-                        const officers = @json($officerStats->pluck('name'));
-                        const drafts = @json($officerStats->pluck('draft'));
+                        const officers  = @json($officerStats->pluck('name'));
                         const submitted = @json($officerStats->pluck('submitted'));
-                        const verified = @json($officerStats->pluck('verified'));
-                        const rejected = @json($officerStats->pluck('rejected'));
-                        const recheck = @json($officerStats->pluck('recheck'));
+                        const verified  = @json($officerStats->pluck('verified'));
+                        const rejected  = @json($officerStats->pluck('rejected'));
+                        const recheck   = @json($officerStats->pluck('recheck'));
+                        const notOpened = @json($officerStats->pluck('not_opened'));
 
                         new Chart(ctx, {
                             type: 'bar',
                             data: {
                                 labels: officers,
                                 datasets: [
-                                    {
-                                        label: 'Draft',
-                                        data: drafts,
-                                        backgroundColor: '#9CA3AF',
-                                        borderColor: '#6B7280',
-                                        borderWidth: 1
-                                    },
-                                    {
-                                        label: 'Pending Review',
-                                        data: submitted,
-                                        backgroundColor: '#60A5FA',
-                                        borderColor: '#3B82F6',
-                                        borderWidth: 1
-                                    },
-                                    {
-                                        label: 'Verified',
-                                        data: verified,
-                                        backgroundColor: '#34D399',
-                                        borderColor: '#10B981',
-                                        borderWidth: 1
-                                    },
-                                    {
-                                        label: 'Rejected',
-                                        data: rejected,
-                                        backgroundColor: '#F87171',
-                                        borderColor: '#EF4444',
-                                        borderWidth: 1
-                                    },
-                                    {
-                                        label: 'Recheck',
-                                        data: recheck,
-                                        backgroundColor: '#FBBF24',
-                                        borderColor: '#F59E0B',
-                                        borderWidth: 1
-                                    }
+                                    { label: 'Pending Review', data: submitted, backgroundColor: '#93C5FD', borderColor: '#3B82F6', borderWidth: 1 },
+                                    { label: 'Verified',       data: verified,  backgroundColor: '#6EE7B7', borderColor: '#10B981', borderWidth: 1 },
+                                    { label: 'Rejected',       data: rejected,  backgroundColor: '#FCA5A5', borderColor: '#EF4444', borderWidth: 1 },
+                                    { label: 'Recheck',        data: recheck,   backgroundColor: '#FCD34D', borderColor: '#F59E0B', borderWidth: 1 },
+                                    { label: 'Not Opened',     data: notOpened, backgroundColor: '#C4B5FD', borderColor: '#7C3AED', borderWidth: 1 },
                                 ]
                             },
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 plugins: {
-                                    title: {
-                                        display: true,
-                                        text: 'Entry Status by Field Officer'
-                                    },
-                                    legend: {
-                                        position: 'bottom'
-                                    }
+                                    legend: { position: 'bottom' },
+                                    title: { display: false }
                                 },
                                 scales: {
-                                    x: {
-                                        stacked: true,
-                                    },
-                                    y: {
-                                        stacked: true,
-                                        beginAtZero: true
-                                    }
+                                    x: { stacked: true },
+                                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
                                 }
                             }
                         });

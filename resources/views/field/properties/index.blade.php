@@ -60,9 +60,10 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Sr No.</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">City</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Code</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Facility Type</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">City</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Updated</th>
                             <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -71,9 +72,10 @@
                     <tbody class="divide-y divide-gray-50">
                         @foreach($entries as $entry)
                             <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-5 py-3 text-sm text-gray-500">{{ $loop->iteration + ($entries->currentPage() - 1) * $entries->perPage() }}</td>
+                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->nearest_city ?? '—' }}</td>
                                 <td class="px-5 py-3 text-sm font-mono font-medium text-zendo-navy">{{ $entry->code }}</td>
                                 <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
-                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->nearest_city ?? '—' }}</td>
                                 <td class="px-5 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                         {{ $entry->status_label }}
@@ -87,7 +89,9 @@
                                             {{ $entry->status === 'rejected' ? 'Re-edit' : 'Edit' }}
                                         </a>
                                     @endif
-                                    <a href="{{ route('field.properties.show', $entry) }}" class="text-gray-600 hover:text-gray-800 text-sm font-medium">View</a>
+                                    @if(!in_array($entry->status, ['submitted', 'verified', 'rejected']))
+                                        <a href="{{ route('field.properties.show', $entry) }}" class="text-gray-600 hover:text-gray-800 text-sm font-medium">View</a>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -100,9 +104,12 @@
                 @foreach($entries as $entry)
                     <div class="p-4">
                         <div class="flex items-start justify-between mb-2">
-                            <div>
-                                <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ $entry->facility_type ?? '—' }} • {{ $entry->nearest_city ?? '—' }}</p>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-zendo-navy rounded-full">{{ $loop->iteration + ($entries->currentPage() - 1) * $entries->perPage() }}</span>
+                                    <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $entry->nearest_city ?? '—' }} • {{ $entry->facility_type ?? '—' }}</p>
                             </div>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                 {{ $entry->status_label }}
@@ -117,7 +124,9 @@
                                         {{ $entry->status === 'rejected' ? 'Re-edit' : 'Edit' }}
                                     </a>
                                 @endif
-                                <a href="{{ route('field.properties.show', $entry) }}" class="text-sm text-gray-600 font-medium">View</a>
+                                @if(!in_array($entry->status, ['submitted', 'verified', 'rejected']))
+                                    <a href="{{ route('field.properties.show', $entry) }}" class="text-sm text-gray-600 font-medium">View</a>
+                                @endif
                             </div>
                         </div>
                     </div>

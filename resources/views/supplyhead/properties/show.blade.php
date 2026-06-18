@@ -31,9 +31,14 @@
     {{-- Action Form --}}
     @if(in_array($property->status, ['submitted', 'recheck', 'verified', 'rejected']))
     @php
-        $allFieldsCorrect = isset($fields) && $fields->count() > 0 && $fields->every(fn($f) => $f['is_correct'] === true);
-        $reviewedCount    = isset($fields) ? $fields->filter(fn($f) => $f['is_correct'] !== null)->count() : 0;
-        $totalCount       = isset($fields) ? $fields->count() : 0;
+        $allFieldsCorrect = isset($fields) && isset($photoReviews)
+            && $fields->count() > 0
+            && $fields->every(fn($f) => $f['is_correct'] === true)
+            && $photoReviews->every(fn($p) => $p['is_correct'] === true);
+        $reviewedCount = (isset($fields) ? $fields->filter(fn($f) => $f['is_correct'] !== null)->count() : 0)
+                       + (isset($photoReviews) ? $photoReviews->filter(fn($p) => $p['is_correct'] !== null)->count() : 0);
+        $totalCount    = (isset($fields) ? $fields->count() : 0)
+                       + (isset($photoReviews) ? $photoReviews->count() : 0);
     @endphp
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="{ showForm: {{ in_array($property->status, ['submitted','recheck']) ? 'true' : 'false' }} }">
             <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
@@ -126,67 +131,110 @@
         </div>
     @endif
 
-    {{-- Field Validation Table — only for submitted/recheck --}}
+    {{-- Field Validation — Collapsible Sections --}}
     @if(in_array($property->status, ['submitted', 'recheck']) && isset($fields))
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="fieldReview()">
+        <div class="space-y-6" x-data="fieldReview()">
 
-            {{-- Card Header --}}
-            <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-semibold text-zendo-navy">Field Validation</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Review each field section-by-section and mark as correct or incorrect</p>
+            {{-- Card Header with Progress --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-zendo-navy">Field Validation</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Review each field section-by-section and mark as correct or incorrect</p>
+                    </div>
+                    <button @click="markAllCorrect" type="button"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all shadow">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Mark All Correct
+                    </button>
                 </div>
-                <button @click="markAllCorrect" type="button"
-                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all shadow">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Mark All Correct
-                </button>
-            </div>
 
-            {{-- Progress Bar --}}
-            <div class="px-5 py-3 bg-blue-50 border-b border-blue-100">
-                <div class="flex items-center justify-between text-sm mb-1.5">
-                    <span class="text-gray-700 font-medium">Review Progress</span>
-                    <span class="text-gray-600 font-medium" x-text="reviewStats.reviewed + ' / ' + reviewStats.total + ' fields reviewed'"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div class="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-                        :style="'width:' + reviewStats.percentage + '%'"></div>
-                </div>
-                <div class="flex gap-4 mt-2 text-xs">
-                    <span class="text-green-700"><span class="font-bold" x-text="reviewStats.correct"></span> correct</span>
-                    <span class="text-red-700"><span class="font-bold" x-text="reviewStats.incorrect"></span> incorrect</span>
-                    <span class="text-gray-500"><span class="font-bold" x-text="reviewStats.pending"></span> pending</span>
+                {{-- Progress Bar --}}
+                <div class="px-5 py-3 border-b border-gray-100" style="background-color: #f0f4f5;">
+                    <div class="flex items-center justify-between text-sm mb-1.5">
+                        <span class="text-gray-700 font-medium">Review Progress</span>
+                        <span class="text-gray-600 font-medium" x-text="reviewStats.reviewed + ' / ' + reviewStats.total + ' fields reviewed'"></span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                            :style="'width:' + reviewStats.percentage + '%'"></div>
+                    </div>
+                    <div class="flex gap-4 mt-2 text-xs">
+                        <span class="text-green-700"><span class="font-bold" x-text="reviewStats.correct"></span> correct</span>
+                        <span class="text-red-700"><span class="font-bold" x-text="reviewStats.incorrect"></span> incorrect</span>
+                        <span class="text-gray-500"><span class="font-bold" x-text="reviewStats.pending"></span> pending</span>
+                    </div>
                 </div>
             </div>
 
             @php
                 $fieldsByName = $fields->keyBy('name');
+                // Complete list of all 98 data fields across all sections
                 $sections = [
-                    ['key' => 'A', 'title' => 'Location & Identification',   'fields' => ['facility_type','nearest_city','village_town_district','postal_address_pin','nearest_highway','nearest_railway_station','nearest_airport','name_full_address']],
-                    ['key' => 'B', 'title' => 'Legal & Statutory',           'fields' => ['tenure','approved_land_use','fire_noc','clu_conversion_status','occupancy_certificate']],
-                    ['key' => 'C', 'title' => 'Property Dimensions',         'fields' => ['plot_area','built_up_area','clear_height_highest','clear_height_side','number_of_floors','fsi_far']],
-                    ['key' => 'D', 'title' => 'Loading & Docking',           'fields' => ['dock_door_count','dock_type','dock_height','truck_movement']],
-                    ['key' => 'E', 'title' => 'Environment & Utilities',     'fields' => ['flooring_type','office_cabin_area','washrooms','ventilation_lighting','power_sanctioned_kva','discom_name','water_source','fire_fighting_system']],
-                    ['key' => 'G', 'title' => 'Financial & Lease Terms',     'fields' => ['deal_type','expected_rent','expected_sale_price','security_deposit_months','lock_in_years','available_from']],
-                    ['key' => 'H', 'title' => 'Surroundings & Emergency',    'fields' => ['approach_road_width','top_neighbouring_companies','flood_risk','nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km']],
-                    ['key' => 'K', 'title' => 'Remarks & Contact',           'fields' => ['owner_contact_name','owner_contact_phone','remarks']],
+                    ['key' => 'A', 'title' => 'Location & Identification', 'fields' => [
+                        'facility_type','name_full_address','village','tehsil','district','state','country',
+                        'postal_address_pin','nearest_city','nearest_highway','nearest_railway_station',
+                        'nearest_airport','owner_contact_name','owner_contact_phone','owner_email'
+                    ]],
+                    ['key' => 'B', 'title' => 'Legal & Statutory Compliance', 'fields' => [
+                        'tenure','approved_land_use','fire_noc','clu_conversion_status','pollution_noc',
+                        'pollution_category','occupancy_certificate'
+                    ]],
+                    ['key' => 'C', 'title' => 'Property Dimensions & Facilities', 'fields' => [
+                        // Property Dimensions (10 fields)
+                        'plot_area','built_up_area','carpet_area','available_area','clear_height_highest',
+                        'clear_height_side','shed_width','shed_length','number_of_floors','fsi_far',
+                        // Dock, Exit & Width Details (21 fields)
+                        'dock_door_count','dock_front','dock_left','dock_right','dock_back',
+                        'dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back',
+                        'fire_exit_front','fire_exit_left','fire_exit_right','fire_exit_back',
+                        'canopy_width_front','canopy_width_left','canopy_width_right','canopy_width_back',
+                        'road_width_front','road_width_left','road_width_right','road_width_back',
+                        // Facility Details (22 fields)
+                        'no_of_offices','office_sizes','canteen','canteen_size','stp_plant','stp_capacity',
+                        'washrooms','no_of_urinals','no_of_closets','female_washroom','driver_rest_room',
+                        'mezzanine','mezzanine_size','structure_type','flooring_type','ventilation_lighting',
+                        'insulation_roof','insulation_side','fire_sprinkler','scrap_yard',
+                        'no_of_companies_same_premise','extension_possible'
+                    ]],
+                    ['key' => 'D', 'title' => 'Loading & Docking', 'fields' => [
+                        'dock_type','dock_height','truck_movement','office_cabin_area'
+                    ]],
+                    ['key' => 'F', 'title' => 'Utilities & Infrastructure', 'fields' => [
+                        'power_sanctioned_kva','discom_name','water_source','water_tank_capacity',
+                        'fire_fighting_system','solar'
+                    ]],
+                    ['key' => 'G', 'title' => 'Financial & Lease Terms', 'fields' => [
+                        'deal_type','expected_rent','expected_sale_price','security_deposit_months',
+                        'lock_in_years','available_from'
+                    ]],
+                    ['key' => 'H', 'title' => 'Surroundings & Environment', 'fields' => [
+                        'approach_road_width','top_neighbouring_companies','flood_risk'
+                    ]],
+                    ['key' => 'I', 'title' => 'Health & Emergency Nearby', 'fields' => [
+                        'nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'
+                    ]],
+                    ['key' => 'K', 'title' => 'General Remarks', 'fields' => [
+                        'remarks'
+                    ]],
                 ];
+                // Total: 15 + 7 + 53 + 4 + 6 + 6 + 3 + 3 + 1 = 98 data fields + 8 photo slots = 106 total
             @endphp
 
             {{-- Collapsible Sections --}}
             @foreach($sections as $section)
-                <div x-data="{ open: true }" class="border-b border-gray-100 last:border-0">
+                <div x-data="{ open: true }" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
                     {{-- Section Toggle Header --}}
                     <button @click="open = !open" type="button"
-                        class="w-full px-5 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left">
+                        class="w-full flex items-center justify-between px-5 py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all"
+                        style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
                         <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-zendo-navy text-white text-xs font-bold flex-shrink-0">{{ $section['key'] }}</span>
-                            <span class="text-sm font-semibold text-gray-800">{{ $section['title'] }}</span>
+                            <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm" style="background-color: #0b2c3d;">{{ $section['key'] }}</div>
+                            <h3 class="text-lg font-semibold text-gray-800">{{ $section['title'] }}</h3>
                         </div>
-                        <svg class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0" :class="open ? 'rotate-180' : ''"
+                        <svg class="w-6 h-6 text-gray-500 transition-transform" :class="{ 'rotate-180': open }"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
@@ -206,92 +254,57 @@
                                 @foreach($section['fields'] as $fn)
                                     @php $field = $fieldsByName->get($fn); @endphp
                                     @if($field)
-                                        <tr x-data="fieldRow(@js($field))" x-init="status = field.is_correct; remarking = false"
+                                        <tr x-data="fieldRow(@js($field))"
                                             :class="status === false ? 'bg-red-50' : (status === true ? 'bg-green-50/30' : '')"
                                             class="transition-colors">
-                                            {{-- Field Label --}}
-                                            <td class="px-5 py-3 text-sm font-medium text-gray-700 w-1/4">{{ $field['label'] }}</td>
+                                            {{-- Field --}}
+                                            <td class="px-5 py-3 text-sm font-medium text-gray-700 align-top">{{ $field['label'] }}</td>
 
-                                            {{-- Value --}}
-                                            <td class="px-5 py-3 text-sm text-gray-900 w-1/3">
+                                            {{-- Value + remark when incorrect --}}
+                                            <td class="px-5 py-3 text-sm text-gray-900 align-top">
                                                 <span class="break-words">{{ $field['value'] ?: '—' }}</span>
-                                                {{-- Show remark inline when incorrect --}}
                                                 <template x-if="status === false && field.remark">
-                                                    <p class="mt-1 text-xs text-red-600 italic" x-text="'Remark: ' + field.remark"></p>
+                                                    <p class="mt-1 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + field.remark"></p>
                                                 </template>
                                             </td>
 
-                                            {{-- Status badge (reactive) --}}
-                                            <td class="px-5 py-3 w-28">
-                                                <template x-if="status === null">
-                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Pending</span>
-                                                </template>
-                                                <template x-if="status === true && !remarking">
-                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">✓ Correct</span>
-                                                </template>
-                                                <template x-if="status === false && !remarking">
-                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">✗ Incorrect</span>
-                                                </template>
-                                                <template x-if="remarking">
-                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Reviewing…</span>
-                                                </template>
-                                            </td>
-
-                                            {{-- Action: toggle checkboxes + inline remark --}}
-                                            <td class="px-5 py-3">
-                                                {{-- When NOT in remark mode: show inline toggle buttons --}}
-                                                <div x-show="!remarking" class="flex items-center gap-2">
-                                                    {{-- Correct toggle --}}
-                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none"
-                                                        @click.prevent="markCorrect">
-                                                        <span class="relative inline-flex">
-                                                            <input type="checkbox" class="sr-only" :checked="status === true" readonly>
-                                                            <span :class="status === true ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'"
-                                                                class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
-                                                                <svg x-show="status === true" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                                                </svg>
-                                                            </span>
+                                            {{-- Review: checkboxes → remark input (inline) --}}
+                                            <td class="px-5 py-3 align-top">
+                                                {{-- Checkbox toggles --}}
+                                                <div x-show="!remarking" class="flex items-center gap-3">
+                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="markCorrect">
+                                                        <span :class="status === true ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'"
+                                                            class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                            <svg x-show="status === true" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                            </svg>
                                                         </span>
-                                                        <span :class="status === true ? 'text-green-700 font-semibold' : 'text-gray-500'"
-                                                            class="text-xs transition-colors">Correct</span>
+                                                        <span :class="status === true ? 'text-green-700 font-semibold' : 'text-gray-500'" class="text-xs">Correct</span>
                                                     </label>
-
-                                                    <span class="text-gray-300 text-xs">|</span>
-
-                                                    {{-- Incorrect toggle --}}
-                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none"
-                                                        @click.prevent="startRemark">
-                                                        <span class="relative inline-flex">
-                                                            <input type="checkbox" class="sr-only" :checked="status === false" readonly>
-                                                            <span :class="status === false ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
-                                                                class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
-                                                                <svg x-show="status === false" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
-                                                                </svg>
-                                                            </span>
+                                                    <span class="text-gray-200 select-none">|</span>
+                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="startRemark">
+                                                        <span :class="status === false ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
+                                                            class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                            <svg x-show="status === false" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                                                            </svg>
                                                         </span>
-                                                        <span :class="status === false ? 'text-red-700 font-semibold' : 'text-gray-500'"
-                                                            class="text-xs transition-colors">Incorrect</span>
+                                                        <span :class="status === false ? 'text-red-700 font-semibold' : 'text-gray-500'" class="text-xs">Incorrect</span>
                                                     </label>
                                                 </div>
 
-                                                {{-- Remark input inline --}}
+                                                {{-- Remark input (replaces checkboxes when active) --}}
                                                 <div x-show="remarking" class="flex items-center gap-1.5">
                                                     <input type="text" x-model="remark"
                                                         placeholder="Remark (required)…"
                                                         @keydown.enter="saveIncorrect"
                                                         @keydown.escape="cancelRemark"
                                                         x-ref="remarkInput"
-                                                        class="w-40 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-400 focus:border-transparent">
+                                                        class="w-36 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-400 focus:border-transparent">
                                                     <button @click="saveIncorrect" type="button"
-                                                        class="px-2.5 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 flex-shrink-0">
-                                                        Save
-                                                    </button>
+                                                        class="px-2 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 flex-shrink-0">Save</button>
                                                     <button @click="cancelRemark" type="button"
-                                                        class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded hover:bg-gray-200 flex-shrink-0">
-                                                        Cancel
-                                                    </button>
+                                                        class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded hover:bg-gray-200 flex-shrink-0">Cancel</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -303,35 +316,111 @@
                 </div>
             @endforeach
 
-            {{-- Section J — Photographs --}}
-            @if($property->photos->count())
-                <div x-data="{ open: true }" class="border-b border-gray-100 last:border-0">
-                    <button @click="open = !open" type="button"
-                        class="w-full px-5 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left">
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-zendo-navy text-white text-xs font-bold flex-shrink-0">J</span>
-                            <span class="text-sm font-semibold text-gray-800">Photographs <span class="text-gray-400 font-normal text-xs">({{ $property->photos->count() }} photos)</span></span>
-                        </div>
-                        <svg class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0" :class="open ? 'rotate-180' : ''"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <div x-show="open" x-collapse class="px-5 py-5">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            @foreach($property->photos as $photo)
-                                <div class="space-y-1.5">
-                                    <a href="{{ $photo->url }}" target="_blank" class="block group">
-                                        <img src="{{ $photo->url }}" alt="{{ $photo->slot_label }}"
-                                            class="w-full aspect-square object-cover rounded-lg border-2 border-gray-200 group-hover:border-zendo-gold transition-colors">
-                                    </a>
-                                    <p class="text-xs text-gray-500 text-center font-medium leading-tight">{{ $photo->slot_label }}</p>
-                                </div>
-                            @endforeach
-                        </div>
+            {{-- Section J — Photographs (reviewable) --}}
+            <div x-data="{ open: true }" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+                <button @click="open = !open" type="button"
+                    class="w-full flex items-center justify-between px-5 py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all"
+                    style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm" style="background-color: #0b2c3d;">J</div>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            Photographs
+                            <span class="text-sm text-gray-500 font-normal ml-2">({{ $property->photos->count() }}/{{ $photoReviews->count() }} uploaded)</span>
+                        </h3>
                     </div>
+                    <svg class="w-6 h-6 text-gray-500 transition-transform" :class="{ 'rotate-180': open }"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div x-show="open" x-collapse>
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100">
+                                <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/4">Slot</th>
+                                <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Image</th>
+                                <th class="px-5 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-52">Review</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @foreach($photoReviews as $photoSlot)
+                                <tr x-data="fieldRow(@js([
+                                        'name'       => $photoSlot['name'],
+                                        'label'      => $photoSlot['label'],
+                                        'value'      => $photoSlot['url'],
+                                        'is_correct' => $photoSlot['is_correct'],
+                                        'remark'     => $photoSlot['remark'],
+                                    ]))"
+                                    :class="status === false ? 'bg-red-50' : (status === true ? 'bg-green-50/30' : '')"
+                                    class="transition-colors">
+
+                                    {{-- Slot label --}}
+                                    <td class="px-5 py-3 text-sm font-medium text-gray-700 align-top">
+                                        {{ $photoSlot['label'] }}
+                                    </td>
+
+                                    {{-- Image or placeholder + remark --}}
+                                    <td class="px-5 py-3 align-top">
+                                        @if($photoSlot['uploaded'])
+                                            <a href="{{ $photoSlot['url'] }}" target="_blank" class="block w-24 h-24 flex-shrink-0 group">
+                                                <img src="{{ $photoSlot['url'] }}" alt="{{ $photoSlot['label'] }}"
+                                                    class="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-zendo-gold transition-colors">
+                                            </a>
+                                        @else
+                                            <div class="w-24 h-24 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center gap-1 flex-shrink-0">
+                                                <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                        @endif
+                                        {{-- Remark shown below image when incorrect --}}
+                                        <template x-if="status === false && field.remark">
+                                            <p class="mt-1.5 text-xs text-red-600 italic font-medium" x-text="'⚠ ' + field.remark"></p>
+                                        </template>
+                                    </td>
+
+                                    {{-- Review checkboxes --}}
+                                    <td class="px-5 py-3 align-top">
+                                        <div x-show="!remarking" class="flex items-center gap-3">
+                                            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="markCorrect">
+                                                <span :class="status === true ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'"
+                                                    class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                    <svg x-show="status === true" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                </span>
+                                                <span :class="status === true ? 'text-green-700 font-semibold' : 'text-gray-500'" class="text-xs">Correct</span>
+                                            </label>
+                                            <span class="text-gray-200 select-none">|</span>
+                                            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" @click.prevent="startRemark">
+                                                <span :class="status === false ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
+                                                    class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0">
+                                                    <svg x-show="status === false" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </span>
+                                                <span :class="status === false ? 'text-red-700 font-semibold' : 'text-gray-500'" class="text-xs">Incorrect</span>
+                                            </label>
+                                        </div>
+                                        <div x-show="remarking" class="flex items-center gap-1.5">
+                                            <input type="text" x-model="remark"
+                                                placeholder="Remark (required)…"
+                                                @keydown.enter="saveIncorrect"
+                                                @keydown.escape="cancelRemark"
+                                                x-ref="remarkInput"
+                                                class="w-36 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-400 focus:border-transparent">
+                                            <button @click="saveIncorrect" type="button"
+                                                class="px-2 py-1 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 flex-shrink-0">Save</button>
+                                            <button @click="cancelRemark" type="button"
+                                                class="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded hover:bg-gray-200 flex-shrink-0">Cancel</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            @endif
+            </div>
 
         </div>
 
@@ -339,7 +428,7 @@
         <script>
         function fieldReview() {
             return {
-                fields: @js($fields->values()),
+                fields: @js($fields->values()->concat($photoReviews->map(fn($p) => ['name' => $p['name'], 'label' => $p['label'], 'value' => $p['url'], 'is_correct' => $p['is_correct'], 'remark' => $p['remark']]))),
                 reviewStats: { total: 0, reviewed: 0, correct: 0, incorrect: 0, pending: 0, percentage: 0 },
                 init() { this.updateStats(); },
                 updateStats() {
@@ -349,7 +438,7 @@
                     this.reviewStats = { total: t, correct: c, incorrect: i, reviewed: c + i, pending: t - c - i, percentage: t ? Math.round((c + i) / t * 100) : 0 };
                 },
                 async markAllCorrect() {
-                    if (!confirm('Mark all fields as correct?')) return;
+                    if (!confirm('Mark all fields and photos as correct?')) return;
                     const r = await fetch('{{ route('supplyhead.properties.mark-all-correct', $property) }}', {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                     });
@@ -367,12 +456,9 @@
                 cancelRemark() {
                     this.remarking = false;
                     this.remark = this.field.remark || '';
-                    // Revert status badge back to saved state
                     this.status = this.field.is_correct;
                 },
-                async markCorrect() {
-                    await this.saveReview(true, null);
-                },
+                async markCorrect() { await this.saveReview(true, null); },
                 async saveIncorrect() {
                     if (!this.remark.trim()) { alert('Remark is required for incorrect fields'); return; }
                     await this.saveReview(false, this.remark);
@@ -388,9 +474,9 @@
                         this.field.is_correct = isCorrect;
                         this.field.remark = remark;
                         this.remarking = false;
-                        // Update parent progress bar
-                        const p = this.$el.closest('[x-data*="fieldReview"]');
-                        if (p && p._x_dataStack) p._x_dataStack[0].updateStats();
+                        // Bubble up to update progress bar
+                        const parent = this.$el.closest('[x-data*="fieldReview"]');
+                        if (parent && parent._x_dataStack) parent._x_dataStack[0].updateStats();
                     }
                 }
             };
@@ -398,6 +484,35 @@
         </script>
 
     @endif
+
+    {{-- ── Property Detail Cards ─────────────────────────────────────────── --}}
+    @php
+        use App\Models\PropertyFieldConfig;
+        $isVerified = $property->status === 'verified';
+        $card       = 'bg-white rounded-xl border border-gray-100 shadow-sm p-5';
+
+        // fd($key, $label, $rawValue) — renders one <div> respecting keep/show_after_verification/show_on_website
+        $fd = function(string $key, string $label, $rawValue) use ($isVerified): string {
+            $cfg = PropertyFieldConfig::forField($key);
+            if (!$cfg->keep_field) return '';
+
+            $webBadge = $cfg->show_on_website
+                ? '<span class="inline-flex items-center ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700">WEB</span>'
+                : '';
+
+            if ($cfg->show_after_verification && !$isVerified) {
+                $display = '<span class="text-xs italic text-gray-400">Visible after verification</span>';
+            } else {
+                $display = '<span class="text-sm font-medium text-gray-900">' . (e($rawValue) ?: '—') . '</span>';
+            }
+
+            return '<div><dt class="text-xs text-gray-400 uppercase tracking-wide font-medium flex items-center gap-0.5">'
+                . e($label) . $webBadge
+                . '</dt><dd class="mt-0.5">' . $display . '</dd></div>';
+        };
+    @endphp
+
+   
 
 </div>
 @endsection

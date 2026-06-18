@@ -147,6 +147,86 @@
         </div>
     </header>
 
+    {{-- Notification Bar (Supply Head only) --}}
+    @if(auth()->check() && auth()->user()->role === 'supply_head')
+        @php
+            $navUnviewedCount = \App\Models\PropertyEntry::whereIn(
+                'field_officer_id',
+                \App\Models\User::where('supply_head_id', auth()->id())->pluck('id')
+            )->whereNull('supply_head_viewed_at')->where('status', 'submitted')->count();
+
+            $navRecentEntries = \App\Models\PropertyEntry::with('fieldOfficer')
+                ->whereIn('field_officer_id',
+                    \App\Models\User::where('supply_head_id', auth()->id())->pluck('id')
+                )->whereNull('supply_head_viewed_at')->where('status', 'submitted')
+                ->latest('submitted_at')->limit(5)->get();
+        @endphp
+        @if($navUnviewedCount > 0)
+        <div x-data="{ notifOpen: false }" class="relative bg-amber-50 border-b border-amber-200 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button @click="notifOpen = !notifOpen"
+                    class="w-full flex items-center justify-between py-2 text-left group">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                        </span>
+                        <span class="text-sm font-semibold text-amber-800">
+                            {{ $navUnviewedCount }} unreviewed {{ Str::plural('submission', $navUnviewedCount) }} waiting for your review
+                        </span>
+                        <span class="text-xs text-amber-600 hidden sm:inline">— click to see details</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('supplyhead.properties.index', ['status' => 'submitted']) }}"
+                            @click.stop
+                            class="text-xs font-semibold text-amber-700 underline hover:text-amber-900">
+                            View All →
+                        </a>
+                        <svg class="w-4 h-4 text-amber-600 transition-transform duration-200" :class="{ 'rotate-180': notifOpen }"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+                </button>
+
+                {{-- Dropdown panel --}}
+                <div x-show="notifOpen" x-cloak
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 -translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-1"
+                    class="pb-3 space-y-1.5">
+                    @foreach($navRecentEntries as $ne)
+                        <a href="{{ route('supplyhead.properties.show', $ne) }}"
+                            class="flex items-center justify-between bg-white border border-amber-100 rounded-lg px-4 py-2.5 hover:border-amber-300 hover:bg-amber-50 transition-colors group/row">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                <div class="min-w-0">
+                                    <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $ne->code }}</span>
+                                    <span class="text-xs text-gray-500 ml-2">{{ $ne->fieldOfficer?->name ?? '—' }}</span>
+                                    <span class="text-xs text-gray-400 ml-1">· {{ $ne->facility_type ?? '—' }} · {{ $ne->nearest_city ?? '—' }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                                <span class="text-xs text-gray-400">{{ $ne->submitted_at?->diffForHumans() ?? '—' }}</span>
+                                <span class="text-xs font-semibold text-blue-600 group-hover/row:underline">Review →</span>
+                            </div>
+                        </a>
+                    @endforeach
+                    @if($navUnviewedCount > 5)
+                        <p class="text-xs text-amber-600 text-center pt-1">
+                            + {{ $navUnviewedCount - 5 }} more —
+                            <a href="{{ route('supplyhead.properties.index', ['status' => 'submitted']) }}" class="underline font-semibold">View all</a>
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+    @endif
+
     <!-- Page Content (full width, no sidebar) -->
     <main class="flex-1">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
