@@ -134,7 +134,13 @@ class PropertyEntryController extends Controller
             ->pluck('remark', 'field_name')
             ->toArray();
 
-        return view('field.properties.edit', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks'));
+        // Build list of fields marked as correct by supply head (used to lock them on rejected+allow_resubmit)
+        $correctFields = $property->fieldReviews()
+            ->where('is_correct', true)
+            ->pluck('field_name')
+            ->toArray();
+
+        return view('field.properties.edit', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks', 'correctFields'));
     }
 
     // ── Update ────────────────────────────────────────────────────────────────

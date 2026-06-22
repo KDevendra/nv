@@ -284,7 +284,7 @@ class PropertyEntry extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'submitted' => 'Pending Review',
+            'submitted' => 'Under Review',
             'verified'  => 'Verified',
             'rejected'  => 'Rejected',
             'recheck'   => 'Needs Recheck',

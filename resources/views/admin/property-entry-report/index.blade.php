@@ -35,7 +35,7 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Pending Review</p>
+                <p class="text-sm font-medium text-gray-600 mb-1">Under Review</p>
                 <p class="text-2xl font-bold text-blue-600">{{ $summary['submitted'] }}</p>
             </div>
             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -306,7 +306,7 @@
                                 };
                                 $label = match($entry->status) {
                                     'draft'     => 'Draft',
-                                    'submitted' => 'Pending Review',
+                                    'submitted' => 'Under Review',
                                     'verified'  => 'Verified',
                                     'recheck'   => 'Needs Recheck',
                                     'rejected'  => 'Rejected',

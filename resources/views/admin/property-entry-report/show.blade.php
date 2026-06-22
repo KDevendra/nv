@@ -27,7 +27,7 @@
                     };
                     $label = match($entry->status) {
                         'draft'     => 'Draft',
-                        'submitted' => 'Pending Review',
+                        'submitted' => 'Under Review',
                         'verified'  => 'Verified',
                         'recheck'   => 'Needs Recheck',
                         'rejected'  => 'Rejected',

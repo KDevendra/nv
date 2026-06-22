@@ -28,108 +28,6 @@
         </a>
     </div>
 
-    {{-- Action Form --}}
-    @if(in_array($property->status, ['submitted', 'recheck', 'verified', 'rejected']))
-    @php
-        $allFieldsCorrect = isset($fields) && isset($photoReviews)
-            && $fields->count() > 0
-            && $fields->every(fn($f) => $f['is_correct'] === true)
-            && $photoReviews->every(fn($p) => $p['is_correct'] === true);
-        $reviewedCount = (isset($fields) ? $fields->filter(fn($f) => $f['is_correct'] !== null)->count() : 0)
-                       + (isset($photoReviews) ? $photoReviews->filter(fn($p) => $p['is_correct'] !== null)->count() : 0);
-        $totalCount    = (isset($fields) ? $fields->count() : 0)
-                       + (isset($photoReviews) ? $photoReviews->count() : 0);
-    @endphp
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="{ showForm: {{ in_array($property->status, ['submitted','recheck']) ? 'true' : 'false' }} }">
-            <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-zendo-navy">Take Action</h3>
-                @if(in_array($property->status, ['verified','rejected']))
-                    <button @click="showForm = !showForm" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                        <span x-text="showForm ? 'Hide' : 'Change Status'"></span>
-                    </button>
-                @endif
-            </div>
-            <div x-show="showForm" class="p-5" x-data="{ selectedAction: '{{ $property->status }}' }">
-                @if(session('success'))
-                    <div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">{{ session('success') }}</div>
-                @endif
-                @if($errors->has('action'))
-                    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                        <strong>Error:</strong> {{ $errors->first('action') }}
-                    </div>
-                @endif
-
-                @if(!$allFieldsCorrect && in_array($property->status, ['submitted', 'recheck']))
-                    <div class="mb-4 border border-amber-200 bg-amber-50 rounded-lg p-4 flex items-start gap-3">
-                        <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                        <div>
-                            <h4 class="text-sm font-semibold text-amber-800">Field Review Incomplete</h4>
-                            <p class="text-sm text-amber-700 mt-0.5">
-                                Review all fields below before verifying. Progress: <strong>{{ $reviewedCount }} / {{ $totalCount }}</strong> fields reviewed.
-                            </p>
-                        </div>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('supplyhead.properties.action', $property) }}" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Decision <span class="text-red-500">*</span></label>
-                        <select name="action" required x-model="selectedAction"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
-                            <option value="">— Select Action —</option>
-                            <option value="verified" {{ !$allFieldsCorrect ? 'disabled' : '' }}>
-                                &#10003; Verified — Approve this entry{{ !$allFieldsCorrect ? ' (complete field review first)' : '' }}
-                            </option>
-                            <option value="rejected">&#10007; Rejected — Permanently reject</option>
-                            <option value="recheck">&#9888; Recheck — Send back to officer</option>
-                        </select>
-                        @error('action')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Note to Field Officer <span class="text-gray-400 text-xs">(required for Recheck / Reject)</span></label>
-                        <textarea name="note" rows="3" placeholder="Explain what needs to be corrected or why it is rejected..."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('note', $property->supply_head_note) }}</textarea>
-                        @error('note')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                    </div>
-                    <div x-show="selectedAction === 'rejected'" x-transition class="border border-amber-200 bg-amber-50 rounded-lg p-4">
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" name="allow_resubmit" value="1"
-                                {{ old('allow_resubmit', $property->allow_resubmit) ? 'checked' : '' }}
-                                class="mt-0.5 h-4 w-4 text-zendo-navy border-gray-300 rounded focus:ring-zendo-gold">
-                            <div class="flex-1">
-                                <span class="text-sm font-medium text-gray-900">Allow field officer to re-edit and resubmit</span>
-                                <p class="text-xs text-gray-600 mt-1">If unchecked, the entry will be permanently rejected with no option to re-edit.</p>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit"
-                            class="inline-flex items-center px-6 py-2 bg-zendo-navy text-white text-sm font-semibold rounded-lg hover:bg-opacity-90 transition-all shadow hover:shadow-md">
-                            Submit Decision
-                        </button>
-                    </div>
-                </form>
-            </div>
-            @if(!in_array($property->status, ['submitted','recheck']))
-                <div x-show="!showForm" class="px-5 py-4 text-sm text-gray-500">
-                    Current status: <span class="font-semibold {{ $property->status_badge_class }} px-2 py-0.5 rounded-full text-xs">{{ $property->status_label }}</span>
-                    @if($property->status === 'rejected')
-                        @if($property->allow_resubmit)
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 ml-2">Re-edit Allowed</span>
-                        @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 ml-2">Re-edit Not Allowed</span>
-                        @endif
-                    @endif
-                    @if($property->supply_head_note)
-                        <br><span class="italic mt-1 block">Note: {{ $property->supply_head_note }}</span>
-                    @endif
-                </div>
-            @endif
-        </div>
-    @endif
 
     {{-- Field Validation — Collapsible Sections --}}
     @if(in_array($property->status, ['submitted', 'recheck']) && isset($fields))
@@ -233,10 +131,10 @@
                     {{-- Section Toggle Header --}}
                     <button @click="open = !open" type="button"
                         class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all gap-2 sm:gap-0"
-                        style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
+                        :style="allCorrect ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background: linear-gradient(to right, #e8eef0, #dfe7ea)'">
                         <div class="flex items-center gap-3 w-full sm:w-auto">
-                            <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" style="background-color: #0b2c3d;">{{ $section['key'] }}</div>
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-800">{{ $section['title'] }}</h3>
+                            <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" :style="allCorrect ? 'background-color: #059669' : 'background-color: #0b2c3d'">{{ $section['key'] }}</div>
+                            <h3 class="text-base sm:text-lg font-semibold" :class="allCorrect ? 'text-green-800' : 'text-gray-800'">{{ $section['title'] }}</h3>
                         </div>
                         <div class="flex items-center gap-2 ml-11 sm:ml-0">
                             <span x-show="correct > 0" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
@@ -340,12 +238,12 @@
             <div x-data="sectionCounter(@js($photoFieldNames))" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
                 <button @click="open = !open" type="button"
                     class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-4 cursor-pointer select-none border-b border-gray-200 hover:bg-opacity-90 transition-all gap-2 sm:gap-0"
-                    style="background: linear-gradient(to right, #e8eef0, #dfe7ea);">
+                    :style="allCorrect ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background: linear-gradient(to right, #e8eef0, #dfe7ea)'">
                     <div class="flex items-center gap-3 w-full sm:w-auto">
-                        <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" style="background-color: #0b2c3d;">J</div>
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-800">
+                        <div class="w-8 h-8 text-white rounded-full flex items-center justify-center font-bold shadow-sm flex-shrink-0" :style="allCorrect ? 'background-color: #059669' : 'background-color: #0b2c3d'">J</div>
+                        <h3 class="text-base sm:text-lg font-semibold" :class="allCorrect ? 'text-green-800' : 'text-gray-800'">
                             Photographs
-                            <span class="text-sm text-gray-500 font-normal ml-2">({{ $property->photos->count() }}/{{ $photoReviews->count() }} uploaded)</span>
+                            <span class="text-sm font-normal ml-2" :class="allCorrect ? 'text-green-600' : 'text-gray-500'">({{ $property->photos->count() }}/{{ $photoReviews->count() }} uploaded)</span>
                         </h3>
                     </div>
                     <div class="flex items-center gap-2 ml-11 sm:ml-0">
@@ -508,6 +406,7 @@
                 get incorrect(){ return this.$store.review.countFor(this.fieldNames).incorrect; },
                 get reviewed() { return this.$store.review.countFor(this.fieldNames).reviewed; },
                 get total()    { return this.fieldNames.length; },
+                get allCorrect() { return this.total > 0 && this.correct === this.total; },
             };
         }
 
@@ -549,6 +448,110 @@
         }
         </script>
 
+    @endif
+
+    
+    {{-- Action Form --}}
+    @if(in_array($property->status, ['submitted', 'recheck', 'verified', 'rejected']))
+    @php
+        $allFieldsCorrect = isset($fields) && isset($photoReviews)
+            && $fields->count() > 0
+            && $fields->every(fn($f) => $f['is_correct'] === true)
+            && $photoReviews->every(fn($p) => $p['is_correct'] === true);
+        $reviewedCount = (isset($fields) ? $fields->filter(fn($f) => $f['is_correct'] !== null)->count() : 0)
+                       + (isset($photoReviews) ? $photoReviews->filter(fn($p) => $p['is_correct'] !== null)->count() : 0);
+        $totalCount    = (isset($fields) ? $fields->count() : 0)
+                       + (isset($photoReviews) ? $photoReviews->count() : 0);
+    @endphp
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" x-data="{ showForm: {{ in_array($property->status, ['submitted','recheck']) ? 'true' : 'false' }} }">
+            <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-zendo-navy">Take Action</h3>
+                @if(in_array($property->status, ['verified','rejected']))
+                    <button @click="showForm = !showForm" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                        <span x-text="showForm ? 'Hide' : 'Change Status'"></span>
+                    </button>
+                @endif
+            </div>
+            <div x-show="showForm" class="p-5" x-data="{ selectedAction: '{{ $property->status }}' }">
+                @if(session('success'))
+                    <div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">{{ session('success') }}</div>
+                @endif
+                @if($errors->has('action'))
+                    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        <strong>Error:</strong> {{ $errors->first('action') }}
+                    </div>
+                @endif
+
+                @if(!$allFieldsCorrect && in_array($property->status, ['submitted', 'recheck']))
+                    <div class="mb-4 border border-amber-200 bg-amber-50 rounded-lg p-4 flex items-start gap-3">
+                        <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-semibold text-amber-800">Field Review Incomplete</h4>
+                            <p class="text-sm text-amber-700 mt-0.5">
+                                Review all fields below before verifying. Progress: <strong>{{ $reviewedCount }} / {{ $totalCount }}</strong> fields reviewed.
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('supplyhead.properties.action', $property) }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Decision <span class="text-red-500">*</span></label>
+                        <select name="action" required x-model="selectedAction"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
+                            <option value="">— Select Action —</option>
+                            <option value="verified" {{ !$allFieldsCorrect ? 'disabled' : '' }}>
+                                &#10003; Verified — Approve this entry{{ !$allFieldsCorrect ? ' (complete field review first)' : '' }}
+                            </option>
+                            <option value="rejected">&#10007; Rejected — Permanently reject</option>
+                            <option value="recheck">&#9888; Recheck — Send back to officer</option>
+                        </select>
+                        @error('action')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Note to Field Officer <span class="text-gray-400 text-xs">(required for Recheck / Reject)</span></label>
+                        <textarea name="note" rows="3" placeholder="Explain what needs to be corrected or why it is rejected..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">{{ old('note', $property->supply_head_note) }}</textarea>
+                        @error('note')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div x-show="selectedAction === 'rejected'" x-transition class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="allow_resubmit" value="1"
+                                {{ old('allow_resubmit', $property->allow_resubmit) ? 'checked' : '' }}
+                                class="mt-0.5 h-4 w-4 text-zendo-navy border-gray-300 rounded focus:ring-zendo-gold">
+                            <div class="flex-1">
+                                <span class="text-sm font-medium text-gray-900">Allow field officer to re-edit and resubmit</span>
+                                <p class="text-xs text-gray-600 mt-1">If unchecked, the entry will be permanently rejected with no option to re-edit.</p>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="inline-flex items-center px-6 py-2 bg-zendo-navy text-white text-sm font-semibold rounded-lg hover:bg-opacity-90 transition-all shadow hover:shadow-md">
+                            Submit Decision
+                        </button>
+                    </div>
+                </form>
+            </div>
+            @if(!in_array($property->status, ['submitted','recheck']))
+                <div x-show="!showForm" class="px-5 py-4 text-sm text-gray-500">
+                    Current status: <span class="font-semibold {{ $property->status_badge_class }} px-2 py-0.5 rounded-full text-xs">{{ $property->status_label }}</span>
+                    @if($property->status === 'rejected')
+                        @if($property->allow_resubmit)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 ml-2">Re-edit Allowed</span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 ml-2">Re-edit Not Allowed</span>
+                        @endif
+                    @endif
+                    @if($property->supply_head_note)
+                        <br><span class="italic mt-1 block">Note: {{ $property->supply_head_note }}</span>
+                    @endif
+                </div>
+            @endif
+        </div>
     @endif
 
     {{-- ── Property Detail Cards ─────────────────────────────────────────── --}}

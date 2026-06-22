@@ -43,6 +43,8 @@ use App\Http\Controllers\Admin\TermsConditionController;
 use App\Http\Controllers\Admin\SeoMetaController;
 use App\Http\Controllers\Admin\VideoTourController;
 use App\Http\Controllers\Admin\PropertyEntryReportController;
+use App\Http\Controllers\Admin\RegionController;
+use App\Http\Controllers\Admin\AreaController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -275,6 +277,15 @@ Route::middleware('auth')->group(function () {
         Route::get('property-entry-report', [PropertyEntryReportController::class, 'index'])->name('property-entry-report.index');
         Route::get('property-entry-report/export', [PropertyEntryReportController::class, 'export'])->name('property-entry-report.export');
         Route::get('property-entry-report/{entry}', [PropertyEntryReportController::class, 'show'])->name('property-entry-report.show');
+
+        // Regions
+        Route::resource('regions', RegionController::class);
+        Route::patch('regions/{region}/toggle-status', [RegionController::class, 'toggleStatus'])->name('regions.toggle-status');
+
+        // Areas
+        Route::resource('areas', AreaController::class);
+        Route::patch('areas/{area}/toggle-status', [AreaController::class, 'toggleStatus'])->name('areas.toggle-status');
+        Route::get('areas-by-region', [AreaController::class, 'getByRegion'])->name('areas.by-region');
     });
 });
 

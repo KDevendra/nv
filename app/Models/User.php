@@ -31,6 +31,8 @@ class User extends Authenticatable
         'password',
         'role',
         'supply_head_id',
+        'region_id',
+        'area_id',
         'is_active',
     ];
 
@@ -94,6 +96,22 @@ class User extends Authenticatable
     public function fieldOfficers()
     {
         return $this->hasMany(User::class, 'supply_head_id');
+    }
+
+    /**
+     * Get the region assigned to this user.
+     */
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    /**
+     * Get the area assigned to this user.
+     */
+    public function area()
+    {
+        return $this->belongsTo(Area::class);
     }
 
     /**

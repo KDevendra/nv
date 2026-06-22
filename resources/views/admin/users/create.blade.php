@@ -89,6 +89,43 @@
                 </div>
             </div>
 
+            <!-- Region & Area Assignment -->
+            <div class="pt-6 border-t border-gray-200">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">Region & Area Assignment</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="region_id" class="block text-sm font-medium text-gray-700 mb-2">Region *</label>
+                        <select name="region_id" 
+                                id="region_id"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('region_id') border-red-500 @enderror select2-region"
+                                required>
+                            <option value="">Select Region</option>
+                            @foreach($regions as $region)
+                                <option value="{{ $region->id }}" {{ old('region_id') == $region->id ? 'selected' : '' }}>
+                                    {{ $region->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('region_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="area_id" class="block text-sm font-medium text-gray-700 mb-2">Area *</label>
+                        <select name="area_id" 
+                                id="area_id"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('area_id') border-red-500 @enderror select2-area"
+                                required>
+                            <option value="">Select Area (Select Region First)</option>
+                        </select>
+                        @error('area_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             <!-- User Status -->
             <div class="pt-6 border-t border-gray-200">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">User Status</h3>
@@ -213,6 +250,20 @@ $(document).ready(function() {
         allowClear: true,
         width: '100%'
     });
+
+    // Initialize Select2 for region dropdown
+    $('.select2-region').select2({
+        placeholder: 'Select a region',
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Initialize Select2 for area dropdown
+    $('.select2-area').select2({
+        placeholder: 'Select area (Select region first)',
+        allowClear: true,
+        width: '100%'
+    });
     
     // Initial toggle
     toggleSupplyHeadField();
@@ -220,6 +271,35 @@ $(document).ready(function() {
     // Listen for role change
     $('#role').on('change', function() {
         toggleSupplyHeadField();
+    });
+
+    // Load areas when region changes
+    $('#region_id').on('change', function() {
+        const regionId = $(this).val();
+        const areaSelect = $('#area_id');
+        
+        // Clear and disable area dropdown
+        areaSelect.empty().append('<option value="">Loading...</option>').prop('disabled', true);
+        
+        if (regionId) {
+            // Fetch areas for selected region
+            fetch('{{ route("admin.areas.by-region") }}?region_id=' + regionId)
+                .then(response => response.json())
+                .then(data => {
+                    areaSelect.empty().append('<option value="">Select Area</option>');
+                    data.forEach(area => {
+                        areaSelect.append(`<option value="${area.id}">${area.name}</option>`);
+                    });
+                    areaSelect.prop('disabled', false);
+                })
+                .catch(error => {
+                    console.error('Error loading areas:', error);
+                    areaSelect.empty().append('<option value="">Error loading areas</option>');
+                    areaSelect.prop('disabled', false);
+                });
+        } else {
+            areaSelect.empty().append('<option value="">Select Region First</option>').prop('disabled', false);
+        }
     });
 });
 </script>

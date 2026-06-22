@@ -187,7 +187,7 @@ Welcome back, {{ Auth::user()->name }}! Here's what's happening with your real e
         <div class="p-5 text-center">
             <a href="{{ route('admin.property-entry-report.index', ['status' => 'submitted']) }}" class="block hover:bg-blue-50 rounded-lg transition-colors -m-2 p-2">
                 <p class="text-2xl font-bold text-blue-600">{{ $pePending }}</p>
-                <p class="text-xs font-medium text-gray-500 mt-1">Pending Review</p>
+                <p class="text-xs font-medium text-gray-500 mt-1">Under Review</p>
                 @if($pePending > 0)
                     <span class="inline-block mt-1 text-xs text-blue-600 font-medium">Review now →</span>
                 @endif

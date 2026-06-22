@@ -31,35 +31,48 @@ class PropertyEntryController extends Controller
 
         // Get field officers under this supply head
         $fieldOfficerIds = User::where('supply_head_id', auth()->id())->pluck('id');
-        $fieldOfficers = User::where('supply_head_id', auth()->id())->get();
-        
-        $query = PropertyEntry::with(['fieldOfficer'])->whereIn('field_officer_id', $fieldOfficerIds)->latest('submitted_at');
+        $fieldOfficers   = User::where('supply_head_id', auth()->id())->get();
 
-        // Field Officer filter
+        // ── Not-opened entries (always shown at top, separate table) ──────────
+        $notOpenedQuery = PropertyEntry::with(['fieldOfficer'])
+            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->whereNull('supply_head_viewed_at')
+            ->latest('submitted_at');
+
+        // Apply same field_officer / search filters to not-opened too
+        if ($request->filled('field_officer')) {
+            $notOpenedQuery->where('field_officer_id', $request->field_officer);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $notOpenedQuery->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('nearest_city', 'like', "%{$search}%")
+                  ->orWhere('facility_type', 'like', "%{$search}%")
+                  ->orWhereHas('fieldOfficer', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+        $notOpenedEntries = $notOpenedQuery->get();
+
+        // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ────────────────────────────
+        $query = PropertyEntry::with(['fieldOfficer'])
+            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->whereNotNull('supply_head_viewed_at')  // Only show entries that have been opened/viewed
+            ->latest('submitted_at');
+
         if ($request->filled('field_officer')) {
             $query->where('field_officer_id', $request->field_officer);
         }
-
-        // Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
-        // Not-opened filter
-        if ($request->boolean('not_opened')) {
-            $query->whereNull('supply_head_viewed_at');
-        }
-
-        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
                   ->orWhere('nearest_city', 'like', "%{$search}%")
                   ->orWhere('facility_type', 'like', "%{$search}%")
-                  ->orWhereHas('fieldOfficer', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                  ->orWhereHas('fieldOfficer', fn($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -74,7 +87,7 @@ class PropertyEntryController extends Controller
             'not_opened' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->whereNull('supply_head_viewed_at')->count(),
         ];
 
-        return view('supplyhead.properties.index', compact('entries', 'counters', 'fieldOfficers'));
+        return view('supplyhead.properties.index', compact('entries', 'notOpenedEntries', 'counters', 'fieldOfficers'));
     }
 
     // ── Show ──────────────────────────────────────────────────────────────────

@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('supplyHead')->latest();
+        $query = User::with(['supplyHead', 'region', 'area'])->withCount('fieldOfficers')->latest();
         
         // Add filters
         if ($request->filled('role')) {
@@ -24,6 +24,14 @@ class UserController extends Controller
         
         if ($request->filled('supply_head_id')) {
             $query->where('supply_head_id', $request->supply_head_id);
+        }
+
+        if ($request->filled('region_id')) {
+            $query->where('region_id', $request->region_id);
+        }
+
+        if ($request->filled('area_id')) {
+            $query->where('area_id', $request->area_id);
         }
 
         if ($request->filled('status')) {
@@ -39,8 +47,10 @@ class UserController extends Controller
         
         $users = $query->paginate(20);
         $supplyHeads = User::getSupplyHeads();
+        $regions = \App\Models\Region::active()->ordered()->get();
+        $areas = \App\Models\Area::active()->ordered()->get();
         
-        return view('admin.users.index', compact('users', 'supplyHeads'));
+        return view('admin.users.index', compact('users', 'supplyHeads', 'regions', 'areas'));
     }
 
     /**
@@ -49,7 +59,8 @@ class UserController extends Controller
     public function create()
     {
         $supplyHeads = User::getSupplyHeads();
-        return view('admin.users.create', compact('supplyHeads'));
+        $regions = \App\Models\Region::active()->ordered()->get();
+        return view('admin.users.create', compact('supplyHeads', 'regions'));
     }
 
     /**
@@ -63,6 +74,8 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:super_admin,admin,supply_head,field_officer'],
             'is_active' => ['boolean'],
+            'region_id' => ['required', 'exists:regions,id'],
+            'area_id' => ['required', 'exists:areas,id'],
             'supply_head_id' => [
                 'nullable',
                 'exists:users,id',
@@ -89,6 +102,8 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'supply_head_id' => $request->role === 'field_officer' ? $request->supply_head_id : null,
+            'region_id' => $request->region_id,
+            'area_id' => $request->area_id,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
             'email_verified_at' => now(),
         ]);
@@ -112,7 +127,9 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $supplyHeads = User::getSupplyHeads();
-        return view('admin.users.edit', compact('user', 'supplyHeads'));
+        $regions = \App\Models\Region::active()->ordered()->get();
+        $areas = \App\Models\Area::active()->ordered()->get();
+        return view('admin.users.edit', compact('user', 'supplyHeads', 'regions', 'areas'));
     }
 
     /**
@@ -126,6 +143,8 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:super_admin,admin,supply_head,field_officer'],
             'is_active' => ['boolean'],
+            'region_id' => ['required', 'exists:regions,id'],
+            'area_id' => ['required', 'exists:areas,id'],
             'supply_head_id' => [
                 'nullable',
                 'exists:users,id',
@@ -155,6 +174,8 @@ class UserController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'supply_head_id' => $request->role === 'field_officer' ? $request->supply_head_id : null,
+            'region_id' => $request->region_id,
+            'area_id' => $request->area_id,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $user->is_active,
         ];
 

@@ -288,6 +288,27 @@ class CheckPermission
         'admin.property-entry-report.index'     => 'dashboard.view',
         'admin.property-entry-report.export'    => 'dashboard.view',
         'admin.property-entry-report.show'      => 'dashboard.view',
+
+        // Regions
+        'admin.regions.index'                   => 'users.view',
+        'admin.regions.show'                    => 'users.view',
+        'admin.regions.create'                  => 'users.create',
+        'admin.regions.store'                   => 'users.create',
+        'admin.regions.edit'                    => 'users.edit',
+        'admin.regions.update'                  => 'users.edit',
+        'admin.regions.destroy'                 => 'users.delete',
+        'admin.regions.toggle-status'           => 'users.edit',
+
+        // Areas
+        'admin.areas.index'                     => 'users.view',
+        'admin.areas.show'                      => 'users.view',
+        'admin.areas.create'                    => 'users.create',
+        'admin.areas.store'                     => 'users.create',
+        'admin.areas.edit'                      => 'users.edit',
+        'admin.areas.update'                    => 'users.edit',
+        'admin.areas.destroy'                   => 'users.delete',
+        'admin.areas.toggle-status'             => 'users.edit',
+        'admin.areas.by-region'                 => 'users.view',
     ];
 
     public function handle(Request $request, Closure $next): Response

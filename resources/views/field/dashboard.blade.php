@@ -10,7 +10,7 @@
                 @php
                     $shStats = [
                         ['label' => 'Total',        'value' => $counters['total']      ?? 0, 'cls' => 'bg-gray-100 text-gray-700',   'b' => 'border-gray-200',  'status' => ''],
-                        ['label' => 'Pending Review','value' => $counters['pending']    ?? 0, 'cls' => 'bg-blue-50 text-blue-700',    'b' => 'border-blue-100',  'status' => 'submitted'],
+                        ['label' => 'Under Review','value' => $counters['pending']    ?? 0, 'cls' => 'bg-blue-50 text-blue-700',    'b' => 'border-blue-100',  'status' => 'submitted'],
                         ['label' => 'Verified',     'value' => $counters['verified']   ?? 0, 'cls' => 'bg-green-50 text-green-700',  'b' => 'border-green-100', 'status' => 'verified'],
                         ['label' => 'Rejected',     'value' => $counters['rejected']   ?? 0, 'cls' => 'bg-red-50 text-red-700',      'b' => 'border-red-100',   'status' => 'rejected'],
                         ['label' => 'Recheck',      'value' => $counters['recheck']    ?? 0, 'cls' => 'bg-orange-50 text-orange-700','b' => 'border-orange-200','status' => 'recheck'],
@@ -142,7 +142,7 @@
                             data: {
                                 labels: officers,
                                 datasets: [
-                                    { label: 'Pending Review', data: submitted, backgroundColor: '#93C5FD', borderColor: '#3B82F6', borderWidth: 1 },
+                                    { label: 'Under Review', data: submitted, backgroundColor: '#93C5FD', borderColor: '#3B82F6', borderWidth: 1 },
                                     { label: 'Verified',       data: verified,  backgroundColor: '#6EE7B7', borderColor: '#10B981', borderWidth: 1 },
                                     { label: 'Rejected',       data: rejected,  backgroundColor: '#FCA5A5', borderColor: '#EF4444', borderWidth: 1 },
                                     { label: 'Recheck',        data: recheck,   backgroundColor: '#FCD34D', borderColor: '#F59E0B', borderWidth: 1 },

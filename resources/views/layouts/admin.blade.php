@@ -143,6 +143,7 @@
         .admin-main-content {
             min-height: calc(100vh - 140px);
             background: #f3f4f6;
+            overflow-x: hidden;
         }
 
         /* Custom scrollbar */
@@ -307,6 +308,48 @@
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                             <span x-show="!sidebarCollapsed" x-transition>Role Permissions</span>
+                        </a>
+                    @endif
+
+                    <!-- Regions -->
+                    @if (in_array('users.view', $navPerms))
+                        <a href="{{ route('admin.regions.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.regions.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Regions</span>
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                Regions
+                            </div>
+                        </a>
+                    @endif
+
+                    <!-- Areas -->
+                    @if (in_array('users.view', $navPerms))
+                        <a href="{{ route('admin.areas.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.areas.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Areas</span>
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                Areas
+                            </div>
                         </a>
                     @endif
 
@@ -1475,7 +1518,7 @@
             </nav>
         </div>
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-h-screen transition-all duration-300"
+        <div class="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden transition-all duration-300"
             :class="{
                 'lg:ml-64': !sidebarCollapsed,
                 'lg:ml-20': sidebarCollapsed
@@ -1531,7 +1574,8 @@
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit"
-                                            class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            onclick="this.disabled=true;this.form.submit();">
                                             Sign Out
                                         </button>
                                     </form>
@@ -1542,7 +1586,7 @@
                 </div>
             </header>
             <!-- Main Content -->
-            <main class="admin-main-content flex-1 p-4 lg:p-6">
+            <main class="admin-main-content flex-1 min-w-0 overflow-x-hidden p-4 lg:p-6">
                 @yield('content')
             </main>
             <!-- Admin Footer -->

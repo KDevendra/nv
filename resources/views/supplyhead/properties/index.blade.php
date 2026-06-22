@@ -23,22 +23,20 @@
     <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
         @php
             $stats = [
-                ['label' => 'Total',         'value' => $counters['total'],      'cls' => 'bg-gray-100 text-gray-700',    'b' => 'border-gray-200',   'status' => '',          'not_opened' => false],
-                ['label' => 'Pending Review', 'value' => $counters['pending'],    'cls' => 'bg-blue-50 text-blue-700',     'b' => 'border-blue-100',   'status' => 'submitted', 'not_opened' => false],
-                ['label' => 'Verified',       'value' => $counters['verified'],   'cls' => 'bg-green-50 text-green-700',   'b' => 'border-green-100',  'status' => 'verified',  'not_opened' => false],
-                ['label' => 'Rejected',       'value' => $counters['rejected'],   'cls' => 'bg-red-50 text-red-700',       'b' => 'border-red-100',    'status' => 'rejected',  'not_opened' => false],
-                ['label' => 'Recheck',        'value' => $counters['recheck'],    'cls' => 'bg-orange-50 text-orange-700', 'b' => 'border-orange-200', 'status' => 'recheck',   'not_opened' => false],
-                ['label' => 'Not Opened',     'value' => $counters['not_opened'], 'cls' => 'bg-purple-50 text-purple-700', 'b' => 'border-purple-200', 'status' => '',          'not_opened' => true],
+                ['label' => 'Total',          'value' => $counters['total'],      'cls' => 'bg-gray-100 text-gray-700',    'b' => 'border-gray-200',   'status' => ''],
+                ['label' => 'Under Review', 'value' => $counters['pending'],    'cls' => 'bg-blue-50 text-blue-700',     'b' => 'border-blue-100',   'status' => 'submitted'],
+                ['label' => 'Verified',       'value' => $counters['verified'],   'cls' => 'bg-green-50 text-green-700',   'b' => 'border-green-100',  'status' => 'verified'],
+                ['label' => 'Rejected',       'value' => $counters['rejected'],   'cls' => 'bg-red-50 text-red-700',       'b' => 'border-red-100',    'status' => 'rejected'],
+                ['label' => 'Recheck',        'value' => $counters['recheck'],    'cls' => 'bg-orange-50 text-orange-700', 'b' => 'border-orange-200', 'status' => 'recheck'],
+                ['label' => 'Not Opened',     'value' => $counters['not_opened'], 'cls' => 'bg-purple-50 text-purple-700', 'b' => 'border-purple-200', 'status' => ''],
             ];
         @endphp
         @foreach($stats as $stat)
             @php
-                $params = [];
-                if ($stat['not_opened']) $params['not_opened'] = '1';
-                elseif ($stat['status']) $params['status'] = $stat['status'];
-                $isActive = $stat['not_opened']
-                    ? request()->boolean('not_opened')
-                    : (request('status') === $stat['status'] && !request()->boolean('not_opened'));
+                $params = $stat['status'] ? ['status' => $stat['status']] : [];
+                $isActive = $stat['status']
+                    ? request('status') === $stat['status']
+                    : (empty($stat['status']) && $loop->first && !request('status'));
             @endphp
             <a href="{{ route('supplyhead.properties.index', $params) }}"
                 class="bg-white rounded-xl border {{ $stat['b'] }} p-4 text-center shadow-sm hover:shadow transition-shadow block {{ $isActive ? 'ring-2 ring-offset-1 ring-zendo-gold' : '' }}">
@@ -58,22 +56,8 @@
         </div>
     @endif
 
-    {{-- Active not-opened indicator --}}
-    @if(request()->boolean('not_opened'))
-        <div class="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-4 py-2">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
-            </svg>
-            Showing only <strong class="mx-1">not-opened</strong> entries
-            <a href="{{ route('supplyhead.properties.index') }}" class="ml-auto text-purple-600 hover:text-purple-900 font-semibold">Clear ×</a>
-        </div>
-    @endif
-
-    {{-- Filters — all in one row --}}
+    {{-- Filters --}}
     <form method="GET" class="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
-        @if(request()->boolean('not_opened'))
-            <input type="hidden" name="not_opened" value="1">
-        @endif
         <div class="flex flex-wrap items-center gap-2">
             <input type="text" name="search" value="{{ request('search') }}"
                 placeholder="Search code, city, facility, officer..."
@@ -92,7 +76,7 @@
             <select name="status"
                 class="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                 <option value="">All Status</option>
-                @foreach(['submitted' => 'Pending Review', 'verified' => 'Verified', 'rejected' => 'Rejected', 'recheck' => 'Recheck'] as $val => $lbl)
+                @foreach(['submitted' => 'Under Review', 'verified' => 'Verified', 'rejected' => 'Rejected', 'recheck' => 'Recheck'] as $val => $lbl)
                     <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                 @endforeach
             </select>
@@ -108,8 +92,126 @@
         </div>
     </form>
 
-    {{-- Table --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         TABLE 1 — NOT OPENED (shown above, always visible)
+    ══════════════════════════════════════════════════════════════════════════ --}}
+    <div class="bg-white rounded-xl shadow-sm border border-purple-200 overflow-hidden">
+        {{-- Section header --}}
+        <div class="flex items-center justify-between px-5 py-3 bg-purple-50 border-b border-purple-200">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <h3 class="text-sm font-semibold text-purple-900">Not Yet Opened</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">
+                    {{ $notOpenedEntries->count() }}
+                </span>
+            </div>
+            <p class="text-xs text-purple-600">These entries have not been reviewed yet</p>
+        </div>
+
+        @if($notOpenedEntries->isEmpty())
+            <div class="py-8 text-center">
+                <svg class="mx-auto w-10 h-10 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-gray-500 font-medium">All caught up! No unread entries.</p>
+            </div>
+        @else
+            {{-- Desktop table --}}
+            <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-purple-50/60 border-b border-purple-100">
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">City</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Code</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Officer</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Facility Type</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($notOpenedEntries as $i => $entry)
+                            <tr class="bg-amber-50 hover:bg-amber-100 transition-colors border-b border-amber-100/80 group">
+                                <td class="px-4 py-3 text-xs text-gray-400 font-medium">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ $entry->nearest_city ?? '—' }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->fieldOfficer?->name ?? '—' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
+                                        {{ $entry->status_label }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-500">{{ $entry->submitted_at?->format('d M Y') ?? '—' }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <a href="{{ route('supplyhead.properties.show', $entry) }}"
+                                        class="inline-flex items-center gap-1 text-purple-600 hover:text-purple-900 text-sm font-semibold group-hover:underline">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Mobile cards --}}
+            <div class="md:hidden divide-y divide-amber-100">
+                @foreach($notOpenedEntries as $entry)
+                    <div class="p-4 bg-amber-50 hover:bg-amber-100 transition-colors">
+                        <div class="flex items-start justify-between mb-1">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="inline-block w-2 h-2 rounded-full bg-amber-400 flex-shrink-0 mt-1.5"></span>
+                                <div class="min-w-0">
+                                    <span class="text-sm font-semibold text-gray-800">{{ $entry->nearest_city ?? '—' }}</span>
+                                    <span class="text-xs font-mono text-zendo-navy ml-1">{{ $entry->code }}</span>
+                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->facility_type ?? '—' }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }} flex-shrink-0 ml-2">
+                                {{ $entry->status_label }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-xs text-gray-400">{{ $entry->submitted_at?->format('d M Y') ?? '—' }}</span>
+                            <a href="{{ route('supplyhead.properties.show', $entry) }}"
+                                class="text-sm text-purple-600 font-semibold flex items-center gap-1">
+                                Open
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         TABLE 2 — ALL ENTRIES (paginated, with filters)
+    ══════════════════════════════════════════════════════════════════════════ --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {{-- Section header --}}
+        <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
+            <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-gray-700">All Submissions</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-gray-200 text-gray-600">
+                    {{ $entries->total() }}
+                </span>
+            </div>
+            @if(request()->hasAny(['search', 'status', 'field_officer']))
+                <span class="text-xs text-zendo-gold font-medium">Filtered results</span>
+            @endif
+        </div>
+
         @if($entries->isEmpty())
             <div class="p-12 text-center">
                 <svg class="mx-auto w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,19 +237,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($entries as $i => $entry)
+                        @foreach($entries as $entry)
                             @php
                                 $isUnread = is_null($entry->supply_head_viewed_at);
-                                $rowBase  = $isUnread ? 'bg-amber-50' : ($i % 2 === 0 ? 'bg-white' : 'bg-gray-50/70');
                                 $srNo     = ($entries->currentPage() - 1) * $entries->perPage() + $loop->iteration;
+                                $rowBase  = $isUnread ? 'bg-amber-50' : ($loop->odd ? 'bg-white' : 'bg-gray-50/50');
                             @endphp
                             <tr class="{{ $rowBase }} hover:bg-blue-50 transition-colors duration-100 border-b border-gray-100/80 group">
                                 <td class="px-4 py-3 text-xs text-gray-400 font-medium">{{ $srNo }}</td>
-                                <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ $entry->nearest_city ?? '—' }}</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-800">
+                                    {{ $entry->nearest_city ?? '—' }}
+                                    @if($isUnread)
+                                        <span class="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-amber-400 align-middle" title="Not yet opened"></span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
-                                    </div>
+                                    <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->fieldOfficer?->name ?? '—' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
@@ -182,6 +287,9 @@
                                 <span class="text-xs text-gray-400 flex-shrink-0">{{ $srNo }}.</span>
                                 <div class="min-w-0">
                                     <span class="text-sm font-semibold text-gray-800">{{ $entry->nearest_city ?? '—' }}</span>
+                                    @if($isUnread)
+                                        <span class="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-amber-400 align-middle"></span>
+                                    @endif
                                     <span class="text-xs font-mono text-zendo-navy ml-1">{{ $entry->code }}</span>
                                     <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->facility_type ?? '—' }}</p>
                                 </div>
@@ -195,6 +303,9 @@
                             <a href="{{ route('supplyhead.properties.show', $entry) }}"
                                 class="text-sm text-blue-600 font-semibold flex items-center gap-1">
                                 Review
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
                             </a>
                         </div>
                     </div>
@@ -205,7 +316,6 @@
 
     {{-- Footer: legend + pagination --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        {{-- Legend --}}
         <div class="flex items-center gap-4 text-xs text-gray-500">
             <div class="flex items-center gap-1.5">
                 <span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span>
@@ -216,8 +326,6 @@
                 Opened
             </div>
         </div>
-
-        {{-- Pagination --}}
         @if($entries->hasPages())
             <div>{{ $entries->appends(request()->query())->links() }}</div>
         @endif

@@ -19,6 +19,18 @@
         ? '<div class="mt-1"><p class="text-[10px] font-semibold text-red-700 mb-0.5"></p><p class="text-xs text-red-800">⚠ ' . e($fieldRemarks[$k]) . '</p></div>'
         : '';
 
+    // ── Restricted editing for rejected + allow_resubmit ──
+    // When a property is rejected but resubmit is allowed, only incorrect fields should be editable.
+    // Fields marked correct by the supply head are disabled/locked.
+    if (!isset($correctFields)) {
+        $correctFields = [];
+    }
+    $isRestrictedEdit = isset($entry) && $entry->status === 'rejected' && $entry->allow_resubmit && !empty($correctFields);
+    // Returns 'disabled' attribute if field is locked (correct), empty string otherwise
+    $dis = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields) ? 'disabled' : '';
+    // Returns true/false for whether a field is locked
+    $isLocked = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields);
+
     // Pre-compute per-section server error counts for the red badge
     $__sfm = [
         'A. Location & Identification'   => ['facility_type','name_full_address','village','tehsil','district','state','country','postal_address_pin','nearest_city','nearest_highway','nearest_railway_station','nearest_airport','owner_contact_name','owner_contact_phone','owner_email'],
@@ -32,27 +44,47 @@
         'H. Surroundings & Environment'  => ['approach_road_width','top_neighbouring_companies','flood_risk'],
         'I. Health & Emergency Nearby'   => ['nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'],
         'K. General Remarks'             => ['remarks'],
+        'J. Photographs'                 => collect(range(0, 7))->map(fn($i) => 'photo_' . $i)->toArray(),
     ];
     $__eb = isset($errors) ? $errors->getBag('default') : null;
     $sec_errs = fn(string $t) => $__eb
         ? collect($__sfm[$t] ?? [])->filter(fn($f) => $__eb->has($f))->count()
         : 0;
-    // $sd(open, sectionTitle) — builds x-data string with baked-in server error count
-    $sd = fn(bool $o, string $t) => 'sectionCounter(' . ($o ? 'true' : 'false') . ',' . $sec_errs($t) . ')';
+    
+    // Per-section review counts (correct / incorrect from supply head review)
+    $sec_correct = fn(string $t) => $isRestrictedEdit
+        ? collect($__sfm[$t] ?? [])->filter(fn($f) => in_array($f, $correctFields))->count()
+        : 0;
+    $sec_incorrect = fn(string $t) => $isRestrictedEdit
+        ? collect($__sfm[$t] ?? [])->filter(fn($f) => isset($fieldRemarks[$f]) && $fieldRemarks[$f])->count()
+        : 0;
+    
+    // $sd(open, sectionTitle) — builds x-data string with baked-in server error count + review counts
+    $sd = fn(bool $o, string $t) => 'sectionCounter(' . ($o ? 'true' : 'false') . ',' . $sec_errs($t) . ',' . $sec_correct($t) . ',' . $sec_incorrect($t) . ')';
 
     $ic  = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm';
     $sc  = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm bg-white';
     $lc  = 'block text-sm font-medium text-gray-700 mb-1';
     $sec = 'bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4';
-    $sh  = 'flex items-center justify-between px-5 py-4 cursor-pointer select-none bg-gray-50 border-b border-gray-100';
+    $sh  = 'flex items-center justify-between px-5 py-4 cursor-pointer select-none border-b border-gray-100 transition-all';
     $sb  = 'px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
     $chevron = '<svg class="w-4 h-4 text-gray-400 transition-transform flex-shrink-0" :class="open?\'rotate-180\':\'\'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
-    // Section header right side: error badge + counter pill + chevron
+    // Section header right side: error badge + review badges + counter pill + chevron
     $counter = '<div class="flex items-center gap-2 flex-shrink-0">'
-        // Red error badge — shown when section has server-side errors
+        // Red error badge — shown when section has server-side validation errors
         . '<span x-show="errorCount > 0" class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">'
         . '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>'
         . '<span x-text="errorCount + \' error\' + (errorCount > 1 ? \'s\' : \'\')"></span>'
+        . '</span>'
+        // Green correct badge — shown when section has correct fields from review
+        . '<span x-show="reviewCorrect > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">'
+        . '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>'
+        . '<span x-text="reviewCorrect"></span>'
+        . '</span>'
+        // Red incorrect badge — shown when section has incorrect fields from review
+        . '<span x-show="reviewIncorrect > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">'
+        . '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>'
+        . '<span x-text="reviewIncorrect"></span>'
         . '</span>'
         // Filled/total pill
         . '<span x-show="total > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-colors"'
@@ -65,8 +97,9 @@
 
 {{-- ══ A. Location & Identification ══════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(true, 'A. Location & Identification') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -216,8 +249,9 @@
 
 {{-- ══ B. Legal & Statutory Compliance ══════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'B. Legal & Statutory Compliance') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -315,8 +349,9 @@
 
 {{-- ══ C. Property Dimensions ════════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Property Dimensions') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -406,8 +441,9 @@
 
 {{-- ══ C-sub. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Dock, Exit & Width Details') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="C. Dock, Exit &amp; Width Details">C. Dock, Exit &amp; Width Details</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Dock, Exit &amp; Width Details">C. Dock, Exit &amp; Width Details</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="px-5 py-5 space-y-6">
@@ -487,8 +523,9 @@
 
 {{-- ══ C-sub. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Facility Details') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="C. Facility Details">C. Facility Details</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Facility Details">C. Facility Details</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -717,8 +754,9 @@
 
 {{-- ══ D. Loading & Docking ══════════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'D. Loading & Docking') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="D. Loading &amp; Docking">D. Loading &amp; Docking Facilities</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="D. Loading &amp; Docking">D. Loading &amp; Docking Facilities</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -765,8 +803,9 @@
 
 {{-- ══ F. Utilities & Infrastructure ═══════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'F. Utilities & Infrastructure') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="F. Utilities &amp; Infrastructure">F. Utilities &amp; Infrastructure</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="F. Utilities &amp; Infrastructure">F. Utilities &amp; Infrastructure</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -831,8 +870,9 @@
 
 {{-- ══ G. Financial & Lease Terms ════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'G. Financial & Lease Terms') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="G. Financial &amp; Lease Terms">G. Financial &amp; Lease Terms</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="G. Financial &amp; Lease Terms">G. Financial &amp; Lease Terms</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -890,8 +930,9 @@
 
 {{-- ══ H. Surroundings & Environment ════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'H. Surroundings & Environment') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="H. Surroundings &amp; Environment">H. Surroundings &amp; Environment</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="H. Surroundings &amp; Environment">H. Surroundings &amp; Environment</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -926,8 +967,9 @@
 
 {{-- ══ I. Health & Emergency Nearby ══════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'I. Health & Emergency Nearby') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="I. Health &amp; Emergency Nearby">I. Health &amp; Emergency Facilities Nearby</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="I. Health &amp; Emergency Nearby">I. Health &amp; Emergency Facilities Nearby</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -957,8 +999,9 @@
 
 {{-- ══ J. Photographs ════════════════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(true, 'J. Photographs') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy">J. Photographs</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')">J. Photographs</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="px-5 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -994,8 +1037,9 @@
 
 {{-- ══ K. General Remarks ════════════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'K. General Remarks') }}">
-    <div class="{{ $sh }}" @click="open=!open">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="K. General Remarks">K. General Remarks &amp; Field Observations</h3>
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="K. General Remarks">K. General Remarks &amp; Field Observations</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1011,12 +1055,14 @@
 </div>
 
 <script>
-function sectionCounter(defaultOpen, serverErrorCount = 0) {
+function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 0, reviewIncorrectCount = 0) {
     return {
         open: defaultOpen,
         filled: 0,
         total: 0,
         errorCount: serverErrorCount,
+        reviewCorrect: reviewCorrectCount,
+        reviewIncorrect: reviewIncorrectCount,
         init() {
             this.$nextTick(() => this._count());
             // Re-count on any input/change inside this section
@@ -1076,5 +1122,53 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('contextmenu', e => { e.preventDefault(); });
     });
+
+    // ── Restricted Edit: Lock correct fields for rejected+allow_resubmit ──
+    @if($isRestrictedEdit)
+    const lockedFields = @json($correctFields);
+    lockedFields.forEach(fieldName => {
+        const el = document.querySelector('[name="' + fieldName + '"]');
+        if (!el) return;
+
+        // Disable the field visually and functionally
+        el.disabled = true;
+        el.classList.remove('focus:ring-2', 'focus:ring-zendo-gold', 'focus:border-transparent', 'bg-white', 'border-gray-300');
+        el.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed', 'border-gray-200');
+
+        // Add a hidden input so the value still submits with the form
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = fieldName;
+        hidden.value = el.value;
+        el.parentNode.appendChild(hidden);
+
+        // Add a lock icon badge to the parent container
+        const wrapper = el.closest('div');
+        if (wrapper) {
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center gap-1 mt-1 text-[10px] text-green-700 font-medium';
+            badge.innerHTML = '';
+            wrapper.appendChild(badge);
+        }
+    });
+
+    // Also lock photo inputs for correct photo fields
+    const lockedPhotoFields = lockedFields.filter(f => f.startsWith('photo_'));
+    lockedPhotoFields.forEach(fieldName => {
+        const idx = fieldName.replace('photo_', '');
+        const fileInput = document.getElementById('photo-' + idx);
+        if (fileInput) {
+            fileInput.disabled = true;
+            fileInput.classList.add('opacity-50', 'cursor-not-allowed');
+            const wrapper = fileInput.closest('div');
+            if (wrapper) {
+                const badge = document.createElement('span');
+                badge.className = 'inline-flex items-center gap-1 mt-1 text-[10px] text-green-700 font-medium';
+                badge.innerHTML = '';
+                wrapper.appendChild(badge);
+            }
+        }
+    });
+    @endif
 });
 </script>
