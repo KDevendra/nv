@@ -11,9 +11,21 @@ use Illuminate\Support\Facades\DB;
 class RolePermissionController extends Controller
 {
     private const ROLES = [
-        'super_admin' => 'Super Admin',
-        'admin'       => 'Admin',
-        'staff'       => 'Staff',
+        // ── Platform ──────────────────────────────────────────────────────
+        'super_admin'                    => 'Super Admin',
+        'admin'                          => 'Admin',
+
+        // ── Warehousing Division ──────────────────────────────────────────
+        'chief_coordinator_warehousing'  => 'Chief Coordinator (Warehousing)',
+        'sales_executive_warehousing'    => 'Sales Executive (Warehousing)',
+        'supply_head'                    => 'Supply Head (Warehousing)',
+        'field_officer'                  => 'Field Officer (Warehousing)',
+
+        // ── Residential & Commercial Division ─────────────────────────────
+        'chief_coordinator_rescomm'      => 'Chief Coordinator (Res/Comm)',
+        'sales_executive_rescomm'        => 'Sales Executive (Res/Comm)',
+        'supply_head_rescomm'            => 'Supply Head (Res/Comm)',
+        'channel_partner'                => 'Zendo Channel Partner',
     ];
 
     public function index()

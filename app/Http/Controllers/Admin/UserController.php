@@ -68,11 +68,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $validRoles = implode(',', array_keys(User::ROLES));
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:super_admin,admin,supply_head,field_officer'],
+            'role' => ['required', 'in:' . $validRoles],
             'is_active' => ['boolean'],
             'region_id' => ['required', 'exists:regions,id'],
             'area_id' => ['required', 'exists:areas,id'],
@@ -137,11 +138,12 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $validRoles = implode(',', array_keys(User::ROLES));
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:super_admin,admin,supply_head,field_officer'],
+            'role' => ['required', 'in:' . $validRoles],
             'is_active' => ['boolean'],
             'region_id' => ['required', 'exists:regions,id'],
             'area_id' => ['required', 'exists:areas,id'],
