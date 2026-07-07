@@ -67,7 +67,7 @@ class PropertyEntryReportController extends Controller
 
     public function show(PropertyEntry $entry): View
     {
-        $entry->load(['photos', 'fieldOfficer', 'supplyHead', 'reviewer', 'logs.user']);
+        $entry->load(['photos', 'fieldOfficer', 'supplyHead', 'reviewer', 'adminActioner', 'logs.user']);
         $slots = self::PHOTO_SLOTS;
 
         return view('admin.property-entry-report.show', compact('entry', 'slots'));
@@ -122,6 +122,100 @@ class PropertyEntryReportController extends Controller
         }
 
         return $query;
+    }
+
+    // ── Admin Approve ─────────────────────────────────────────────────────────
+
+    public function adminApprove(Request $request, PropertyEntry $entry)
+    {
+        if ($entry->status !== 'verified') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only supply-head verified entries can be approved by admin.',
+            ], 422);
+        }
+
+        $entry->admin_status      = 'approved';
+        $entry->admin_note        = $request->input('note');
+        $entry->admin_actioned_at = now();
+        $entry->admin_actioned_by = $request->user()->id;
+        $entry->save();
+
+        // Log the action
+        $entry->logs()->create([
+            'user_id' => $request->user()->id,
+            'action'  => 'admin_approved',
+            'note'    => $request->input('note') ?? 'Admin approved.',
+        ]);
+
+        return response()->json([
+            'success'      => true,
+            'admin_status' => 'approved',
+            'actioned_by'  => $request->user()->name,
+            'actioned_at'  => $entry->admin_actioned_at->format('d M Y, g:i A'),
+            'message'      => 'Entry approved. You can now control website visibility.',
+        ]);
+    }
+
+    // ── Admin Reject ──────────────────────────────────────────────────────────
+
+    public function adminReject(Request $request, PropertyEntry $entry)
+    {
+        if ($entry->status !== 'verified') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only supply-head verified entries can be rejected by admin.',
+            ], 422);
+        }
+
+        $request->validate(['note' => 'required|string|max:1000']);
+
+        $entry->admin_status      = 'rejected';
+        $entry->admin_note        = $request->input('note');
+        $entry->admin_actioned_at = now();
+        $entry->admin_actioned_by = $request->user()->id;
+        // If previously shown on website, hide it
+        $entry->show_on_website   = false;
+        $entry->save();
+
+        // Log the action
+        $entry->logs()->create([
+            'user_id' => $request->user()->id,
+            'action'  => 'admin_rejected',
+            'note'    => $request->input('note'),
+        ]);
+
+        return response()->json([
+            'success'      => true,
+            'admin_status' => 'rejected',
+            'actioned_by'  => $request->user()->name,
+            'actioned_at'  => $entry->admin_actioned_at->format('d M Y, g:i A'),
+            'message'      => 'Entry rejected by admin.',
+        ]);
+    }
+
+    // ── Toggle Website Visibility ─────────────────────────────────────────────
+
+    public function toggleWebsite(PropertyEntry $entry)
+    {
+        // Only allow for admin-approved entries
+        if ($entry->admin_status !== 'approved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only admin-approved entries can be shown on the website.',
+            ], 403);
+        }
+
+        $entry->show_on_website = !$entry->show_on_website;
+        $entry->save();
+
+        return response()->json([
+            'success'         => true,
+            'show_on_website' => $entry->show_on_website,
+            'message'         => $entry->show_on_website
+                ? 'Property entry is now visible on the website.'
+                : 'Property entry is now hidden from the website.',
+        ]);
     }
 
 }

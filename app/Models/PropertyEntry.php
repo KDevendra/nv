@@ -15,6 +15,11 @@ class PropertyEntry extends Model
         'status',
         'supply_head_note',
         'allow_resubmit',
+        'show_on_website',
+        'admin_status',
+        'admin_note',
+        'admin_actioned_at',
+        'admin_actioned_by',
         'submitted_at',
         'reviewed_at',
         'verified_at',
@@ -139,6 +144,8 @@ class PropertyEntry extends Model
         'verified_at'                  => 'datetime',
         'supply_head_viewed_at'        => 'datetime',
         'allow_resubmit'               => 'boolean',
+        'show_on_website'              => 'boolean',
+        'admin_actioned_at'            => 'datetime',
         // C — decimals
         'plot_area'                    => 'float',
         'built_up_area'                => 'float',
@@ -290,5 +297,19 @@ class PropertyEntry extends Model
             'recheck'   => 'Needs Recheck',
             default     => ucfirst($this->status),
         };
+    }
+
+    public function getAdminStatusLabelAttribute(): string
+    {
+        return match ($this->admin_status) {
+            'approved' => 'Admin Approved',
+            'rejected' => 'Admin Rejected',
+            default    => 'Pending Admin Review',
+        };
+    }
+
+    public function adminActioner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'admin_actioned_by');
     }
 }

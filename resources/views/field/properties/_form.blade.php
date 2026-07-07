@@ -998,6 +998,47 @@
 </div>
 
 {{-- ══ J. Photographs ════════════════════════════════════════════════════════ --}}
+
+{{-- Camera Modal — single shared modal, opened per slot --}}
+<div id="camera-modal" class="fixed inset-0 z-[9999] bg-black flex-col items-center justify-center hidden" style="touch-action:none;">
+    {{-- Video viewfinder --}}
+    <video id="camera-stream" autoplay playsinline muted
+        class="w-full h-full object-cover absolute inset-0"></video>
+
+    {{-- Top bar --}}
+    <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/70 to-transparent z-10">
+        <span id="camera-slot-label" class="text-white text-sm font-semibold truncate"></span>
+        <button type="button" onclick="closeCamera()"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    {{-- Capture button --}}
+    <div class="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-8 z-10">
+        {{-- Flip camera (mobile) --}}
+        <button type="button" id="flip-btn" onclick="flipCamera()"
+            class="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+        </button>
+        {{-- Shutter --}}
+        <button type="button" onclick="capturePhoto()"
+            class="w-18 h-18 rounded-full bg-white border-4 border-white/50 shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center"
+            style="width:72px;height:72px;">
+            <span class="w-14 h-14 rounded-full bg-white block" style="width:56px;height:56px;"></span>
+        </button>
+        {{-- Spacer to balance flip button --}}
+        <div class="w-12 h-12"></div>
+    </div>
+
+    {{-- Hidden canvas for snapshot --}}
+    <canvas id="camera-canvas" class="hidden"></canvas>
+</div>
+
 <div class="{{ $sec }}" x-data="{{ $sd(true, 'J. Photographs') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1006,26 +1047,80 @@
     </div>
     <div x-show="open" class="px-5 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
         @foreach($slots as $index => $slotLabel)
-            @php $existing = $entry?->photos?->firstWhere('slot_label', $slotLabel); @endphp
-            <div class="flex flex-col items-center">
-                <div class="w-full aspect-square mb-2 rounded-lg overflow-hidden border border-gray-200 bg-gray-50" id="preview-{{ $index }}">
-                    @if($existing)
-                        <img src="{{ asset('images/property_photos/'.basename($existing->file_path)) }}" alt="{{ $slotLabel }}" class="w-full h-full object-cover">
-                    @else
-                        <div class="w-full h-full flex items-center justify-center" id="placeholder-{{ $index }}">
-                            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            @php
+                $existing  = $entry?->photos?->firstWhere('slot_label', $slotLabel);
+                $isLocked  = isset($correctFields) && in_array('photo_'.$index, $correctFields);
+            @endphp
+            <div class="flex flex-col items-center gap-2">
+
+                {{-- Preview box --}}
+                <div class="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-dashed border-gray-200 bg-gray-50 group cursor-pointer"
+                     id="preview-box-{{ $index }}"
+                     @if(!$isLocked) onclick="openCamera({{ $index }}, '{{ addslashes($slotLabel) }}')" @endif>
+
+                    {{-- Existing / captured preview --}}
+                    <img id="preview-img-{{ $index }}"
+                         src="{{ $existing ? asset('images/property_photos/'.basename($existing->file_path)) : '' }}"
+                         alt="{{ $slotLabel }}"
+                         class="w-full h-full object-cover {{ $existing ? '' : 'hidden' }}">
+
+                    {{-- Placeholder (no photo yet) --}}
+                    <div id="placeholder-{{ $index }}"
+                         class="w-full h-full flex flex-col items-center justify-center gap-1 {{ $existing ? 'hidden' : '' }}">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span class="text-[10px] text-gray-400">No photo</span>
+                    </div>
+
+                    {{-- Retake hover overlay --}}
+                    @if(!$isLocked)
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="flex flex-col items-center gap-1 text-white pointer-events-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                        </div>
+                            <span class="text-[11px] font-semibold">Tap to capture</span>
+                        </span>
+                    </div>
                     @endif
                 </div>
-                <label class="text-xs text-gray-600 text-center font-medium mb-1 leading-tight"><b>{{ $slotLabel }}</b></label>
+
+                {{-- Slot label --}}
+                <span class="text-[11px] text-gray-600 text-center font-semibold leading-tight">{{ $slotLabel }}</span>
+
+                {{-- Hidden file input (receives the dataURL blob via JS) --}}
                 <input type="file" name="photos[{{ $index }}]" id="photo-{{ $index }}"
-                    capture="camera" accept="image/*"
-                    onchange="previewPhoto(this, {{ $index }})"
-                    class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-zendo-gold file:text-white hover:file:bg-opacity-90 cursor-pointer">
+                    accept="image/*" class="sr-only"
+                    @if($isLocked) disabled @endif>
+
+                {{-- Take Photo / Locked button --}}
+                @if($isLocked)
+                    <div class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        Locked
+                    </div>
+                @else
+                    <button type="button"
+                        onclick="openCamera({{ $index }}, '{{ addslashes($slotLabel) }}')"
+                        id="cam-btn-{{ $index }}"
+                        class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors
+                               {{ $existing ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200' : 'bg-zendo-navy text-white hover:bg-opacity-90' }}">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span id="cam-btn-label-{{ $index }}">{{ $existing ? 'Retake Photo' : 'Take Photo' }}</span>
+                    </button>
+                @endif
+
+                {{-- Remark --}}
                 @if(isset($fieldRemarks['photo_' . $index]) && $fieldRemarks['photo_' . $index])
-                    <div class="mt-2 px-2 py-1.5 bg-red-50 border border-red-200 rounded text-center">
+                    <div class="w-full px-2 py-1.5 bg-red-50 border border-red-200 rounded-lg text-center">
                         <p class="text-[10px] font-semibold text-red-700 mb-0.5">⚠ Remark:</p>
                         <p class="text-xs text-red-800">{{ $fieldRemarks['photo_' . $index] }}</p>
                     </div>
@@ -1110,14 +1205,113 @@ function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 
         }
     };
 }
-function previewPhoto(input, index) {
-    const file = input.files[0];
-    if (!file) return;
-    const preview = document.getElementById('preview-' + index);
-    const reader = new FileReader();
-    reader.onload = e => { preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="w-full h-full object-cover">'; };
-    reader.readAsDataURL(file);
+// ── Camera API — no file picker, no gallery ───────────────────────────────
+let _cameraStream   = null;
+let _cameraSlotIdx  = null;
+let _facingMode     = 'environment'; // start with rear camera
+
+async function openCamera(slotIndex, slotLabel) {
+    _cameraSlotIdx = slotIndex;
+
+    const modal  = document.getElementById('camera-modal');
+    const video  = document.getElementById('camera-stream');
+    const label  = document.getElementById('camera-slot-label');
+
+    label.textContent = slotLabel;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    await _startStream();
 }
+
+async function _startStream() {
+    // Stop any existing stream first
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(t => t.stop());
+        _cameraStream = null;
+    }
+
+    const video = document.getElementById('camera-stream');
+
+    try {
+        _cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: _facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false
+        });
+        video.srcObject = _cameraStream;
+    } catch (err) {
+        // If rear camera not available, try any camera
+        try {
+            _cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = _cameraStream;
+        } catch (e) {
+            alert('Camera access denied or not available. Please allow camera permission and try again.');
+            closeCamera();
+        }
+    }
+}
+
+async function flipCamera() {
+    _facingMode = _facingMode === 'environment' ? 'user' : 'environment';
+    await _startStream();
+}
+
+function capturePhoto() {
+    const video  = document.getElementById('camera-stream');
+    const canvas = document.getElementById('camera-canvas');
+
+    canvas.width  = video.videoWidth  || 1280;
+    canvas.height = video.videoHeight || 720;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert canvas to Blob and assign to the hidden file input
+    canvas.toBlob(blob => {
+        const idx      = _cameraSlotIdx;
+        const file     = new File([blob], 'photo_' + idx + '.jpg', { type: 'image/jpeg' });
+        const input    = document.getElementById('photo-' + idx);
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+
+        // Update preview
+        const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+        const img     = document.getElementById('preview-img-' + idx);
+        const ph      = document.getElementById('placeholder-' + idx);
+        if (img) { img.src = dataURL; img.classList.remove('hidden'); }
+        if (ph)  { ph.classList.add('hidden'); }
+
+        // Update button label
+        const btnLabel = document.getElementById('cam-btn-label-' + idx);
+        const btn      = document.getElementById('cam-btn-' + idx);
+        if (btnLabel) btnLabel.textContent = 'Retake Photo';
+        if (btn) {
+            btn.classList.remove('bg-zendo-navy', 'text-white');
+            btn.classList.add('bg-gray-100', 'text-gray-600', 'border', 'border-gray-200');
+        }
+
+        closeCamera();
+    }, 'image/jpeg', 0.92);
+}
+
+function closeCamera() {
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(t => t.stop());
+        _cameraStream = null;
+    }
+    const modal = document.getElementById('camera-modal');
+    const video = document.getElementById('camera-stream');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    if (video) video.srcObject = null;
+    document.body.style.overflow = '';
+    _cameraSlotIdx = null;
+}
+
+// Close camera on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCamera(); });
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('contextmenu', e => { e.preventDefault(); });

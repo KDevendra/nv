@@ -285,9 +285,12 @@ class CheckPermission
         'dashboard.analytics'                   => 'dashboard.view',
 
         // Property Entry Report (admin)
-        'admin.property-entry-report.index'     => 'dashboard.view',
-        'admin.property-entry-report.export'    => 'dashboard.view',
-        'admin.property-entry-report.show'      => 'dashboard.view',
+        'admin.property-entry-report.index'          => 'dashboard.view',
+        'admin.property-entry-report.export'         => 'dashboard.view',
+        'admin.property-entry-report.show'           => 'dashboard.view',
+        'admin.property-entry-report.toggle-website' => 'dashboard.view',
+        'admin.property-entry-report.admin-approve'  => 'dashboard.view',
+        'admin.property-entry-report.admin-reject'   => 'dashboard.view',
 
         // Regions
         'admin.regions.index'                   => 'users.view',
