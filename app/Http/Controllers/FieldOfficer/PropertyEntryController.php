@@ -78,10 +78,12 @@ class PropertyEntryController extends Controller
     {
         abort_if(auth()->user()->role !== 'field_officer', 403);
 
-        $data = $this->validateEntry($request);
         $action = $request->input('action', 'submit');
+        $isDraft = ($action === 'draft');
+        
+        $data = $this->validateEntry($request, $isDraft);
 
-        if ($action === 'draft') {
+        if ($isDraft) {
             // Save as draft — no status change, no submitted_at, no log
             $entry = PropertyEntry::create(array_merge($data, [
                 'field_officer_id' => auth()->id(),
@@ -172,11 +174,13 @@ class PropertyEntryController extends Controller
         // Check if the property is editable using the model's isEditable() method
         abort_if(! $property->isEditable(), 403, 'This entry cannot be edited. It may have been permanently rejected or is in a non-editable state.');
 
-        $data = $this->validateEntry($request);
-        $oldStatus = $property->status;
         $action = $request->input('action', 'submit');
+        $isDraft = ($action === 'draft');
+        $oldStatus = $property->status;
+        
+        $data = $this->validateEntry($request, $isDraft);
 
-        if ($action === 'draft') {
+        if ($isDraft) {
             // Save as draft — keep current status if already draft, otherwise set to draft
             $property->update(array_merge($data, [
                 'status'         => 'draft',
@@ -216,7 +220,7 @@ class PropertyEntryController extends Controller
 
     // ── Validation ────────────────────────────────────────────────────────────
 
-    private function validateEntry(Request $request): array
+    private function validateEntry(Request $request, bool $isDraft = false): array
     {
         $configs = PropertyFieldConfig::allKeyed();
 
@@ -350,8 +354,13 @@ class PropertyEntryController extends Controller
                 continue;
             }
 
-            // required vs nullable — fall back to nullable when no config row
-            $presence = ($cfg && $cfg->mandatory_field) ? 'required' : 'nullable';
+            // For drafts, all fields are nullable regardless of config
+            // For submissions, use config to determine required vs nullable
+            if ($isDraft) {
+                $presence = 'nullable';
+            } else {
+                $presence = ($cfg && $cfg->mandatory_field) ? 'required' : 'nullable';
+            }
 
             $rules[$field] = $presence . '|' . $typeConstraint;
         }

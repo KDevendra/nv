@@ -467,7 +467,7 @@
     </div>
 </div>
 
-{{-- ══ C-sub. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
+{{-- ══ D-sub. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Dock, Exit & Width Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -789,7 +789,7 @@
     </div>
 </div>
 
-{{-- ══ C-sub. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
+{{-- ══ E-sub. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Facility Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1144,7 +1144,7 @@
     </div>
 </div>
 
-{{-- ══ D. Loading & Docking ══════════════════════════════════════════════════ --}}
+{{-- ══ F. Loading & Docking ══════════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'D. Loading & Docking') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1193,7 +1193,7 @@
     </div>
 </div>
 
-{{-- ══ F. Utilities & Infrastructure ═══════════════════════════════════════ --}}
+{{-- ══ G. Utilities & Infrastructure ═══════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'F. Utilities & Infrastructure') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1260,7 +1260,7 @@
     </div>
 </div>
 
-{{-- ══ G. Financial & Lease Terms ════════════════════════════════════════════ --}}
+{{-- ══ H. Financial & Lease Terms ════════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'G. Financial & Lease Terms') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1320,7 +1320,7 @@
     </div>
 </div>
 
-{{-- ══ H. Surroundings & Environment ════════════════════════════════════════ --}}
+{{-- ══ I. Surroundings & Environment ════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'H. Surroundings & Environment') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1357,7 +1357,7 @@
     </div>
 </div>
 
-{{-- ══ I. Health & Emergency Nearby ══════════════════════════════════════════ --}}
+{{-- ══ J. Health & Emergency Nearby ══════════════════════════════════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'I. Health & Emergency Nearby') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
