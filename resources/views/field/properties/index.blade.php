@@ -86,8 +86,8 @@
                                 <td class="px-5 py-3 text-right space-x-3">
                                     @if($entry->isEditable())
                                         <a href="{{ route('field.properties.edit', $entry) }}"
-                                            class="text-sm font-medium {{ $entry->status === 'rejected' ? 'text-orange-600 hover:text-orange-800' : 'text-blue-600 hover:text-blue-800' }}">
-                                            {{ $entry->status === 'rejected' ? 'Re-edit' : 'Edit' }}
+                                            class="text-sm font-medium {{ $entry->status === 'draft' ? 'text-gray-600 hover:text-gray-800' : ($entry->status === 'rejected' ? 'text-orange-600 hover:text-orange-800' : 'text-blue-600 hover:text-blue-800') }}">
+                                            {{ $entry->status === 'draft' ? 'Continue' : ($entry->status === 'rejected' ? 'Re-edit' : 'Edit') }}
                                         </a>
                                     @endif
                                     @if(!in_array($entry->status, ['submitted', 'verified', 'rejected']))
@@ -121,8 +121,8 @@
                             <div class="flex gap-3">
                                 @if($entry->isEditable())
                                     <a href="{{ route('field.properties.edit', $entry) }}"
-                                        class="text-sm font-medium {{ $entry->status === 'rejected' ? 'text-orange-600' : 'text-blue-600' }}">
-                                        {{ $entry->status === 'rejected' ? 'Re-edit' : 'Edit' }}
+                                        class="text-sm font-medium {{ $entry->status === 'draft' ? 'text-gray-600' : ($entry->status === 'rejected' ? 'text-orange-600' : 'text-blue-600') }}">
+                                        {{ $entry->status === 'draft' ? 'Continue' : ($entry->status === 'rejected' ? 'Re-edit' : 'Edit') }}
                                     </a>
                                 @endif
                                 @if(!in_array($entry->status, ['submitted', 'verified', 'rejected']))
