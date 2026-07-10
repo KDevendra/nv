@@ -468,10 +468,10 @@
 </div>
 
 {{-- ══ D-sub. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Dock, Exit & Width Details') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'D. Dock, Exit &amp; Width Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Dock, Exit &amp; Width Details">C. Dock, Exit &amp; Width Details</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="D. Dock, Exit &amp; Width Details">D. Dock, Exit &amp; Width Details</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="px-5 py-5 space-y-6">
@@ -790,10 +790,10 @@
 </div>
 
 {{-- ══ E-sub. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Facility Details') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'E. Facility Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Facility Details">C. Facility Details</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="E. Facility Details">E. Facility Details</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -898,7 +898,7 @@
                             </label>
                             <input type="number" step="0.01" min="0"
                                 x-model="office.w"
-                                :required="i === 0"
+                                :required="i === 0 && !$el.form.noValidate"
                                 placeholder="W (ft)"
                                 class="{{ $ic }} text-sm">
                         </div>
@@ -1145,10 +1145,10 @@
 </div>
 
 {{-- ══ F. Loading & Docking ══════════════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'D. Loading & Docking') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'F. Loading & Docking') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="D. Loading &amp; Docking">D. Loading &amp; Docking Facilities</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="F. Loading &amp; Docking">F. Loading &amp; Docking Facilities</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1194,10 +1194,10 @@
 </div>
 
 {{-- ══ G. Utilities & Infrastructure ═══════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'F. Utilities & Infrastructure') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'G. Utilities & Infrastructure') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="F. Utilities &amp; Infrastructure">F. Utilities &amp; Infrastructure</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="G. Utilities &amp; Infrastructure">G. Utilities &amp; Infrastructure</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1261,10 +1261,10 @@
 </div>
 
 {{-- ══ H. Financial & Lease Terms ════════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'G. Financial & Lease Terms') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'H. Financial & Lease Terms') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="G. Financial &amp; Lease Terms">G. Financial &amp; Lease Terms</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="H. Financial &amp; Lease Terms">H. Financial &amp; Lease Terms</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1321,10 +1321,10 @@
 </div>
 
 {{-- ══ I. Surroundings & Environment ════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'H. Surroundings & Environment') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'I. Surroundings & Environment') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="H. Surroundings &amp; Environment">H. Surroundings &amp; Environment</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="I. Surroundings &amp; Environment">I. Surroundings &amp; Environment</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1358,10 +1358,10 @@
 </div>
 
 {{-- ══ J. Health & Emergency Nearby ══════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'I. Health & Emergency Nearby') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'J. Health & Emergency Nearby') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="I. Health &amp; Emergency Nearby">I. Health &amp; Emergency Facilities Nearby</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="J. Health &amp; Emergency Nearby">J. Health &amp; Emergency Facilities Nearby</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
@@ -1431,10 +1431,10 @@
     <canvas id="camera-canvas" class="hidden"></canvas>
 </div>
 
-<div class="{{ $sec }}" x-data="{{ $sd(true, 'J. Photographs') }}">
+<div class="{{ $sec }}" x-data="{{ $sd(true, 'K. Photographs') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')">J. Photographs</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')">K. Photographs</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="px-5 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1522,11 +1522,11 @@
     </div>
 </div>
 
-{{-- ══ K. General Remarks ════════════════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'K. General Remarks') }}">
+{{-- ══ L. General Remarks ════════════════════════════════════════════════════ --}}
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'L. General Remarks') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="K. General Remarks">K. General Remarks &amp; Field Observations</h3>
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="L. General Remarks">L. General Remarks &amp; Field Observations</h3>
         {!! $counter !!}
     </div>
     <div x-show="open" class="{{ $sb }}">
