@@ -95,8 +95,8 @@ class PropertyEntryController extends Controller
 
             $this->handlePhotos($entry, $request);
 
-            return redirect()->route('field.dashboard')
-                ->with('success', 'Property entry saved as draft. Code: ' . $entry->code);
+            return redirect()->route('field.properties.edit', $entry)
+                ->with('success', 'Draft saved. You can continue editing and submit when ready.');
         }
 
         // Default: submit

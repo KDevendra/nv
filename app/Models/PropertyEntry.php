@@ -279,6 +279,10 @@ class PropertyEntry extends Model
 
     public function isEditable(): bool
     {
+        if ($this->status === 'draft') {
+            return true;
+        }
+
         if ($this->status === 'rejected') {
             return $this->allow_resubmit === true;
         }
