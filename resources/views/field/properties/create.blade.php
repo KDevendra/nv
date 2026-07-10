@@ -32,7 +32,7 @@
                 'H. Financial & Lease Terms'     => ['deal_type','expected_rent','expected_sale_price','security_deposit_months','lock_in_years','available_from'],
                 'I. Surroundings & Environment'  => ['approach_road_width','top_neighbouring_companies','flood_risk'],
                 'J. Health & Emergency Nearby'   => ['nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'],
-                'K. General Remarks'             => ['remarks'],
+                'L. General Remarks'             => ['remarks'],
             ];
             $errorsBySec = [];
             foreach ($sectionFields as $secName => $fields) {

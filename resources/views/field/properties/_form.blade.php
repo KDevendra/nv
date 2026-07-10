@@ -43,8 +43,8 @@
         'H. Financial & Lease Terms'     => ['deal_type','expected_rent','expected_sale_price','security_deposit_months','lock_in_years','available_from'],
         'I. Surroundings & Environment'  => ['approach_road_width','top_neighbouring_companies','flood_risk'],
         'J. Health & Emergency Nearby'   => ['nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'],
-        'K. General Remarks'             => ['remarks'],
-        'J. Photographs'                 => collect(range(0, 7))->map(fn($i) => 'photo_' . $i)->toArray(),
+        'K. Photographs'                 => collect(range(0, 7))->map(fn($i) => 'photo_' . $i)->toArray(),
+        'L. General Remarks'             => ['remarks'],
     ];
     $__eb = isset($errors) ? $errors->getBag('default') : null;
     $sec_errs = fn(string $t) => $__eb
