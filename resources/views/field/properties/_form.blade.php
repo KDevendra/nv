@@ -95,61 +95,14 @@
         . '</div>';
 @endphp
 
-{{-- ═══════════════════════════════════════
-     STEP WIZARD — TOP PROGRESS BAR
-     ═══════════════════════════════════════ --}}
-<div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">
-    <div class="overflow-x-auto">
-        <div class="flex items-center gap-1 min-w-max mx-auto">
-            @php
-                $wizardSteps = [
-                    [0,'A','Location & ID'],
-                    [1,'B','Legal'],
-                    [2,'C','Dimensions'],
-                    [3,'D','Dock & Exits'],
-                    [4,'E','Facilities'],
-                    [5,'F','Loading'],
-                    [6,'G','Utilities'],
-                    [7,'H','Financial'],
-                    [8,'I','Surroundings'],
-                    [9,'J','Health'],
-                    [10,'K','Photos'],
-                    [11,'L','Remarks'],
-                ];
-            @endphp
-            @foreach($wizardSteps as [$idx, $letter, $label])
-                <button type="button" onclick="wizardGoTo({{ $idx }})"
-                    id="wiz-btn-{{ $idx }}"
-                    class="wiz-step-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors bg-gray-100 text-gray-500 hover:bg-gray-200">
-                    <span id="wiz-num-{{ $idx }}" class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 bg-gray-300">{{ $idx + 1 }}</span>
-                    <span>{{ $letter }}</span>
-                </button>
-                @if(!$loop->last)
-                    <div class="w-3 h-px bg-gray-200 flex-shrink-0"></div>
-                @endif
-            @endforeach
-        </div>
-    </div>
-    <div class="mt-2 px-1">
-        <p class="text-xs text-gray-500">Step <span id="wiz-current-num" class="font-semibold text-gray-700">1</span> of {{ count($wizardSteps) }} — <span id="wiz-current-title" class="font-semibold text-zendo-navy">Location &amp; Identification</span></p>
-    </div>
-</div>
-
-
-
 {{-- ══ A. Location & Identification ══════════════════════════════════════════ --}}
-<div class="wizard-step" data-step="0">
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
-        @if($sec_errs('A. Location & Identification') > 0)
-            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                {{ $sec_errs('A. Location & Identification') }} error(s)
-            </span>
-        @endif
+<div class="{{ $sec }}" x-data="{{ $sd(true, 'A. Location & Identification') }}">
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
+        {!! $counter !!}
     </div>
-    <div class="{{ $sb }}">
+    <div x-show="open" class="{{ $sb }}">
 
         @if($fc('facility_type')->keep_field)
         <div>
@@ -293,21 +246,15 @@
 
     </div>
 </div>
-</div>{{-- end wizard-step 0 --}}
 
 {{-- ══ B. Legal & Statutory Compliance ══════════════════════════════════════ --}}
-<div class="wizard-step" data-step="1">
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
-        @if($sec_errs('B. Legal & Statutory Compliance') > 0)
-            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                {{ $sec_errs('B. Legal & Statutory Compliance') }} error(s)
-            </span>
-        @endif
+<div class="{{ $sec }}" x-data="{{ $sd(false, 'B. Legal & Statutory Compliance') }}">
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
+        {!! $counter !!}
     </div>
-    <div class="{{ $sb }}">
+    <div x-show="open" class="{{ $sb }}">
 
         @if($fc('tenure')->keep_field)
         <div>
@@ -399,18 +346,15 @@
 
     </div>
 </div>
-</div>{{-- end wizard-step 1 --}}
 
 {{-- ══ C. Property Dimensions ════════════════════════════════════════════════ --}}
-<div class="wizard-step" data-step="2">
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4" x-data="{ unit: '{{ old('area_unit', $entry?->area_unit ?? 'sq_ft') }}' }">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
-        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
-        @if($sec_errs('C. Property Dimensions') > 0)
-            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('C. Property Dimensions') }} error(s)</span>
-        @endif
+<div class="{{ $sec }}" x-data="Object.assign({{ $sd(false, 'C. Property Dimensions') }}, { unit: '{{ old('area_unit', $entry?->area_unit ?? 'sq_ft') }}' })">
+    <div class="{{ $sh }}" @click="open=!open"
+        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
+        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
+        {!! $counter !!}
     </div>
-    <div class="{{ $sb }}">
+    <div x-show="open" class="{{ $sb }}">
 
         {{-- ── Area Unit Selector ── --}}
         <div class="sm:col-span-2 lg:col-span-3 flex items-center gap-3 pb-2 border-b border-gray-100 mb-1">
@@ -1597,58 +1541,6 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════════════════
-     STEP WIZARD — BOTTOM NAV BAR (new, non-invasive)
-     Keep this inside the same <form> that wraps the sections above.
-     ═══════════════════════════════════════════════════════════════ --}}
-<div x-data="propertyWizard()" x-init="init()"
-     class="sticky bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.04)] px-4 py-3 mt-6 -mx-1">
-    <div class="flex items-center justify-between gap-2 max-w-3xl mx-auto">
-
-        {{-- Previous --}}
-        <button type="button"
-            @click="prev()"
-            :disabled="current === 0"
-            :class="current === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50'"
-            class="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Previous
-        </button>
-
-        <div class="flex items-center gap-2 flex-1 justify-end">
-
-            {{-- Save Draft — always visible, submits form as-is (no client validation) --}}
-            <button type="submit"
-                name="save_mode" value="draft"
-                formnovalidate
-                class="px-4 py-2.5 rounded-lg text-sm font-semibold text-zendo-navy border border-zendo-navy/30 bg-white hover:bg-gray-50 transition-colors">
-                Save Draft
-            </button>
-
-            {{-- Save & Next — visible on all steps except the last --}}
-            <button type="button"
-                x-show="current < steps.length - 1"
-                @click="next()"
-                class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-zendo-navy hover:bg-opacity-90 transition-colors">
-                Save &amp; Next
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </button>
-
-            {{-- Submit to Office — visible only on last step, real submit --}}
-            <button type="submit"
-                x-show="current === steps.length - 1"
-                name="save_mode" value="submit"
-                class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
-                Submit to Office
-            </button>
-        </div>
-    </div>
-</div>
-
 <script>
 function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 0, reviewIncorrectCount = 0) {
     return {
@@ -1705,87 +1597,6 @@ function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 
         }
     };
 }
-
-// ── Step Wizard controller — layered on top of existing accordion ──
-// Does not touch field names, values, or validation. It simply toggles
-// each section's Alpine `open` state and scrolls the viewport.
-function propertyWizard() {
-    return {
-        current: 0,
-        steps: [
-            { key: 'A', letter: 'A', title: 'Location & Identification' },
-            { key: 'B', letter: 'B', title: 'Legal & Statutory Compliance' },
-            { key: 'C', letter: 'C', title: 'Property Dimensions' },
-            { key: 'D', letter: 'D', title: 'Dock, Exit & Width Details' },
-            { key: 'E', letter: 'E', title: 'Facility Details' },
-            { key: 'F', letter: 'F', title: 'Loading & Docking' },
-            { key: 'G', letter: 'G', title: 'Utilities & Infrastructure' },
-            { key: 'H', letter: 'H', title: 'Financial & Lease Terms' },
-            { key: 'I', letter: 'I', title: 'Surroundings & Environment' },
-            { key: 'J', letter: 'J', title: 'Health & Emergency Nearby' },
-            { key: 'K', letter: 'K', title: 'Photographs' },
-            { key: 'L', letter: 'L', title: 'General Remarks' },
-        ],
-        init() {
-            // Restore last-viewed step (per browser tab) so a full-page
-            // "Save & Next" / validation-error reload lands on the right step.
-            const saved = sessionStorage.getItem('propertyWizardStep');
-            if (saved !== null && +saved < this.steps.length) {
-                this.current = +saved;
-            }
-            this.$nextTick(() => this._openOnly(this.current));
-
-            // If server-side validation errors came back, jump straight to
-            // the first step that has one instead of wherever we left off.
-            const firstErrorStep = this._findFirstErrorStep();
-            if (firstErrorStep !== -1) {
-                this.current = firstErrorStep;
-                this.$nextTick(() => this._openOnly(this.current));
-            }
-        },
-        _sectionEls() {
-            // One entry per top-level accordion section, in A..L DOM order
-            return Array.from(document.querySelectorAll('[data-section-title]'))
-                .map(h => h.closest('.mb-4') || h.parentElement.parentElement);
-        },
-        _openOnly(index) {
-            const sections = this._sectionEls();
-            sections.forEach((sec, i) => {
-                if (!sec || !sec.__x) return;
-                sec.__x.$data.open = (i === index);
-            });
-            const target = sections[index];
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        },
-        _findFirstErrorStep() {
-            const sections = this._sectionEls();
-            for (let i = 0; i < sections.length; i++) {
-                if (sections[i] && sections[i].querySelector('.text-red-600')) return i;
-            }
-            return -1;
-        },
-        goTo(index) {
-            this.current = index;
-            sessionStorage.setItem('propertyWizardStep', index);
-            this._openOnly(index);
-        },
-        next() {
-            if (this.current < this.steps.length - 1) {
-                this.current++;
-                sessionStorage.setItem('propertyWizardStep', this.current);
-            }
-            this._openOnly(this.current);
-        },
-        prev() {
-            if (this.current > 0) {
-                this.current--;
-                sessionStorage.setItem('propertyWizardStep', this.current);
-            }
-            this._openOnly(this.current);
-        },
-    };
-}
-
 // ── Camera API — no file picker, no gallery ───────────────────────────────
 let _cameraStream   = null;
 let _cameraSlotIdx  = null;
