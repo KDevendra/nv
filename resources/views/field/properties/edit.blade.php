@@ -132,7 +132,7 @@
         </script>
     @endif
 
-    <form method="POST" action="{{ route('field.properties.update', $property) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('field.properties.update', $property) }}" enctype="multipart/form-data" x-data="{ isDraft: false }">
         @csrf
         @method('PUT')
         @php $entry = $property; @endphp
@@ -147,14 +147,14 @@
                 @endif
             </p>
             <div class="flex gap-3">
-                <button type="submit" name="action" value="draft"
+                <button type="submit" name="action" value="draft" @click="isDraft = true; $el.form.noValidate = true"
                     class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow hover:bg-gray-600 transition-all">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                     </svg>
                     Save as Draft
                 </button>
-                <button type="submit" name="action" value="submit" onclick="return confirmSubmission()"
+                <button type="submit" name="action" value="submit" @click="isDraft = false; $el.form.noValidate = false" onclick="return confirmSubmission()"
                     class="inline-flex items-center px-8 py-3 bg-zendo-gold text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition-all hover:shadow-xl">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
