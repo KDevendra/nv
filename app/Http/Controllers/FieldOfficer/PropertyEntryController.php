@@ -85,6 +85,7 @@ class PropertyEntryController extends Controller
             'supply_head_id'   => auth()->user()->supply_head_id,
             'status'           => 'submitted',
             'submitted_at'     => now(),
+            'area_unit'        => $request->input('area_unit', 'sq_ft'),
         ]));
 
         $this->handlePhotos($entry, $request);
@@ -157,9 +158,10 @@ class PropertyEntryController extends Controller
         $oldStatus = $property->status;
 
         $property->update(array_merge($data, [
-            'status'       => 'submitted',
-            'submitted_at' => now(),
-            'allow_resubmit' => null, // Clear the flag on resubmission
+            'status'         => 'submitted',
+            'submitted_at'   => now(),
+            'allow_resubmit' => null,
+            'area_unit'      => $request->input('area_unit', $property->area_unit ?? 'sq_ft'),
         ]));
 
         $this->handlePhotos($property, $request);
@@ -208,6 +210,7 @@ class PropertyEntryController extends Controller
             'pollution_noc'                => 'string|max:50',
             'pollution_category'           => 'string|max:100',
             // C — dimensions
+            'area_unit'                    => 'string|in:sq_ft,sq_mt,sq_yd',
             'plot_area'                    => 'numeric|min:0',
             'built_up_area'                => 'numeric|min:0',
             'carpet_area'                  => 'numeric|min:0',
@@ -233,15 +236,21 @@ class PropertyEntryController extends Controller
             'fire_exit_right'              => 'integer|min:0',
             'fire_exit_back'               => 'integer|min:0',
             'canopy_width_front'           => 'numeric|min:0',
+            'canopy_length_front'          => 'numeric|min:0',
             'canopy_width_left'            => 'numeric|min:0',
+            'canopy_length_left'           => 'numeric|min:0',
             'canopy_width_right'           => 'numeric|min:0',
+            'canopy_length_right'          => 'numeric|min:0',
             'canopy_width_back'            => 'numeric|min:0',
+            'canopy_length_back'           => 'numeric|min:0',
+            'has_dock_leveller'            => 'boolean',
             'road_width_front'             => 'numeric|min:0',
             'road_width_left'              => 'numeric|min:0',
             'road_width_right'             => 'numeric|min:0',
             'road_width_back'              => 'numeric|min:0',
             'no_of_offices'                => 'integer|min:0',
-            'office_sizes'                 => 'string|max:255',
+            'has_offices'                  => 'boolean',
+            'office_sizes'                 => 'nullable|string',
             'canteen'                      => 'boolean',
             'canteen_size'                 => 'string|max:255',
             'stp_plant'                    => 'boolean',

@@ -136,6 +136,13 @@
         @include('field.properties._form')
 
         <div class="mt-6 flex items-center justify-end gap-4">
+            <button type="submit" name="action" value="draft"
+                class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow hover:bg-gray-600 transition-all">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                </svg>
+                Save as Draft
+            </button>
             <button type="submit" name="action" value="submit" onclick="return confirmSubmission()"
                 class="inline-flex items-center px-8 py-3 bg-zendo-gold text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition-all hover:shadow-xl">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

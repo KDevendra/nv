@@ -40,13 +40,13 @@
                 'A. Location & Identification'   => ['facility_type','name_full_address','village','tehsil','district','state','country','postal_address_pin','nearest_city','nearest_highway','nearest_railway_station','nearest_airport','owner_contact_name','owner_contact_phone','owner_email'],
                 'B. Legal & Statutory Compliance'=> ['tenure','approved_land_use','fire_noc','clu_conversion_status','pollution_noc','pollution_category','occupancy_certificate'],
                 'C. Property Dimensions'         => ['plot_area','built_up_area','carpet_area','available_area','clear_height_highest','clear_height_side','shed_width','shed_length','number_of_floors','fsi_far'],
-                'C. Dock, Exit & Width Details'  => ['dock_door_count','dock_front','dock_left','dock_right','dock_back','dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back','fire_exit_front','fire_exit_left','fire_exit_right','fire_exit_back','canopy_width_front','canopy_width_left','canopy_width_right','canopy_width_back','road_width_front','road_width_left','road_width_right','road_width_back'],
-                'C. Facility Details'            => ['no_of_offices','office_sizes','canteen','canteen_size','stp_plant','stp_capacity','washrooms','no_of_urinals','no_of_closets','female_washroom','driver_rest_room','mezzanine','mezzanine_size','structure_type','flooring_type','ventilation_lighting','insulation_roof','insulation_side','fire_sprinkler','scrap_yard','no_of_companies_same_premise','extension_possible'],
-                'D. Loading & Docking'           => ['dock_type','dock_height','truck_movement','office_cabin_area'],
-                'F. Utilities & Infrastructure'  => ['power_sanctioned_kva','discom_name','water_source','water_tank_capacity','fire_fighting_system','solar'],
-                'G. Financial & Lease Terms'     => ['deal_type','expected_rent','expected_sale_price','security_deposit_months','lock_in_years','available_from'],
-                'H. Surroundings & Environment'  => ['approach_road_width','top_neighbouring_companies','flood_risk'],
-                'I. Health & Emergency Nearby'   => ['nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'],
+                'D. Dock, Exit & Width Details'  => ['dock_door_count','dock_front','dock_left','dock_right','dock_back','dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back','fire_exit_front','fire_exit_left','fire_exit_right','fire_exit_back','canopy_width_front','canopy_width_left','canopy_width_right','canopy_width_back','road_width_front','road_width_left','road_width_right','road_width_back'],
+                'E. Facility Details'            => ['no_of_offices','office_sizes','canteen','canteen_size','stp_plant','stp_capacity','washrooms','no_of_urinals','no_of_closets','female_washroom','driver_rest_room','mezzanine','mezzanine_size','structure_type','flooring_type','ventilation_lighting','insulation_roof','insulation_side','fire_sprinkler','scrap_yard','no_of_companies_same_premise','extension_possible'],
+                'F. Loading & Docking'           => ['dock_type','dock_height','truck_movement','office_cabin_area'],
+                'G. Utilities & Infrastructure'  => ['power_sanctioned_kva','discom_name','water_source','water_tank_capacity','fire_fighting_system','solar'],
+                'H. Financial & Lease Terms'     => ['deal_type','expected_rent','expected_sale_price','security_deposit_months','lock_in_years','available_from'],
+                'I. Surroundings & Environment'  => ['approach_road_width','top_neighbouring_companies','flood_risk'],
+                'J. Health & Emergency Nearby'   => ['nearest_hospital_km','nearest_fire_station_km','nearest_police_station_km'],
                 'K. General Remarks'             => ['remarks'],
             ];
             $errorsBySec = [];
@@ -147,6 +147,13 @@
                 @endif
             </p>
             <div class="flex gap-3">
+                <button type="submit" name="action" value="draft"
+                    class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow hover:bg-gray-600 transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    Save as Draft
+                </button>
                 <button type="submit" name="action" value="submit" onclick="return confirmSubmission()"
                     class="inline-flex items-center px-8 py-3 bg-zendo-gold text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition-all hover:shadow-xl">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

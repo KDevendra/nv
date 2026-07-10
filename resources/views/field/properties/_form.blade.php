@@ -120,7 +120,7 @@
 
         @if($fc('name_full_address')->keep_field)
         <div class="sm:col-span-2 lg:col-span-3">
-            <label class="{{ $lc }}">Full Address / Name of Property {!! $ast('name_full_address') !!}</label>
+            <label class="{{ $lc }}">Address {!! $ast('name_full_address') !!}</label>
             <textarea name="name_full_address" rows="2" {{ $req('name_full_address') }} class="{{ $ic }}">{{ $v('name_full_address') }}</textarea>
             @error('name_full_address')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
  {!! $rmk('name_full_address') !!}
@@ -348,7 +348,7 @@
 </div>
 
 {{-- ══ C. Property Dimensions ════════════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'C. Property Dimensions') }}">
+<div class="{{ $sec }}" x-data="Object.assign({{ $sd(false, 'C. Property Dimensions') }}, { unit: '{{ old('area_unit', $entry?->area_unit ?? 'sq_ft') }}' })">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
         <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
@@ -356,36 +356,64 @@
     </div>
     <div x-show="open" class="{{ $sb }}">
 
+        {{-- ── Area Unit Selector ── --}}
+        <div class="sm:col-span-2 lg:col-span-3 flex items-center gap-3 pb-2 border-b border-gray-100 mb-1">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">Area Unit</span>
+            <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
+                @foreach(['sq_ft' => 'Sq Ft', 'sq_mt' => 'Sq Mt', 'sq_yd' => 'Sq Yd'] as $val => $label)
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="area_unit" value="{{ $val }}"
+                        x-model="unit"
+                        class="sr-only">
+                    <span class="block px-4 py-2 transition-colors select-none"
+                          :class="unit === '{{ $val }}' ? 'bg-zendo-navy text-white' : 'bg-white text-gray-600 hover:bg-gray-50'"
+                          style="{{ !$loop->last ? 'border-right: 1px solid #d1d5db;' : '' }}">
+                        {{ $label }}
+                    </span>
+                </label>
+                @endforeach
+            </div>
+            <span class="text-xs text-gray-400 italic">Applies to all area fields below</span>
+        </div>
+
+        @php
+            $unitLabel = fn(string $field) => '<span class="text-gray-400 font-normal text-xs" x-text="\'(\' + unit.replace(\'_\',\' \') + \')\'">&nbsp;</span>';
+        @endphp
+
         @if($fc('plot_area')->keep_field)
-        <div><label class="{{ $lc }}">Plot Area — as per CLU (sq ft) {!! $ast('plot_area') !!}</label>
+        <div>
+            <label class="{{ $lc }}">Plot Area — as per CLU {!! $unitLabel('plot_area') !!} {!! $ast('plot_area') !!}</label>
             <input type="number" step="0.01" min="0" name="plot_area" value="{{ $v('plot_area') }}" {{ $req('plot_area') }} class="{{ $ic }}">
             @error('plot_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('plot_area') !!}
- </div>
+            {!! $rmk('plot_area') !!}
+        </div>
         @endif
 
         @if($fc('built_up_area')->keep_field)
-        <div><label class="{{ $lc }}">Built-up Area (sq ft) {!! $ast('built_up_area') !!}</label>
+        <div>
+            <label class="{{ $lc }}">Built-up Area {!! $unitLabel('built_up_area') !!} {!! $ast('built_up_area') !!}</label>
             <input type="number" step="0.01" min="0" name="built_up_area" value="{{ $v('built_up_area') }}" {{ $req('built_up_area') }} class="{{ $ic }}">
             @error('built_up_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('built_up_area') !!}
- </div>
+            {!! $rmk('built_up_area') !!}
+        </div>
         @endif
 
         @if($fc('carpet_area')->keep_field)
-        <div><label class="{{ $lc }}">Carpet Area (sq ft) {!! $ast('carpet_area') !!}</label>
+        <div>
+            <label class="{{ $lc }}">Carpet Area {!! $unitLabel('carpet_area') !!} {!! $ast('carpet_area') !!}</label>
             <input type="number" step="0.01" min="0" name="carpet_area" value="{{ $v('carpet_area') }}" {{ $req('carpet_area') }} class="{{ $ic }}">
             @error('carpet_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('carpet_area') !!}
- </div>
+            {!! $rmk('carpet_area') !!}
+        </div>
         @endif
 
         @if($fc('available_area')->keep_field)
-        <div><label class="{{ $lc }}">Available Area (sq ft) {!! $ast('available_area') !!}</label>
+        <div>
+            <label class="{{ $lc }}">Available Area {!! $unitLabel('available_area') !!} {!! $ast('available_area') !!}</label>
             <input type="number" step="0.01" min="0" name="available_area" value="{{ $v('available_area') }}" {{ $req('available_area') }} class="{{ $ic }}">
             @error('available_area')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('available_area') !!}
- </div>
+            {!! $rmk('available_area') !!}
+        </div>
         @endif
 
         @if($fc('clear_height_highest')->keep_field)
@@ -448,57 +476,297 @@
     </div>
     <div x-show="open" class="px-5 py-5 space-y-6">
 
-        {{-- Dock counts --}}
-        <div>
-            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Total Dock Doors</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                @foreach(['dock_door_count'=>'Total','dock_front'=>'Front','dock_left'=>'Left','dock_right'=>'Right','dock_back'=>'Back'] as $fk=>$lbl)
-                @if($fc($fk)->keep_field)
-                <div><label class="{{ $lc }}">{{ $lbl }} {!! $ast($fk) !!}</label>
-                    <input type="number" min="0" name="{{ $fk }}" value="{{ $v($fk) }}" {{ $req($fk) }} class="{{ $ic }}">
-                    @error($fk)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+        {{-- Dock counts — Total auto-calculated from Front+Left+Right+Back --}}
+        <div x-data="{
+            dock_front: {{ (int)($entry?->dock_front ?? 0) }},
+            dock_left:  {{ (int)($entry?->dock_left  ?? 0) }},
+            dock_right: {{ (int)($entry?->dock_right ?? 0) }},
+            dock_back:  {{ (int)($entry?->dock_back  ?? 0) }},
+            get total() { return (parseInt(this.dock_front)||0) + (parseInt(this.dock_left)||0) + (parseInt(this.dock_right)||0) + (parseInt(this.dock_back)||0); }
+        }">
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Dock Doors</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+                {{-- Front --}}
+                @if($fc('dock_front')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Front {!! $ast('dock_front') !!}</label>
+                    <input type="number" min="0" name="dock_front"
+                        x-model.number="dock_front"
+                        value="{{ $v('dock_front') }}" {{ $req('dock_front') }} class="{{ $ic }}">
+                    @error('dock_front')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_front') !!}
+                </div>
                 @endif
-                @endforeach
+                {{-- Left --}}
+                @if($fc('dock_left')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Left {!! $ast('dock_left') !!}</label>
+                    <input type="number" min="0" name="dock_left"
+                        x-model.number="dock_left"
+                        value="{{ $v('dock_left') }}" {{ $req('dock_left') }} class="{{ $ic }}">
+                    @error('dock_left')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_left') !!}
+                </div>
+                @endif
+                {{-- Right --}}
+                @if($fc('dock_right')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Right {!! $ast('dock_right') !!}</label>
+                    <input type="number" min="0" name="dock_right"
+                        x-model.number="dock_right"
+                        value="{{ $v('dock_right') }}" {{ $req('dock_right') }} class="{{ $ic }}">
+                    @error('dock_right')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_right') !!}
+                </div>
+                @endif
+                {{-- Back --}}
+                @if($fc('dock_back')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Back {!! $ast('dock_back') !!}</label>
+                    <input type="number" min="0" name="dock_back"
+                        x-model.number="dock_back"
+                        value="{{ $v('dock_back') }}" {{ $req('dock_back') }} class="{{ $ic }}">
+                    @error('dock_back')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_back') !!}
+                </div>
+                @endif
+                {{-- Total — read-only, auto-calculated --}}
+                @if($fc('dock_door_count')->keep_field)
+                <div>
+                    <label class="{{ $lc }} flex items-center gap-1">
+                        Total
+                        <span class="text-[10px] text-gray-400 font-normal">(auto)</span>
+                        {!! $ast('dock_door_count') !!}
+                    </label>
+                    <div class="relative">
+                        <input type="number" min="0" name="dock_door_count"
+                            :value="total"
+                            readonly
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 cursor-not-allowed font-semibold">
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">= F+L+R+B</span>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
-        {{-- Dock levellers --}}
-        <div>
+        {{-- Dock levellers — Yes/No toggle, fields only shown if Yes --}}
+        <div x-data="{
+            hasLev: {{ $entry?->has_dock_leveller === true ? 'true' : ($entry?->has_dock_leveller === false ? 'false' : 'null') }},
+            lev_front: {{ (int)($entry?->dock_leveller_front ?? 0) }},
+            lev_left:  {{ (int)($entry?->dock_leveller_left  ?? 0) }},
+            lev_right: {{ (int)($entry?->dock_leveller_right ?? 0) }},
+            lev_back:  {{ (int)($entry?->dock_leveller_back  ?? 0) }},
+            get total() {
+                if (this.hasLev !== true) return 0;
+                return (parseInt(this.lev_front)||0) + (parseInt(this.lev_left)||0) + (parseInt(this.lev_right)||0) + (parseInt(this.lev_back)||0);
+            },
+            setNo() {
+                this.hasLev = false;
+                this.lev_front = 0; this.lev_left = 0; this.lev_right = 0; this.lev_back = 0;
+            }
+        }">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Dock Levellers</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+            {{-- Yes / No radio --}}
+            <div class="flex items-center gap-4 mb-4">
+                <span class="text-sm text-gray-600 font-medium">Dock Levellers Available?</span>
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="has_dock_leveller" value="1"
+                            x-model.number="hasLev"
+                            @change="hasLev = true"
+                            {{ old('has_dock_leveller', $entry?->has_dock_leveller) == '1' ? 'checked' : '' }}
+                            class="sr-only">
+                        <span class="block px-5 py-2 transition-colors border-r border-gray-300"
+                              :class="hasLev === true ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                            Yes
+                        </span>
+                    </label>
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="has_dock_leveller" value="0"
+                            @change="setNo()"
+                            {{ old('has_dock_leveller', $entry?->has_dock_leveller) === false || old('has_dock_leveller', $entry?->has_dock_leveller) == '0' ? 'checked' : '' }}
+                            class="sr-only">
+                        <span class="block px-5 py-2 transition-colors"
+                              :class="hasLev === false ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                            No
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            {{-- Fields — only shown when Yes --}}
+            <div x-show="hasLev === true" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+                @if($fc('dock_leveller_front')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Front {!! $ast('dock_leveller_front') !!}</label>
+                    <input type="number" min="0" name="dock_leveller_front"
+                        x-model.number="lev_front"
+                        value="{{ $v('dock_leveller_front') }}" class="{{ $ic }}">
+                    @error('dock_leveller_front')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_leveller_front') !!}
+                </div>
+                @endif
+                @if($fc('dock_leveller_left')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Left {!! $ast('dock_leveller_left') !!}</label>
+                    <input type="number" min="0" name="dock_leveller_left"
+                        x-model.number="lev_left"
+                        value="{{ $v('dock_leveller_left') }}" class="{{ $ic }}">
+                    @error('dock_leveller_left')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_leveller_left') !!}
+                </div>
+                @endif
+                @if($fc('dock_leveller_right')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Right {!! $ast('dock_leveller_right') !!}</label>
+                    <input type="number" min="0" name="dock_leveller_right"
+                        x-model.number="lev_right"
+                        value="{{ $v('dock_leveller_right') }}" class="{{ $ic }}">
+                    @error('dock_leveller_right')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_leveller_right') !!}
+                </div>
+                @endif
+                @if($fc('dock_leveller_back')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Back {!! $ast('dock_leveller_back') !!}</label>
+                    <input type="number" min="0" name="dock_leveller_back"
+                        x-model.number="lev_back"
+                        value="{{ $v('dock_leveller_back') }}" class="{{ $ic }}">
+                    @error('dock_leveller_back')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('dock_leveller_back') !!}
+                </div>
+                @endif
+                {{-- Total auto --}}
+                <div>
+                    <label class="{{ $lc }} flex items-center gap-1">Total <span class="text-[10px] text-gray-400 font-normal">(auto)</span></label>
+                    <div class="relative">
+                        <input type="number" :value="total" readonly
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 cursor-not-allowed font-semibold">
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">= F+L+R+B</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- When No — show zeros summary --}}
+            <div x-show="hasLev === false" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                 @foreach(['dock_leveller_front'=>'Front','dock_leveller_left'=>'Left','dock_leveller_right'=>'Right','dock_leveller_back'=>'Back'] as $fk=>$lbl)
-                @if($fc($fk)->keep_field)
-                <div><label class="{{ $lc }}">{{ $lbl }} {!! $ast($fk) !!}</label>
-                    <input type="number" min="0" name="{{ $fk }}" value="{{ $v($fk) }}" {{ $req($fk) }} class="{{ $ic }}">
-                    @error($fk)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
-                @endif
+                <div>
+                    <label class="{{ $lc }} text-gray-400">{{ $lbl }}</label>
+                    <input type="number" name="{{ $fk }}" value="0" readonly
+                        class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                </div>
                 @endforeach
+                <div>
+                    <label class="{{ $lc }} flex items-center gap-1 text-gray-400">Total</label>
+                    <input type="number" value="0" readonly
+                        class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed font-semibold">
+                </div>
             </div>
         </div>
 
-        {{-- Fire exit doors --}}
-        <div>
+        {{-- Fire exit doors — Total auto-calculated --}}
+        <div x-data="{
+            fe_front: {{ (int)($entry?->fire_exit_front ?? 0) }},
+            fe_left:  {{ (int)($entry?->fire_exit_left  ?? 0) }},
+            fe_right: {{ (int)($entry?->fire_exit_right ?? 0) }},
+            fe_back:  {{ (int)($entry?->fire_exit_back  ?? 0) }},
+            get total() { return (parseInt(this.fe_front)||0) + (parseInt(this.fe_left)||0) + (parseInt(this.fe_right)||0) + (parseInt(this.fe_back)||0); }
+        }">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Fire Exit Doors</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                @foreach(['fire_exit_front'=>'Front','fire_exit_left'=>'Left','fire_exit_right'=>'Right','fire_exit_back'=>'Back'] as $fk=>$lbl)
-                @if($fc($fk)->keep_field)
-                <div><label class="{{ $lc }}">{{ $lbl }} {!! $ast($fk) !!}</label>
-                    <input type="number" min="0" name="{{ $fk }}" value="{{ $v($fk) }}" {{ $req($fk) }} class="{{ $ic }}">
-                    @error($fk)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+                @if($fc('fire_exit_front')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Front {!! $ast('fire_exit_front') !!}</label>
+                    <input type="number" min="0" name="fire_exit_front"
+                        x-model.number="fe_front"
+                        value="{{ $v('fire_exit_front') }}" {{ $req('fire_exit_front') }} class="{{ $ic }}">
+                    @error('fire_exit_front')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('fire_exit_front') !!}
+                </div>
                 @endif
-                @endforeach
+                @if($fc('fire_exit_left')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Left {!! $ast('fire_exit_left') !!}</label>
+                    <input type="number" min="0" name="fire_exit_left"
+                        x-model.number="fe_left"
+                        value="{{ $v('fire_exit_left') }}" {{ $req('fire_exit_left') }} class="{{ $ic }}">
+                    @error('fire_exit_left')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('fire_exit_left') !!}
+                </div>
+                @endif
+                @if($fc('fire_exit_right')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Right {!! $ast('fire_exit_right') !!}</label>
+                    <input type="number" min="0" name="fire_exit_right"
+                        x-model.number="fe_right"
+                        value="{{ $v('fire_exit_right') }}" {{ $req('fire_exit_right') }} class="{{ $ic }}">
+                    @error('fire_exit_right')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('fire_exit_right') !!}
+                </div>
+                @endif
+                @if($fc('fire_exit_back')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">Back {!! $ast('fire_exit_back') !!}</label>
+                    <input type="number" min="0" name="fire_exit_back"
+                        x-model.number="fe_back"
+                        value="{{ $v('fire_exit_back') }}" {{ $req('fire_exit_back') }} class="{{ $ic }}">
+                    @error('fire_exit_back')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('fire_exit_back') !!}
+                </div>
+                @endif
+                {{-- Total (read-only display only) --}}
+                <div>
+                    <label class="{{ $lc }} flex items-center gap-1">
+                        Total
+                        <span class="text-[10px] text-gray-400 font-normal">(auto)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" :value="total" readonly
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 cursor-not-allowed font-semibold">
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">= F+L+R+B</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {{-- Canopy widths --}}
+        {{-- Canopy Length & Width (ft) --}}
         <div>
-            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Canopy Width (ft)</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                @foreach(['canopy_width_front'=>'Front','canopy_width_left'=>'Left','canopy_width_right'=>'Right','canopy_width_back'=>'Back'] as $fk=>$lbl)
-                @if($fc($fk)->keep_field)
-                <div><label class="{{ $lc }}">{{ $lbl }} {!! $ast($fk) !!}</label>
-                    <input type="number" step="0.01" min="0" name="{{ $fk }}" value="{{ $v($fk) }}" {{ $req($fk) }} class="{{ $ic }}">
-                    @error($fk)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror</div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Canopy Length &amp; Width (ft)</h4>
+            <div class="space-y-3">
+                @foreach([
+                    'front' => 'Front',
+                    'left'  => 'Left',
+                    'right' => 'Right',
+                    'back'  => 'Back',
+                ] as $side => $sideLabel)
+                @php
+                    $lf = 'canopy_length_' . $side;
+                    $wf = 'canopy_width_'  . $side;
+                @endphp
+                @if($fc($wf)->keep_field)
+                <div class="grid grid-cols-3 gap-3 items-end">
+                    <div class="flex items-center pt-6">
+                        <span class="text-sm font-semibold text-gray-600 w-14">{{ $sideLabel }}</span>
+                    </div>
+                    <div>
+                        <label class="{{ $lc }}">Length (L) {!! $ast($lf) !!}</label>
+                        <input type="number" step="0.01" min="0" name="{{ $lf }}"
+                            value="{{ $v($lf) }}" {{ $req($lf) }} class="{{ $ic }}"
+                            placeholder="0.00">
+                        @error($lf)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        {!! $rmk($lf) !!}
+                    </div>
+                    <div>
+                        <label class="{{ $lc }}">Width (W) {!! $ast($wf) !!}</label>
+                        <input type="number" step="0.01" min="0" name="{{ $wf }}"
+                            value="{{ $v($wf) }}" {{ $req($wf) }} class="{{ $ic }}"
+                            placeholder="0.00">
+                        @error($wf)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        {!! $rmk($wf) !!}
+                    </div>
+                </div>
                 @endif
                 @endforeach
             </div>
@@ -531,19 +799,143 @@
     <div x-show="open" class="{{ $sb }}">
 
         @if($fc('no_of_offices')->keep_field)
-        <div><label class="{{ $lc }}">No. of Offices {!! $ast('no_of_offices') !!}</label>
-            <input type="number" min="0" name="no_of_offices" value="{{ $v('no_of_offices') }}" {{ $req('no_of_offices') }} class="{{ $ic }}">
-            @error('no_of_offices')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('no_of_offices') !!}
- </div>
-        @endif
+        @php
+            $savedOffices = [];
+            if ($entry && $entry->office_sizes) {
+                $decoded = is_array($entry->office_sizes) ? $entry->office_sizes : json_decode($entry->office_sizes, true);
+                if (is_array($decoded)) $savedOffices = $decoded;
+            }
+            while (count($savedOffices) < 3) $savedOffices[] = ['l' => '', 'w' => ''];
+            $savedOffices    = array_values($savedOffices);
+            $initHasOffices  = $entry?->has_offices === true ? 'true' : ($entry?->has_offices === false ? 'false' : 'null');
+        @endphp
 
-        @if($fc('office_sizes')->keep_field)
-        <div><label class="{{ $lc }}">Office Sizes {!! $ast('office_sizes') !!}</label>
-            <input type="text" name="office_sizes" value="{{ $v('office_sizes') }}" {{ $req('office_sizes') }} class="{{ $ic }}">
+        {{-- Alpine.data component registered before mount so x-data can reference it by name --}}
+        <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('officeWidget', () => ({
+                hasOffices: {{ $initHasOffices }},
+                offices: @json($savedOffices),
+                get officeCount() {
+                    return this.hasOffices ? this.offices.filter(function(o){ return o.l || o.w; }).length : 0;
+                },
+                get serialized() {
+                    if (!this.hasOffices) return '[]';
+                    return JSON.stringify(this.offices.map(function(o){ return {l: o.l, w: o.w}; }));
+                },
+                setNo() {
+                    this.hasOffices = false;
+                    this.offices = [{l:'',w:''},{l:'',w:''},{l:'',w:''}];
+                },
+                addOffice() {
+                    if (this.offices.length < 3) this.offices.push({l:'',w:''});
+                },
+                removeOffice(i) {
+                    if (i > 0) this.offices.splice(i, 1);
+                }
+            }));
+        });
+        </script>
+
+        {{-- No. of Offices: Yes/No toggle + L×W per office (up to 3) --}}
+        <div class="sm:col-span-2 lg:col-span-3" x-data="officeWidget">
+
+            <div class="flex items-center gap-4 mb-3">
+                <label class="{{ $lc }} mb-0">No. of Offices {!! $ast('no_of_offices') !!}</label>
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="has_offices" value="1"
+                            @change="hasOffices = true"
+                            {{ $initHasOffices === 'true' ? 'checked' : '' }}
+                            class="sr-only">
+                        <span class="block px-5 py-2 transition-colors border-r border-gray-300 select-none"
+                              :class="hasOffices === true ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                            Yes
+                        </span>
+                    </label>
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="has_offices" value="0"
+                            @change="setNo()"
+                            {{ $initHasOffices === 'false' ? 'checked' : '' }}
+                            class="sr-only">
+                        <span class="block px-5 py-2 transition-colors select-none"
+                              :class="hasOffices === false ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">
+                            No
+                        </span>
+                    </label>
+                </div>
+                <span x-show="hasOffices === true && officeCount > 0"
+                      class="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full"
+                      x-text="officeCount + (officeCount === 1 ? ' office' : ' offices')"></span>
+            </div>
+
+            {{-- Hidden inputs for form submit --}}
+            <input type="hidden" name="no_of_offices" :value="officeCount">
+            <input type="hidden" name="office_sizes"  :value="serialized">
+
+            {{-- Office rows --}}
+            <div x-show="hasOffices === true" x-cloak class="space-y-3">
+                <template x-for="(office, i) in offices" :key="i">
+                    <div class="flex items-end gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="w-20 flex-shrink-0">
+                            <span class="text-xs font-semibold text-gray-500 uppercase" x-text="'Office ' + (i+1)"></span>
+                            <span x-show="i === 0" class="block text-[10px] text-red-500 font-medium">Required</span>
+                            <span x-show="i > 0"  class="block text-[10px] text-gray-400">Optional</span>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                Length (L) <span x-show="i === 0" class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="0.01" min="0"
+                                x-model="office.l"
+                                :required="i === 0"
+                                placeholder="L (ft)"
+                                class="{{ $ic }} text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                Width (W) <span x-show="i === 0" class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="0.01" min="0"
+                                x-model="office.w"
+                                :required="i === 0"
+                                placeholder="W (ft)"
+                                class="{{ $ic }} text-sm">
+                        </div>
+                        <div class="w-24 flex-shrink-0">
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Area (auto)</label>
+                            <div class="px-2 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 text-center"
+                                 x-text="(office.l && office.w) ? (parseFloat(office.l) * parseFloat(office.w)).toFixed(1) + ' sq ft' : '—'">
+                            </div>
+                        </div>
+                        <button type="button" x-show="i > 0" @click="removeOffice(i)"
+                            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <div x-show="i === 0" class="w-8 flex-shrink-0"></div>
+                    </div>
+                </template>
+
+                <button type="button" x-show="offices.length < 3" @click="addOffice()"
+                    class="flex items-center gap-2 text-xs font-semibold text-zendo-navy hover:opacity-70 transition-colors mt-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Office <span class="text-gray-400 font-normal" x-text="'(' + offices.length + '/3)'"></span>
+                </button>
+            </div>
+
+            <div x-show="hasOffices === false" x-cloak class="text-xs text-gray-400 italic px-1 mt-1">
+                No offices — count and sizes set to zero.
+            </div>
+
+            @error('no_of_offices')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             @error('office_sizes')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
- {!! $rmk('office_sizes') !!}
- </div>
+            {!! $rmk('no_of_offices') !!}
+            {!! $rmk('office_sizes') !!}
+        </div>
         @endif
 
         @if($fc('canteen')->keep_field)

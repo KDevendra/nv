@@ -302,7 +302,7 @@ class PropertyEntryController extends Controller
         return [
             // A. Location & Identification (15 fields)
             ['name' => 'facility_type', 'label' => 'Facility Type', 'value' => $property->facility_type],
-            ['name' => 'name_full_address', 'label' => 'Full Address / Name of Property', 'value' => $property->name_full_address],
+            ['name' => 'name_full_address', 'label' => 'Address', 'value' => $property->name_full_address],
             ['name' => 'village', 'label' => 'Village', 'value' => $property->village],
             ['name' => 'tehsil', 'label' => 'Tehsil', 'value' => $property->tehsil],
             ['name' => 'district', 'label' => 'District', 'value' => $property->district],
