@@ -79,7 +79,25 @@ class PropertyEntryController extends Controller
         abort_if(auth()->user()->role !== 'field_officer', 403);
 
         $data = $this->validateEntry($request);
+        $action = $request->input('action', 'submit');
 
+        if ($action === 'draft') {
+            // Save as draft — no status change, no submitted_at, no log
+            $entry = PropertyEntry::create(array_merge($data, [
+                'field_officer_id' => auth()->id(),
+                'supply_head_id'   => auth()->user()->supply_head_id,
+                'status'           => 'draft',
+                'submitted_at'     => null,
+                'area_unit'        => $request->input('area_unit', 'sq_ft'),
+            ]));
+
+            $this->handlePhotos($entry, $request);
+
+            return redirect()->route('field.dashboard')
+                ->with('success', 'Property entry saved as draft. Code: ' . $entry->code);
+        }
+
+        // Default: submit
         $entry = PropertyEntry::create(array_merge($data, [
             'field_officer_id' => auth()->id(),
             'supply_head_id'   => auth()->user()->supply_head_id,
@@ -156,7 +174,26 @@ class PropertyEntryController extends Controller
 
         $data = $this->validateEntry($request);
         $oldStatus = $property->status;
+        $action = $request->input('action', 'submit');
 
+        if ($action === 'draft') {
+            // Save as draft — keep current status if already draft, otherwise set to draft
+            $property->update(array_merge($data, [
+                'status'         => 'draft',
+                'submitted_at'   => null,
+                'allow_resubmit' => null,
+                'area_unit'      => $request->input('area_unit', $property->area_unit ?? 'sq_ft'),
+            ]));
+
+            $this->handlePhotos($property, $request);
+
+            // No log entry for draft saves
+
+            return redirect()->route('field.properties.index')
+                ->with('success', 'Entry saved as draft. Code: ' . $property->code);
+        }
+
+        // Default: submit
         $property->update(array_merge($data, [
             'status'         => 'submitted',
             'submitted_at'   => now(),
