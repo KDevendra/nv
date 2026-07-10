@@ -294,6 +294,7 @@ class PropertyEntry extends Model
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
+            'draft'     => 'bg-gray-100 text-gray-600',
             'submitted' => 'bg-blue-100 text-blue-800',
             'verified'  => 'bg-green-100 text-green-800',
             'rejected'  => 'bg-red-100 text-red-800',
@@ -305,6 +306,7 @@ class PropertyEntry extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
+            'draft'     => 'Draft',
             'submitted' => 'Under Review',
             'verified'  => 'Verified',
             'rejected'  => 'Rejected',
