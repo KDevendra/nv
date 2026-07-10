@@ -1,20 +1,15 @@
+# Simple PowerShell script to transform accordion form to wizard
 $file = "c:\work\project\laravel\nv\resources\views\field\properties\_form.blade.php"
-$c = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
+$content = Get-Content $file -Raw -Encoding UTF8
 
-Write-Host "Starting wizard transformation..."
+Write-Host "Starting transformation..."
 
-# ── 1. Replace top wizard progress bar ──────────────────────────────────────
-$topOld = [regex]::Escape(@'
-{{-- ═══════════════════════════════════════
-     STEP WIZARD — TOP PROGRESS BAR
-     ═══════════════════════════════════════ --}}
-<div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">
-'@)
+# Step 1: Replace top wizard progress bar (find the opening div and keep it, but replace what follows)
+# Find: <div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">
+# Then find the closing </div> and replace everything between
 
-$topNew = @'
-{{-- ═══════════════════════════════════════
-     STEP WIZARD — TOP PROGRESS BAR
-     ═══════════════════════════════════════ --}}
+$topOldStart = '<div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">'
+$topNewContent = @'
 <div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">
     <div class="max-w-5xl mx-auto flex items-center gap-2">
         <div id="wizard-step-0" class="wizard-step-indicator flex-1 flex items-center">
@@ -68,121 +63,100 @@ $topNew = @'
 </div>
 '@
 
-if ($c -match $topOld) {
-    $c = $c -replace $topOld, $topNew
-    Write-Host "✓ Replaced top wizard progress bar"
-} else {
-    Write-Host "✗ Could not find top wizard progress bar pattern"
-}
+# Use regex to replace the old wizard progress section
+$pattern = '(?s)<div id="wizard-progress"[^>]*>.*?</div>(?=\s*{{-- ══ A\. Location)'
+$content = $content -replace $pattern, $topNewContent
 
-# ── 2. Define section replacements ──────────────────────────────────────────
-$sections = @(
-    @{ Step=0; Letter='A'; Title='Location & Identification'; Key='A. Location & Identification' }
-    @{ Step=1; Letter='B'; Title='Legal & Statutory Compliance'; Key='B. Legal & Statutory Compliance' }
-    @{ Step=2; Letter='C'; Title='Property Dimensions'; Key='C. Property Dimensions' }
-    @{ Step=3; Letter='D'; Title='Dock, Exit & Width Details'; Key='D. Dock, Exit & Width Details' }
-    @{ Step=4; Letter='E'; Title='Facility Details'; Key='E. Facility Details' }
-    @{ Step=5; Letter='F'; Title='Loading & Docking'; Key='F. Loading & Docking' }
-    @{ Step=6; Letter='G'; Title='Utilities & Infrastructure'; Key='G. Utilities & Infrastructure' }
-    @{ Step=7; Letter='H'; Title='Financial & Lease Terms'; Key='H. Financial & Lease Terms' }
-    @{ Step=8; Letter='I'; Title='Surroundings & Environment'; Key='I. Surroundings & Environment' }
-    @{ Step=9; Letter='J'; Title='Health & Emergency Nearby'; Key='J. Health & Emergency Nearby' }
-    @{ Step=10; Letter='K'; Title='Photographs'; Key='K. Photographs' }
-    @{ Step=11; Letter='L'; Title='General Remarks'; Key='L. General Remarks' }
-)
+Write-Host "Step 1: Replaced top wizard progress bar"
 
-# Replace each section's accordion wrapper with wizard-step wrapper
-foreach ($sec in $sections) {
-    $n = $sec.Step
-    $letter = $sec.Letter
-    $title = $sec.Title
-    $key = $sec.Key
+# Step 2: Replace each section wrapper
+# We'll use a function to generate the new wrapper for each section
+function Get-WizardStepHeader {
+    param($step, $letter, $title, $key)
     
-    # Build the old pattern (5 lines of accordion header)
-    # Pattern: <div class="{{ $sec }}" x-data="{{ $sd(false, 'KeyTitle') }}">
-    #              <div class="{{ $sh }}" @click="open=!open" :style="...">
-    #                  <h3 ...>Letter. Title</h3>
-    #                  {!! $counter !!}
-    #              </div>
-    #              <div x-show="open" ...>
-    
-    # We'll use a simpler regex that matches the section opening pattern
-    $oldPattern = "(?s)<div class=`"\{\{ \`$sec \}\}`" x-data=`"\{\{ \`$sd\(false, '$key'\) \}\}`">.+?<div x-show=`"open`""
-    
-    $newWrapper = @"
+    return @"
 
-<div class="wizard-step" data-step="$n" style="display:none">
+<div class="wizard-step" data-step="$step" style="display:none">
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
         <h3 class="text-sm font-semibold text-zendo-navy">$letter. $title</h3>
-        {!! \$sec_errs('$key') > 0 ? '<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">' . \$sec_errs('$key') . ' error(s)</span>' : '' !!}
+        {!! `$sec_errs('$key') > 0 ? '<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">' . `$sec_errs('$key') . ' error(s)</span>' : '' !!}
     </div>
     <div
 "@
-    
-    if ($c -match $oldPattern) {
-        $c = $c -replace $oldPattern, $newWrapper
-        Write-Host "✓ Replaced section $letter ($title)"
-    } else {
-        Write-Host "✗ Could not find section $letter pattern"
-    }
 }
 
-# ── 3. Replace bottom nav Alpine block with vanilla JS nav ──────────────────
-$bottomOld = [regex]::Escape(@'
-{{-- ═══════════════════════════════════════════════════════════════
-     STEP WIZARD — BOTTOM NAV BAR (new, non-invasive)
-     Keep this inside the same <form> that wraps the sections above.
-     ═══════════════════════════════════════════════════════════════ --}}
-<div x-data="propertyWizard()" x-init="init()"
-     class="sticky bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.04)] px-4 py-3 mt-6 -mx-1">
-    <div class="flex items-center justify-between gap-2 max-w-3xl mx-auto">
+# Section A: Location & Identification
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(true, ''A\. Location & Identification''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 0 'A' 'Location & Identification' 'A. Location & Identification')
+Write-Host "Step 2A: Replaced section A"
 
-        {{-- Previous --}}
-        <button type="button"
-            @click="prev()"
-            :disabled="current === 0"
-            :class="current === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50'"
-            class="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-            Previous
-        </button>
+# Section B: Legal & Statutory Compliance  
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''B\. Legal & Statutory Compliance''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 1 'B' 'Legal & Statutory Compliance' 'B. Legal & Statutory Compliance')
+Write-Host "Step 2B: Replaced section B"
 
-        <div class="flex items-center gap-2 flex-1 justify-end">
+# Section C: Property Dimensions
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''C\. Property Dimensions''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 2 'C' 'Property Dimensions' 'C. Property Dimensions')
+Write-Host "Step 2C: Replaced section C"
 
-            {{-- Save Draft — always visible, submits form as-is (no client validation) --}}
-            <button type="submit"
-                name="save_mode" value="draft"
-                formnovalidate
-                class="px-4 py-2.5 rounded-lg text-sm font-semibold text-zendo-navy border border-zendo-navy/30 bg-white hover:bg-gray-50 transition-colors">
-                Save Draft
-            </button>
+# Section D: Dock, Exit & Width Details
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''D\. Dock, Exit & Width Details''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 3 'D' 'Dock, Exit & Width Details' 'D. Dock, Exit & Width Details')
+Write-Host "Step 2D: Replaced section D"
 
-            {{-- Save & Next — visible on all steps except the last --}}
-            <button type="button"
-                x-show="current < steps.length - 1"
-                @click="next()"
-                class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-zendo-navy hover:bg-opacity-90 transition-colors">
-                Save &amp; Next
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </button>
+# Section E: Facility Details
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''E\. Facility Details''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 4 'E' 'Facility Details' 'E. Facility Details')
+Write-Host "Step 2E: Replaced section E"
 
-            {{-- Submit to Office — visible only on last step, real submit --}}
-            <button type="submit"
-                x-show="current === steps.length - 1"
-                name="save_mode" value="submit"
-                class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
-                Submit to Office
-            </button>
-        </div>
-    </div>
-</div>
-'@)
+# Section F: Loading & Docking
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''F\. Loading & Docking''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 5 'F' 'Loading & Docking' 'F. Loading & Docking')
+Write-Host "Step 2F: Replaced section F"
 
+# Section G: Utilities & Infrastructure
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''G\. Utilities & Infrastructure''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 6 'G' 'Utilities & Infrastructure' 'G. Utilities & Infrastructure')
+Write-Host "Step 2G: Replaced section G"
+
+# Section H: Financial & Lease Terms
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''H\. Financial & Lease Terms''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 7 'H' 'Financial & Lease Terms' 'H. Financial & Lease Terms')
+Write-Host "Step 2H: Replaced section H"
+
+# Section I: Surroundings & Environment
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''I\. Surroundings & Environment''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 8 'I' 'Surroundings & Environment' 'I. Surroundings & Environment')
+Write-Host "Step 2I: Replaced section I"
+
+# Section J: Health & Emergency Nearby
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''J\. Health & Emergency Nearby''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 9 'J' 'Health & Emergency Nearby' 'J. Health & Emergency Nearby')
+Write-Host "Step 2J: Replaced section J"
+
+# Section K: Photographs
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''K\. Photographs''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 10 'K' 'Photographs' 'K. Photographs')
+Write-Host "Step 2K: Replaced section K"
+
+# Section L: General Remarks
+$content = $content -replace '(?s)<div class="\{\{ \$sec \}\}" x-data="\{\{ \$sd\(false, ''L\. General Remarks''\) \}\}">.*?<div x-show="open"', (Get-WizardStepHeader 11 'L' 'General Remarks' 'L. General Remarks')
+Write-Host "Step 2L: Replaced section L"
+
+# Step 3: Add closing tags before each section comment (except first)
+$sectionMarkers = @(
+    '{{-- ══ B. Legal & Statutory Compliance',
+    '{{-- ══ C. Property Dimensions',
+    '{{-- ══ D. Docks, Levellers, Fire Exits',
+    '{{-- ══ E. Facilities',
+    '{{-- ══ F. Loading & Docking',
+    '{{-- ══ G. Utilities & Infrastructure',
+    '{{-- ══ H. Financial & Lease Terms',
+    '{{-- ══ I. Surroundings & Environment',
+    '{{-- ══ J. Health & Emergency Facilities',
+    '{{-- ══ K. Photos',
+    '{{-- ══ L. General Remarks'
+)
+
+foreach ($marker in $sectionMarkers) {
+    $content = $content -replace [regex]::Escape($marker), ("`n</div></div>`n`n" + $marker)
+}
+
+Write-Host "Step 3: Added closing tags between sections"
+
+# Step 4: Replace bottom nav bar
+$bottomOldPattern = '(?s){{-- ═+\s+STEP WIZARD — BOTTOM NAV BAR.*?</div>\s*</div>'
 
 $bottomNew = @'
 {{-- ═══════════════════════════════════════════════════════════════
@@ -328,53 +302,21 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 '@
 
-if ($c -match $bottomOld) {
-    $c = $c -replace $bottomOld, $bottomNew
-    Write-Host "✓ Replaced bottom wizard nav bar"
-} else {
-    Write-Host "✗ Could not find bottom wizard nav bar pattern"
-}
+$content = $content -replace $bottomOldPattern, $bottomNew
 
-# ── 4. Add closing </div></div> tags for each wizard-step ──────────────────
-# Need to close each section's content div + wizard-step div
-# Pattern: find each </div>{{-- ══ SectionName ══ --}} and add </div></div> before it
+Write-Host "Step 4: Replaced bottom wizard nav bar"
 
-# Actually, simpler approach: find the comment markers that separate sections
-# and add </div></div> before each one (except the first section)
-
-$sectionComments = @(
-    '{{-- ══ B. Legal & Statutory Compliance ═══════════════════════════════════════════════════════════════ --}}'
-    '{{-- ══ C. Property Dimensions (plot, built-up, clear height, FSI, etc.) ══════════════════════════════ --}}'
-    '{{-- ══ D. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}'
-    '{{-- ══ E. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}'
-    '{{-- ══ F. Loading & Docking ══════════════════════════════════════════════════ --}}'
-    '{{-- ══ G. Utilities & Infrastructure ═══════════════════════════════════════ --}}'
-    '{{-- ══ H. Financial & Lease Terms ════════════════════════════════════════════ --}}'
-    '{{-- ══ I. Surroundings & Environment ═══════════════════════════════════════ --}}'
-    '{{-- ══ J. Health & Emergency Facilities Nearby ══════════════════════════════ --}}'
-    '{{-- ══ K. Photos ══════════════════════════════════════════════════════════ --}}'
-    '{{-- ══ L. General Remarks ═════════════════════════════════════════════════ --}}'
-)
-
-foreach ($comment in $sectionComments) {
-    $escaped = [regex]::Escape($comment)
-    $c = $c -replace $escaped, ("</div></div>`n`n" + $comment)
-}
-
-# Add closing tags at the very end (before the wizard nav bar)
-$beforeNav = [regex]::Escape('{{-- ═══════════════════════════════════════════════════════════════
-     STEP WIZARD — BOTTOM NAV BAR (vanilla JS)')
-$c = $c -replace $beforeNav, ("</div></div>`n`n" + '{{-- ═══════════════════════════════════════════════════════════════
+# Step 5: Add final closing tags before the wizard nav
+$content = $content -replace '{{-- ═+\s+STEP WIZARD — BOTTOM NAV BAR \(vanilla JS\)', ("`n</div></div>`n`n" + '{{-- ═══════════════════════════════════════════════════════════════
      STEP WIZARD — BOTTOM NAV BAR (vanilla JS)')
 
-Write-Host "✓ Added closing tags for wizard steps"
+Write-Host "Step 5: Added final closing tags"
 
-# ── 5. Save the transformed file ──────────────────────────────────────────
-[System.IO.File]::WriteAllText($file, $c, [System.Text.Encoding]::UTF8)
-Write-Host ""
-Write-Host "✅ Transformation complete! File saved to: $file"
-Write-Host ""
-Write-Host "Next steps:"
+# Save the file
+$content | Out-File -FilePath $file -Encoding UTF8 -NoNewline
+
+Write-Host "`n✅ Transformation complete!"
+Write-Host "`nNext steps:"
 Write-Host "1. Remove duplicate button rows from create.blade.php"
 Write-Host "2. Remove duplicate button rows from edit.blade.php"
 Write-Host "3. Clear view cache: php artisan view:clear"
