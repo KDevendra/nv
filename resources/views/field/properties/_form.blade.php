@@ -95,37 +95,47 @@
         . '</div>';
 @endphp
 
-{{-- ═══════════════════════════════════════════════════════════════
-     STEP WIZARD — PROGRESS BAR (new, non-invasive)
-     ═══════════════════════════════════════════════════════════════ --}}
-<div x-data="propertyWizard()" x-init="init()" class="mb-5">
-    <div class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200 -mx-1 px-1 py-3 mb-4 overflow-x-auto">
-        <div class="flex items-center gap-1 min-w-max">
-            <template x-for="(step, i) in steps" :key="step.key">
-                <div class="flex items-center">
-                    <button type="button"
-                        @click="goTo(i)"
-                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors"
-                        :class="i === current
-                            ? 'bg-zendo-navy text-white'
-                            : (i < current ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')">
-                        <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0"
-                              :class="i === current ? 'bg-white/25' : (i < current ? 'bg-emerald-200' : 'bg-gray-300')"
-                              x-text="i < current ? '✓' : (i + 1)"></span>
-                        <span x-text="step.letter"></span>
-                    </button>
-                    <div class="w-4 h-px bg-gray-200 flex-shrink-0" x-show="i < steps.length - 1"></div>
-                </div>
-            </template>
+{{-- ═══════════════════════════════════════
+     STEP WIZARD — TOP PROGRESS BAR
+     ═══════════════════════════════════════ --}}
+<div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 -mx-1 px-2 py-3 mb-4">
+    <div class="overflow-x-auto">
+        <div class="flex items-center gap-1 min-w-max mx-auto">
+            @php
+                $wizardSteps = [
+                    [0,'A','Location & ID'],
+                    [1,'B','Legal'],
+                    [2,'C','Dimensions'],
+                    [3,'D','Dock & Exits'],
+                    [4,'E','Facilities'],
+                    [5,'F','Loading'],
+                    [6,'G','Utilities'],
+                    [7,'H','Financial'],
+                    [8,'I','Surroundings'],
+                    [9,'J','Health'],
+                    [10,'K','Photos'],
+                    [11,'L','Remarks'],
+                ];
+            @endphp
+            @foreach($wizardSteps as [$idx, $letter, $label])
+                <button type="button" onclick="wizardGoTo({{ $idx }})"
+                    id="wiz-btn-{{ $idx }}"
+                    class="wiz-step-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors bg-gray-100 text-gray-500 hover:bg-gray-200">
+                    <span id="wiz-num-{{ $idx }}" class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 bg-gray-300">{{ $idx + 1 }}</span>
+                    <span>{{ $letter }}</span>
+                </button>
+                @if(!$loop->last)
+                    <div class="w-3 h-px bg-gray-200 flex-shrink-0"></div>
+                @endif
+            @endforeach
         </div>
     </div>
-    <div class="flex items-center justify-between px-1 mb-1">
-        <p class="text-xs text-gray-400">
-            Step <span x-text="current + 1" class="font-semibold text-gray-600"></span> of <span x-text="steps.length"></span>
-            — <span x-text="steps[current].title" class="font-semibold text-zendo-navy"></span>
-        </p>
+    <div class="mt-2 px-1">
+        <p class="text-xs text-gray-500">Step <span id="wiz-current-num" class="font-semibold text-gray-700">1</span> of {{ count($wizardSteps) }} — <span id="wiz-current-title" class="font-semibold text-zendo-navy">Location &amp; Identification</span></p>
     </div>
 </div>
+
+
 
 {{-- ══ A. Location & Identification ══════════════════════════════════════════ --}}
 <div class="wizard-step" data-step="0">
@@ -389,15 +399,18 @@
 
     </div>
 </div>
+</div>{{-- end wizard-step 1 --}}
 
 {{-- ══ C. Property Dimensions ════════════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="Object.assign({{ $sd(false, 'C. Property Dimensions') }}, { unit: '{{ old('area_unit', $entry?->area_unit ?? 'sq_ft') }}' })">
-    <div class="{{ $sh }}" @click="open=!open"
-        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
-        {!! $counter !!}
+<div class="wizard-step" data-step="2">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4" x-data="{ unit: '{{ old('area_unit', $entry?->area_unit ?? 'sq_ft') }}' }">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="C. Property Dimensions">C. Property Dimensions</h3>
+        @if($sec_errs('C. Property Dimensions') > 0)
+            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('C. Property Dimensions') }} error(s)</span>
+        @endif
     </div>
-    <div x-show="open" class="{{ $sb }}">
+    <div class="{{ $sb }}">
 
         {{-- ── Area Unit Selector ── --}}
         <div class="sm:col-span-2 lg:col-span-3 flex items-center gap-3 pb-2 border-b border-gray-100 mb-1">
