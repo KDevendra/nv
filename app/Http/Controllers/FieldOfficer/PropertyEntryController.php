@@ -191,10 +191,8 @@ class PropertyEntryController extends Controller
 
             $this->handlePhotos($property, $request);
 
-            // No log entry for draft saves
-
-            return redirect()->route('field.properties.index')
-                ->with('success', 'Entry saved as draft. Code: ' . $property->code);
+            return redirect()->route('field.properties.edit', $property)
+                ->with('success', 'Draft saved. You can continue editing and submit when ready.');
         }
 
         // Default: submit

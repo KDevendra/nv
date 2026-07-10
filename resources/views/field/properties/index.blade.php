@@ -22,11 +22,12 @@
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         @php
             $stats = [
-                ['label' => 'Total',        'value' => $counters['total'],     'cls' => 'bg-gray-100 text-gray-700',    'b' => 'border-gray-200'],
-                ['label' => 'Submitted',    'value' => $counters['submitted'], 'cls' => 'bg-blue-50 text-blue-700',    'b' => 'border-blue-100'],
-                ['label' => 'Verified',     'value' => $counters['verified'],  'cls' => 'bg-green-50 text-green-700',  'b' => 'border-green-100'],
-                ['label' => 'Recheck',      'value' => $counters['recheck'],   'cls' => 'bg-orange-50 text-orange-700','b' => 'border-orange-200'],
-                ['label' => 'Rejected',     'value' => $counters['rejected'],  'cls' => 'bg-red-50 text-red-700',      'b' => 'border-red-100'],
+                ['label' => 'Total',        'value' => $counters['total'],              'cls' => 'bg-gray-100 text-gray-700',    'b' => 'border-gray-200'],
+                ['label' => 'Draft',        'value' => $counters['draft'] ?? 0,         'cls' => 'bg-gray-50 text-gray-500',     'b' => 'border-gray-200'],
+                ['label' => 'Submitted',    'value' => $counters['submitted'],          'cls' => 'bg-blue-50 text-blue-700',    'b' => 'border-blue-100'],
+                ['label' => 'Verified',     'value' => $counters['verified'],           'cls' => 'bg-green-50 text-green-700',  'b' => 'border-green-100'],
+                ['label' => 'Recheck',      'value' => $counters['recheck'],            'cls' => 'bg-orange-50 text-orange-700','b' => 'border-orange-200'],
+                ['label' => 'Rejected',     'value' => $counters['rejected'],           'cls' => 'bg-red-50 text-red-700',      'b' => 'border-red-100'],
             ];
         @endphp
         @foreach($stats as $stat)
