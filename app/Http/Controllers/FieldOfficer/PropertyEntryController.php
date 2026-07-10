@@ -51,6 +51,7 @@ class PropertyEntryController extends Controller
         // Counters always reflect the full dataset (no 6h filter)
         $counters = [
             'total'     => PropertyEntry::where('field_officer_id', $userId)->count(),
+            'draft'     => PropertyEntry::where('field_officer_id', $userId)->where('status', 'draft')->count(),
             'submitted' => PropertyEntry::where('field_officer_id', $userId)->where('status', 'submitted')->count(),
             'verified'  => PropertyEntry::where('field_officer_id', $userId)->where('status', 'verified')->count(),
             'recheck'   => PropertyEntry::where('field_officer_id', $userId)->where('status', 'recheck')->count(),
