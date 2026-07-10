@@ -95,14 +95,51 @@
         . '</div>';
 @endphp
 
-{{-- ══ A. Location & Identification ══════════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(true, 'A. Location & Identification') }}">
-    <div class="{{ $sh }}" @click="open=!open"
-        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
-        {!! $counter !!}
+{{-- ═══════════════════════════════════════════════════════════════
+     STEP WIZARD — PROGRESS BAR (new, non-invasive)
+     ═══════════════════════════════════════════════════════════════ --}}
+<div x-data="propertyWizard()" x-init="init()" class="mb-5">
+    <div class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200 -mx-1 px-1 py-3 mb-4 overflow-x-auto">
+        <div class="flex items-center gap-1 min-w-max">
+            <template x-for="(step, i) in steps" :key="step.key">
+                <div class="flex items-center">
+                    <button type="button"
+                        @click="goTo(i)"
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors"
+                        :class="i === current
+                            ? 'bg-zendo-navy text-white'
+                            : (i < current ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')">
+                        <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0"
+                              :class="i === current ? 'bg-white/25' : (i < current ? 'bg-emerald-200' : 'bg-gray-300')"
+                              x-text="i < current ? '✓' : (i + 1)"></span>
+                        <span x-text="step.letter"></span>
+                    </button>
+                    <div class="w-4 h-px bg-gray-200 flex-shrink-0" x-show="i < steps.length - 1"></div>
+                </div>
+            </template>
+        </div>
     </div>
-    <div x-show="open" class="{{ $sb }}">
+    <div class="flex items-center justify-between px-1 mb-1">
+        <p class="text-xs text-gray-400">
+            Step <span x-text="current + 1" class="font-semibold text-gray-600"></span> of <span x-text="steps.length"></span>
+            — <span x-text="steps[current].title" class="font-semibold text-zendo-navy"></span>
+        </p>
+    </div>
+</div>
+
+{{-- ══ A. Location & Identification ══════════════════════════════════════════ --}}
+<div class="wizard-step" data-step="0">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="A. Location &amp; Identification">A. Location &amp; Identification</h3>
+        @if($sec_errs('A. Location & Identification') > 0)
+            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                {{ $sec_errs('A. Location & Identification') }} error(s)
+            </span>
+        @endif
+    </div>
+    <div class="{{ $sb }}">
 
         @if($fc('facility_type')->keep_field)
         <div>
@@ -246,15 +283,21 @@
 
     </div>
 </div>
+</div>{{-- end wizard-step 0 --}}
 
 {{-- ══ B. Legal & Statutory Compliance ══════════════════════════════════════ --}}
-<div class="{{ $sec }}" x-data="{{ $sd(false, 'B. Legal & Statutory Compliance') }}">
-    <div class="{{ $sh }}" @click="open=!open"
-        :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
-        <h3 class="text-sm font-semibold" :class="reviewIncorrect > 0 ? 'text-red-800' : ((filled > 0 && filled === total) ? 'text-green-800' : 'text-zendo-navy')" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
-        {!! $counter !!}
+<div class="wizard-step" data-step="1">
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-sm font-semibold text-zendo-navy" data-section-title="B. Legal &amp; Statutory Compliance">B. Legal &amp; Statutory Compliance</h3>
+        @if($sec_errs('B. Legal & Statutory Compliance') > 0)
+            <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                {{ $sec_errs('B. Legal & Statutory Compliance') }} error(s)
+            </span>
+        @endif
     </div>
-    <div x-show="open" class="{{ $sb }}">
+    <div class="{{ $sb }}">
 
         @if($fc('tenure')->keep_field)
         <div>
@@ -467,7 +510,7 @@
     </div>
 </div>
 
-{{-- ══ D-sub. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
+{{-- ══ D. Docks, Levellers, Fire Exits, Canopy & Road Widths ════════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'D. Dock, Exit &amp; Width Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -789,7 +832,7 @@
     </div>
 </div>
 
-{{-- ══ E-sub. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
+{{-- ══ E. Facilities (offices, canteen, washrooms, STP, etc.) ══════════ --}}
 <div class="{{ $sec }}" x-data="{{ $sd(false, 'E. Facility Details') }}">
     <div class="{{ $sh }}" @click="open=!open"
         :style="reviewIncorrect > 0 ? 'background: linear-gradient(to right, #fee2e2, #fecaca)' : ((filled > 0 && filled === total) ? 'background: linear-gradient(to right, #d1fae5, #a7f3d0)' : 'background-color: #f9fafb')">
@@ -1541,6 +1584,58 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════════════════════════════
+     STEP WIZARD — BOTTOM NAV BAR (new, non-invasive)
+     Keep this inside the same <form> that wraps the sections above.
+     ═══════════════════════════════════════════════════════════════ --}}
+<div x-data="propertyWizard()" x-init="init()"
+     class="sticky bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.04)] px-4 py-3 mt-6 -mx-1">
+    <div class="flex items-center justify-between gap-2 max-w-3xl mx-auto">
+
+        {{-- Previous --}}
+        <button type="button"
+            @click="prev()"
+            :disabled="current === 0"
+            :class="current === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50'"
+            class="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Previous
+        </button>
+
+        <div class="flex items-center gap-2 flex-1 justify-end">
+
+            {{-- Save Draft — always visible, submits form as-is (no client validation) --}}
+            <button type="submit"
+                name="save_mode" value="draft"
+                formnovalidate
+                class="px-4 py-2.5 rounded-lg text-sm font-semibold text-zendo-navy border border-zendo-navy/30 bg-white hover:bg-gray-50 transition-colors">
+                Save Draft
+            </button>
+
+            {{-- Save & Next — visible on all steps except the last --}}
+            <button type="button"
+                x-show="current < steps.length - 1"
+                @click="next()"
+                class="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-zendo-navy hover:bg-opacity-90 transition-colors">
+                Save &amp; Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+            {{-- Submit to Office — visible only on last step, real submit --}}
+            <button type="submit"
+                x-show="current === steps.length - 1"
+                name="save_mode" value="submit"
+                class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+                Submit to Office
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 0, reviewIncorrectCount = 0) {
     return {
@@ -1597,10 +1692,91 @@ function sectionCounter(defaultOpen, serverErrorCount = 0, reviewCorrectCount = 
         }
     };
 }
+
+// ── Step Wizard controller — layered on top of existing accordion ──
+// Does not touch field names, values, or validation. It simply toggles
+// each section's Alpine `open` state and scrolls the viewport.
+function propertyWizard() {
+    return {
+        current: 0,
+        steps: [
+            { key: 'A', letter: 'A', title: 'Location & Identification' },
+            { key: 'B', letter: 'B', title: 'Legal & Statutory Compliance' },
+            { key: 'C', letter: 'C', title: 'Property Dimensions' },
+            { key: 'D', letter: 'D', title: 'Dock, Exit & Width Details' },
+            { key: 'E', letter: 'E', title: 'Facility Details' },
+            { key: 'F', letter: 'F', title: 'Loading & Docking' },
+            { key: 'G', letter: 'G', title: 'Utilities & Infrastructure' },
+            { key: 'H', letter: 'H', title: 'Financial & Lease Terms' },
+            { key: 'I', letter: 'I', title: 'Surroundings & Environment' },
+            { key: 'J', letter: 'J', title: 'Health & Emergency Nearby' },
+            { key: 'K', letter: 'K', title: 'Photographs' },
+            { key: 'L', letter: 'L', title: 'General Remarks' },
+        ],
+        init() {
+            // Restore last-viewed step (per browser tab) so a full-page
+            // "Save & Next" / validation-error reload lands on the right step.
+            const saved = sessionStorage.getItem('propertyWizardStep');
+            if (saved !== null && +saved < this.steps.length) {
+                this.current = +saved;
+            }
+            this.$nextTick(() => this._openOnly(this.current));
+
+            // If server-side validation errors came back, jump straight to
+            // the first step that has one instead of wherever we left off.
+            const firstErrorStep = this._findFirstErrorStep();
+            if (firstErrorStep !== -1) {
+                this.current = firstErrorStep;
+                this.$nextTick(() => this._openOnly(this.current));
+            }
+        },
+        _sectionEls() {
+            // One entry per top-level accordion section, in A..L DOM order
+            return Array.from(document.querySelectorAll('[data-section-title]'))
+                .map(h => h.closest('.mb-4') || h.parentElement.parentElement);
+        },
+        _openOnly(index) {
+            const sections = this._sectionEls();
+            sections.forEach((sec, i) => {
+                if (!sec || !sec.__x) return;
+                sec.__x.$data.open = (i === index);
+            });
+            const target = sections[index];
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        },
+        _findFirstErrorStep() {
+            const sections = this._sectionEls();
+            for (let i = 0; i < sections.length; i++) {
+                if (sections[i] && sections[i].querySelector('.text-red-600')) return i;
+            }
+            return -1;
+        },
+        goTo(index) {
+            this.current = index;
+            sessionStorage.setItem('propertyWizardStep', index);
+            this._openOnly(index);
+        },
+        next() {
+            if (this.current < this.steps.length - 1) {
+                this.current++;
+                sessionStorage.setItem('propertyWizardStep', this.current);
+            }
+            this._openOnly(this.current);
+        },
+        prev() {
+            if (this.current > 0) {
+                this.current--;
+                sessionStorage.setItem('propertyWizardStep', this.current);
+            }
+            this._openOnly(this.current);
+        },
+    };
+}
+
 // ── Camera API — no file picker, no gallery ───────────────────────────────
 let _cameraStream   = null;
 let _cameraSlotIdx  = null;
-let _facingMode     = 'environment'; // start with rear camera
+let _facingMode     = 'environment';
 
 async function openCamera(slotIndex, slotLabel) {
     _cameraSlotIdx = slotIndex;
