@@ -1291,6 +1291,9 @@
 </div>{{-- /step 11 --}}
 
 
+{{-- Hidden: current wizard step — submitted with draft saves so we can restore position --}}
+<input type="hidden" name="wizard_step" id="wizard_step_input" value="{{ session('wizard_step', 0) }}">
+
 {{-- ═══════════════════════════════════════════════════════
      WIZARD — BOTTOM NAV BAR
      ═══════════════════════════════════════════════════════ --}}

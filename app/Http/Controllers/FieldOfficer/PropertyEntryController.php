@@ -97,7 +97,8 @@ class PropertyEntryController extends Controller
             $this->handlePhotos($entry, $request);
 
             return redirect()->route('field.properties.edit', $entry)
-                ->with('success', 'Draft saved. You can continue editing and submit when ready.');
+                ->with('success', 'Draft saved. You can continue editing and submit when ready.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
         }
 
         // Default: submit
@@ -193,7 +194,8 @@ class PropertyEntryController extends Controller
             $this->handlePhotos($property, $request);
 
             return redirect()->route('field.properties.edit', $property)
-                ->with('success', 'Draft saved. You can continue editing and submit when ready.');
+                ->with('success', 'Draft saved. You can continue editing and submit when ready.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
         }
 
         // Default: submit
