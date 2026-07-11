@@ -135,28 +135,7 @@
         @php $entry = null; @endphp
         @include('field.properties._form')
 
-        <div class="mt-6 flex items-center justify-end gap-4">
-            <button type="submit" name="action" value="draft" @click="isDraft = true; $el.form.noValidate = true"
-                class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow hover:bg-gray-600 transition-all">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                </svg>
-                Save as Draft
-            </button>
-            <button type="submit" name="action" value="submit" @click="isDraft = false; $el.form.noValidate = false" onclick="return confirmSubmission()"
-                class="inline-flex items-center px-8 py-3 bg-zendo-gold text-white font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transition-all hover:shadow-xl">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Submit to Office
-            </button>
-        </div>
-
-        <script>
-            function confirmSubmission() {
-                return confirm('Are you sure you want to submit this property entry to the office? Once submitted, you cannot edit it until it is reviewed.');
-            }
-        </script>
+        {{-- Buttons are in the wizard nav bar inside _form.blade.php --}}
     </form>
 
 </div>
