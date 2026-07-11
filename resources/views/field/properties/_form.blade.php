@@ -1325,8 +1325,8 @@
             </button>
 
             {{-- Submit to Office (shown only on last step) --}}
-            <button type="submit" id="wiz-submit-btn" name="action" value="submit"
-                onclick="return confirm('Submit this property entry to the office?')"
+            <button type="button" id="wiz-submit-btn" name="action" value="submit"
+                onclick="wizardSubmit()"
                 style="display:none"
                 class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
                 Submit to Office
@@ -1443,8 +1443,102 @@ function wizardGoTo(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function wizardNext() { wizardGoTo(wizCurrent + 1); }
+// ─────────────────────────────────────────────────────────────────────
+// STEP VALIDATION
+// Collects all required inputs/selects/textareas in the given step div
+// that are empty, highlights them, and returns false if any found.
+// ─────────────────────────────────────────────────────────────────────
+function wizardValidateStep(stepIndex) {
+    const stepEl = document.querySelector(`.wizard-step[data-step="${stepIndex}"]`);
+    if (!stepEl) return true;
+
+    // Clear previous error highlights in this step
+    stepEl.querySelectorAll('.wiz-field-error').forEach(el => {
+        el.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+    });
+    stepEl.querySelectorAll('.wiz-inline-err').forEach(el => el.remove());
+
+    const fields = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+    let firstInvalid = null;
+
+    fields.forEach(field => {
+        // Skip hidden / disabled / readonly fields
+        if (field.disabled || field.type === 'hidden' || field.closest('[style*="display:none"]')) return;
+
+        const val = field.value ? field.value.trim() : '';
+        if (val === '') {
+            field.classList.add('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+            // Insert inline error message if not already there
+            let wrapper = field.parentElement;
+            if (!wrapper.querySelector('.wiz-inline-err')) {
+                const msg = document.createElement('p');
+                msg.className = 'wiz-inline-err mt-1 text-xs text-red-600 font-medium';
+                msg.textContent = 'This field is required';
+                wrapper.appendChild(msg);
+            }
+            if (!firstInvalid) firstInvalid = field;
+        }
+    });
+
+    if (firstInvalid) {
+        // Scroll to first invalid field
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus();
+        return false;
+    }
+    return true;
+}
+
+function wizardValidateAll() {
+    let firstFailStep = -1;
+    for (let i = 0; i < WIZ_TOTAL; i++) {
+        if (!wizardValidateStep(i)) {
+            if (firstFailStep === -1) firstFailStep = i;
+        }
+    }
+    if (firstFailStep !== -1) {
+        wizardGoTo(firstFailStep);
+        return false;
+    }
+    return true;
+}
+
+function wizardNext() {
+    if (!wizardValidateStep(wizCurrent)) return; // blocked — errors shown inline
+    wizardGoTo(wizCurrent + 1);
+}
+
 function wizardPrev() { wizardGoTo(wizCurrent - 1); }
+
+function wizardSubmit() {
+    if (!wizardValidateAll()) return; // navigate to first step with errors
+    if (!confirm('Submit this property entry to the office?')) return;
+    // Programmatically submit with action=submit
+    const form = document.querySelector('form');
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden'; hidden.name = 'action'; hidden.value = 'submit';
+    form.appendChild(hidden);
+    form.noValidate = false;
+    form.submit();
+}
+
+// Remove error highlight when user fills in a field
+document.addEventListener('input', function(e) {
+    const el = e.target;
+    if (el.classList.contains('wiz-field-error') && el.value.trim() !== '') {
+        el.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+        const msg = el.parentElement.querySelector('.wiz-inline-err');
+        if (msg) msg.remove();
+    }
+}, true);
+document.addEventListener('change', function(e) {
+    const el = e.target;
+    if (el.classList.contains('wiz-field-error') && el.value.trim() !== '') {
+        el.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+        const msg = el.parentElement.querySelector('.wiz-inline-err');
+        if (msg) msg.remove();
+    }
+}, true);
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
