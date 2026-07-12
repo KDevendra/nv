@@ -54,7 +54,7 @@ class PropertyEntryController extends Controller
         }
         $notOpenedEntries = $notOpenedQuery->get();
 
-        // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ────────────────────────────
+        // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ──
         $query = PropertyEntry::with(['fieldOfficer'])
             ->whereIn('field_officer_id', $fieldOfficerIds)
             ->whereNotNull('supply_head_viewed_at')
