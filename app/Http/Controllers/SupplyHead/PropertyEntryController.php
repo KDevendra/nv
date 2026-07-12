@@ -37,7 +37,7 @@ class PropertyEntryController extends Controller
         $notOpenedQuery = PropertyEntry::with(['fieldOfficer'])
             ->whereIn('field_officer_id', $fieldOfficerIds)
             ->whereNull('supply_head_viewed_at')
-            ->latest('submitted_at');
+            ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
 
         // Apply same field_officer / search filters to not-opened too
         if ($request->filled('field_officer')) {
@@ -57,8 +57,8 @@ class PropertyEntryController extends Controller
         // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ────────────────────────────
         $query = PropertyEntry::with(['fieldOfficer'])
             ->whereIn('field_officer_id', $fieldOfficerIds)
-            ->whereNotNull('supply_head_viewed_at')  // Only show entries that have been opened/viewed
-            ->latest('submitted_at');
+            ->whereNotNull('supply_head_viewed_at')
+            ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
 
         if ($request->filled('field_officer')) {
             $query->where('field_officer_id', $request->field_officer);

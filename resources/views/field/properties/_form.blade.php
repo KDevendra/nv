@@ -1363,7 +1363,7 @@ const WIZ_TITLES = [
 // Step error counts baked in from server (0 if no errors)
 const WIZ_ERR_COUNTS = @json($stepErrCounts);
 
-let wizCurrent = {{ $firstErrStep >= 0 ? $firstErrStep : 0 }};
+let wizCurrent = 0; // will be set correctly in DOMContentLoaded
 
 function wizardGoTo(step) {
     if (step < 0 || step >= WIZ_TOTAL) return;
@@ -1444,6 +1444,10 @@ function wizardGoTo(step) {
 
     // Scroll to top of page
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Keep hidden input in sync so draft saves carry the step
+    const stepInput = document.getElementById('wizard_step_input');
+    if (stepInput) stepInput.value = step;
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -1543,8 +1547,12 @@ document.addEventListener('change', function(e) {
     }
 }, true);
 
-// Init on DOM ready
+// Init on DOM ready — restore step from session (after draft save) or go to first error step
 document.addEventListener('DOMContentLoaded', function () {
+    const sessionStep = {{ session('wizard_step', -1) }};
+    const errStep     = {{ $firstErrStep }};
+    // Priority: validation errors > session-restored step > 0
+    wizCurrent = errStep >= 0 ? errStep : (sessionStep >= 0 ? sessionStep : 0);
     wizardGoTo(wizCurrent);
 });
 </script>
