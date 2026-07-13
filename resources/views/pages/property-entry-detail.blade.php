@@ -107,222 +107,434 @@
                         <div class="sgdxp-contact-row">
                             <div class="sgdxp-contact-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path fill="#b39359" d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                                    <path fill="#b39359" d="M6.62 10.79a15.093 15.093 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.07 21 3 13.93 3 5c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.21 2.2z" />
                                 </svg>
                             </div>
                             <div>
                                 <div class="sgdxp-contact-label">Call Us</div>
                                 <div class="sgdxp-contact-details">
-                                    <a href="tel:+917494010101" style="color:#e6edf8;text-decoration:none;">+91 74-94-01-01-01</a>
+                                    <a href="tel:+917494010101" class="sgdxp-call-number" style="color:#e6edf8;text-decoration:none;">+91 74-94-01-01-01</a>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <a href="{{ route('contact') }}" class="sgdxp-cta-button">Request Callback</a>
+                <div class="sgdxp-request-btn">
+                    <button type="button" id="open-callback-modal-btn">Request Callback</button>
                 </div>
             </aside>
+
         </div>
+    </div>
 
-        <!-- Additional Gallery -->
-        @if($entry->photos->count() > 1)
-        <div style="max-width:1400px; margin:48px auto; padding:0 20px;">
-            <h2 style="font-size:28px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0;">More Photos</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
-                @foreach($entry->photos->skip(1) as $photo)
-                <div style="position:relative; padding-bottom:75%; background:#f5f6f8; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                    <img src="{{ asset('images/property_photos/' . basename($photo->file_path)) }}"
-                         alt="Property Photo"
-                         style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <!-- Property Details Sections -->
-        <div style="max-width:1400px; margin:48px auto; padding:0 20px;">
-
-            {{-- Overview --}}
-            @if($entry->photos->count() > 0)
-            <div style="margin-bottom:32px; border-radius:12px; overflow:hidden; border:1px solid #e9ebef;">
-                <div style="position:relative; padding-bottom:60%; background:#f5f6f8;">
-                    <img src="{{ asset('images/property_photos/' . basename($entry->photos->first()->file_path)) }}"
-                         alt="Property Photo"
-                         style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
-                </div>
-                @if($entry->photos->count() > 1)
-                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; padding:8px; background:#fff;">
-                    @foreach($entry->photos->skip(1) as $photo)
-                    <div style="position:relative; padding-bottom:75%; background:#f5f6f8; border-radius:8px; overflow:hidden;">
-                        <img src="{{ asset('images/property_photos/' . basename($photo->file_path)) }}"
-                             alt="Property Photo"
-                             style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
-                    </div>
-                    @endforeach
-                </div>
-                @endif
-            </div>
-            @endif
-
-            {{-- Overview --}}
-            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:32px;">
-                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Property Overview</h2>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:24px;">
-                    @if($entry->facility_type)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Facility Type</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->facility_type }}</strong>
-                    </div>
-                    @endif
-                    @if($entry->plot_area)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Plot Area</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->plot_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
-                    </div>
-                    @endif
-                    @if($entry->built_up_area)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Built-up Area</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->built_up_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
-                    </div>
-                    @endif
-                    @if($entry->available_area)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Available Area</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->available_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
-                    </div>
-                    @endif
-                    @if($entry->clear_height_highest)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Clear Height</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->clear_height_highest }} ft</strong>
-                    </div>
-                    @endif
-                    @if($entry->number_of_floors)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Floors</span>
-                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->number_of_floors }}</strong>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Two Column Layout for Facilities --}}
-            {{-- Two Column Layout for Facilities --}}
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-bottom:32px;">
-
-                {{-- Dock & Loading --}}
-                @if($entry->dock_door_count || $entry->dock_type)
-                <div style="background:#fff; padding:28px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-                    <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:12px; border-bottom:2px solid #f0f2f5;">Dock & Loading</h2>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        @if($entry->dock_door_count)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Dock Doors</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_door_count }} total</strong>
+    <!-- SECTION 2: USP CARD + OVERVIEW + SPECIFICATIONS -->
+    <section id="sg2-section">
+        <div class="sg2-row">
+            <div>
+                <!-- USP Card -->
+                <div class="sg2-usp-card">
+                    <div class="sg2-usp-grid">
+                        <div>
+                            <div class="sg2-usp-item-label">Type</div>
+                            <div class="sg2-usp-item-value">{{ $entry->facility_type ?? 'N/A' }}</div>
                         </div>
-                        @endif
-                        @if($entry->dock_type)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Dock Type</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_type }}</strong>
+                        <div>
+                            <div class="sg2-usp-item-label">Area</div>
+                            <div class="sg2-usp-item-value">
+                                {{ $entry->available_area ? number_format($entry->available_area) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : 'N/A' }}
+                            </div>
                         </div>
-                        @endif
-                        @if($entry->dock_height)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Dock Height</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_height }} ft</strong>
+                        <div>
+                            <div class="sg2-usp-item-label">Clear Height</div>
+                            <div class="sg2-usp-item-value">{{ $entry->clear_height_highest ? $entry->clear_height_highest . ' ft' : 'N/A' }}</div>
                         </div>
-                        @endif
-                        @if($entry->truck_movement)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0;">
-                            <span style="font-size:14px; color:#5f738c;">Truck Movement</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->truck_movement }}</strong>
+                        <div>
+                            <div class="sg2-usp-item-label">Possession</div>
+                            <div class="sg2-usp-item-value">{{ $entry->available_from ? $entry->available_from->format('M Y') : 'On Request' }}</div>
                         </div>
-                        @endif
                     </div>
                 </div>
+
+                <!-- Property Overview -->
+                <h2 class="sg2-title-main">Property Overview</h2>
+                <hr class="sg2-hr">
+                @if($entry->remarks)
+                <p class="sg2-overview-text">{{ $entry->remarks }}</p>
+                @else
+                <p class="sg2-overview-text">Premium {{ $entry->facility_type }} available for {{ $entry->deal_type ?? 'lease/sale' }} in {{ $entry->nearest_city }}. Contact us for detailed specifications and site visit.</p>
                 @endif
 
-                {{-- Utilities --}}
-                @if($entry->power_sanctioned_kva || $entry->water_source)
-                <div style="background:#fff; padding:28px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-                    <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:12px; border-bottom:2px solid #f0f2f5;">Utilities</h2>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        @if($entry->power_sanctioned_kva)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Power</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->power_sanctioned_kva }} KVA</strong>
-                        </div>
-                        @endif
-                        @if($entry->water_source)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Water Source</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->water_source }}</strong>
-                        </div>
-                        @endif
-                        @if($entry->fire_fighting_system)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
-                            <span style="font-size:14px; color:#5f738c;">Fire System</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->fire_fighting_system }}</strong>
-                        </div>
-                        @endif
-                        @if($entry->fire_noc)
-                        <div style="display:flex; justify-content:space-between; padding:10px 0;">
-                            <span style="font-size:14px; color:#5f738c;">Fire NOC</span>
-                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->fire_noc }}</strong>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-                @endif
+                <!-- Key Features -->
 
-            </div>
-
-            {{-- Location --}}
-            @if($entry->nearest_city || $entry->nearest_highway)
-            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:32px;">
-                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Location & Connectivity</h2>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-                    @if($entry->nearest_city)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Nearest City</span>
-                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_city }}</strong>
-                    </div>
+                @if($entry->dock_door_count || $entry->power_sanctioned_kva || $entry->fire_noc)
+                <h3 class="sg2-subtitle">Top Reasons to Invest</h3>
+                <ul class="sg2-reasons">
+                    @if($entry->dock_door_count)
+                    <li>
+                        <span class="sg2-bullet-icon">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                                <path fill="#b39359" d="M12 3l3.7 4.3 5.3 1.4-3.4 4.1.4 5.5L12 16.8 6 18.3l.4-5.5-3.4-4.1 5.3-1.4L12 3z" />
+                            </svg>
+                        </span>
+                        <span>{{ $entry->dock_door_count }} Dock Doors</span>
+                    </li>
+                    @endif
+                    @if($entry->power_sanctioned_kva)
+                    <li>
+                        <span class="sg2-bullet-icon">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                                <path fill="#b39359" d="M12 3l3.7 4.3 5.3 1.4-3.4 4.1.4 5.5L12 16.8 6 18.3l.4-5.5-3.4-4.1 5.3-1.4L12 3z" />
+                            </svg>
+                        </span>
+                        <span>{{ $entry->power_sanctioned_kva }} KVA Power</span>
+                    </li>
+                    @endif
+                    @if($entry->fire_noc === 'Yes')
+                    <li>
+                        <span class="sg2-bullet-icon">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                                <path fill="#b39359" d="M12 3l3.7 4.3 5.3 1.4-3.4 4.1.4 5.5L12 16.8 6 18.3l.4-5.5-3.4-4.1 5.3-1.4L12 3z" />
+                            </svg>
+                        </span>
+                        <span>Fire NOC Approved</span>
+                    </li>
                     @endif
                     @if($entry->nearest_highway)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Highway</span>
-                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_highway }}</strong>
-                    </div>
+                    <li>
+                        <span class="sg2-bullet-icon">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                                <path fill="#b39359" d="M12 3l3.7 4.3 5.3 1.4-3.4 4.1.4 5.5L12 16.8 6 18.3l.4-5.5-3.4-4.1 5.3-1.4L12 3z" />
+                            </svg>
+                        </span>
+                        <span>Excellent Connectivity - {{ $entry->nearest_highway }}</span>
+                    </li>
                     @endif
-                    @if($entry->nearest_railway_station)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Railway Station</span>
-                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_railway_station }}</strong>
-                    </div>
+                    @if($entry->water_source)
+                    <li>
+                        <span class="sg2-bullet-icon">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                                <path fill="#b39359" d="M12 3l3.7 4.3 5.3 1.4-3.4 4.1.4 5.5L12 16.8 6 18.3l.4-5.5-3.4-4.1 5.3-1.4L12 3z" />
+                            </svg>
+                        </span>
+                        <span>{{ $entry->water_source }} Water Supply</span>
+                    </li>
                     @endif
-                    @if($entry->nearest_airport)
-                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
-                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Airport</span>
-                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_airport }}</strong>
-                    </div>
-                    @endif
+                </ul>
+                @endif
+
+                <!-- Specifications Table -->
+                <h2 class="sg2-title-main">Specifications</h2>
+                <hr class="sg2-hr">
+
+                <div class="apw-table-wrap">
+                    <table class="apw-table">
+                        <thead>
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Attributes</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $srNo = 1; @endphp
+                            @if($entry->facility_type)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Facility Type</td>
+                                <td>{{ $entry->facility_type }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->plot_area)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Plot Area</td>
+                                <td>{{ number_format($entry->plot_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->built_up_area)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Built-up Area</td>
+                                <td>{{ number_format($entry->built_up_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->carpet_area)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Carpet Area</td>
+                                <td>{{ number_format($entry->carpet_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->available_area)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Available Area</td>
+                                <td>{{ number_format($entry->available_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->clear_height_highest)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Clear Height (Highest)</td>
+                                <td>{{ $entry->clear_height_highest }} ft</td>
+                            </tr>
+                            @endif
+                            @if($entry->clear_height_lowest)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Clear Height (Lowest)</td>
+                                <td>{{ $entry->clear_height_lowest }} ft</td>
+                            </tr>
+                            @endif
+                            @if($entry->number_of_floors)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Number of Floors</td>
+                                <td>{{ $entry->number_of_floors }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->dock_door_count)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Doors</td>
+                                <td>{{ $entry->dock_door_count }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->dock_type)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Type</td>
+                                <td>{{ $entry->dock_type }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->dock_height)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Height</td>
+                                <td>{{ $entry->dock_height }} ft</td>
+                            </tr>
+                            @endif
+                            @if($entry->power_sanctioned_kva)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Power Sanctioned</td>
+                                <td>{{ $entry->power_sanctioned_kva }} KVA</td>
+                            </tr>
+                            @endif
+                            @if($entry->discom_name)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>DISCOM</td>
+                                <td>{{ $entry->discom_name }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->water_source)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Water Source</td>
+                                <td>{{ $entry->water_source }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->fire_fighting_system)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Fire Fighting System</td>
+                                <td>{{ $entry->fire_fighting_system }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->fire_noc)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Fire NOC</td>
+                                <td>{{ $entry->fire_noc }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->pollution_noc)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Pollution NOC</td>
+                                <td>{{ $entry->pollution_noc }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->occupancy_certificate)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Occupancy Certificate</td>
+                                <td>{{ $entry->occupancy_certificate }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->no_of_offices)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Number of Offices</td>
+                                <td>{{ $entry->no_of_offices }}</td>
+                            </tr>
+                            @endif
+
+                            @if($entry->canteen)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Canteen</td>
+                                <td>{{ $entry->canteen ? 'Yes' : 'No' }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->washrooms)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Washrooms</td>
+                                <td>{{ $entry->washrooms }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->flooring_type)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Flooring Type</td>
+                                <td>{{ $entry->flooring_type }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->tenure)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Tenure</td>
+                                <td>{{ $entry->tenure }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->nearest_city)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest City</td>
+                                <td>{{ $entry->nearest_city }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->nearest_highway)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Highway</td>
+                                <td>{{ $entry->nearest_highway }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->nearest_railway_station)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Railway Station</td>
+                                <td>{{ $entry->nearest_railway_station }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->nearest_airport)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Airport</td>
+                                <td>{{ $entry->nearest_airport }}</td>
+                            </tr>
+                            @endif
+                            @if($entry->expected_rent)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Expected Rent</td>
+                                <td>₹{{ number_format($entry->expected_rent, 2) }} /sq ft/month</td>
+                            </tr>
+                            @endif
+                            @if($entry->expected_sale_price)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Expected Sale Price</td>
+                                <td>₹{{ number_format($entry->expected_sale_price / 100000, 2) }} Lac</td>
+                            </tr>
+                            @endif
+                            @if($entry->security_deposit_months)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Security Deposit</td>
+                                <td>{{ $entry->security_deposit_months }} months</td>
+                            </tr>
+                            @endif
+                            @if($entry->lock_in_years)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Lock-in Period</td>
+                                <td>{{ $entry->lock_in_years }} years</td>
+                            </tr>
+                            @endif
+                            @if($entry->available_from)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Available From</td>
+                                <td>{{ $entry->available_from->format('M d, Y') }}</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            @endif
 
-            {{-- Remarks --}}
-            @if($entry->remarks)
-            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Remarks</h2>
-                <p style="font-size:16px; color:#5f738c; line-height:1.8; margin:0; white-space:pre-wrap;">{{ $entry->remarks }}</p>
-            </div>
-            @endif
+            <aside>
+                <h2 class="sg2-form-title">Request a Callback</h2>
+                <p class="sg2-form-subtext">Share your details and our team will call you with floor plans, pricing and exclusive offers.</p>
 
+                <!-- Success Message -->
+                <div id="callback-success-message" style="display:none;background:#10b981;color:#fff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                    Thank you! We'll contact you shortly.
+                </div>
+
+                <!-- Error Message -->
+                <div id="callback-error-message" style="display:none;background:#ef4444;color:#fff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                    Something went wrong. Please try again.
+                </div>
+
+                <form id="callback-form" action="{{ route('inquiries.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="property_entry_code" value="{{ $entry->code }}">
+                    <div class="sg2-form-group">
+                        <input type="text" name="name" class="sg2-input" placeholder="Your Name" required>
+                    </div>
+                    <div class="sg2-form-group">
+                        <input type="tel" name="phone" class="sg2-input" placeholder="Phone Number" required>
+                    </div>
+                    <div class="sg2-form-group">
+                        <input type="email" name="email" class="sg2-input" placeholder="Email">
+                    </div>
+                    <div class="sg2-form-group">
+                        <textarea name="message" class="sg2-textarea" placeholder="I am interested in {{ $entry->facility_type }} - {{ $entry->code }}..."></textarea>
+                    </div>
+                    <div class="sg2-btn-wrap">
+                        <button type="submit" class="sg2-btn" id="callback-submit-btn">
+                            <span class="btn-text">Get Best Price</span>
+                            <span class="btn-loading" style="display:none;">
+                                <svg class="animate-spin h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Sending...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </aside>
         </div>
+    </section>
 
-    </div>{{-- Close #sgdxp-page --}}
+    <!-- GALLERY -->
+    @if($entry->photos->count() > 0)
+    <section id="sg-gallery-similar">
+        <div class="sg-gs-row">
+            <div class="sg-gallery-box">
+                <h2 class="sg-gallery-title">Gallery</h2>
+                <hr class="sg2-hr">
+
+                <div class="sg-slider">
+                    @foreach($entry->photos as $photo)
+                        <div class="sg-slide">
+                            <img src="{{ asset('images/property_photos/' . basename($photo->file_path)) }}" alt="{{ $entry->facility_type }}">
+                        </div>
+                    @endforeach
+
+                    <div class="sg-prev" onclick="sgPlusSlides(-1)">‹</div>
+                    <div class="sg-next" onclick="sgPlusSlides(1)">›</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    @endif
 
 @endsection
