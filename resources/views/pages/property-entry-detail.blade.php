@@ -124,12 +124,26 @@
             </aside>
         </div>
 
-    <div style="max-width:1200px; margin:0 auto; padding:60px 20px;">
+        <!-- Additional Gallery -->
+        @if($entry->photos->count() > 1)
+        <div style="max-width:1400px; margin:48px auto; padding:0 20px;">
+            <h2 style="font-size:28px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0;">More Photos</h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
+                @foreach($entry->photos->skip(1) as $photo)
+                <div style="position:relative; padding-bottom:75%; background:#f5f6f8; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                    <img src="{{ asset('images/property_photos/' . basename($photo->file_path)) }}"
+                         alt="Property Photo"
+                         style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
-        {{-- Main Content --}}
-        <div>
+        <!-- Property Details Sections -->
+        <div style="max-width:1400px; margin:48px auto; padding:0 20px;">
 
-            {{-- Photo Gallery --}}
+            {{-- Overview --}}
             @if($entry->photos->count() > 0)
             <div style="margin-bottom:32px; border-radius:12px; overflow:hidden; border:1px solid #e9ebef;">
                 <div style="position:relative; padding-bottom:60%; background:#f5f6f8;">
@@ -152,37 +166,49 @@
             @endif
 
             {{-- Overview --}}
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Property Overview</h2>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:32px;">
+                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Property Overview</h2>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:24px;">
                     @if($entry->facility_type)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Facility Type</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->facility_type }}</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Facility Type</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->facility_type }}</strong>
+                    </div>
                     @endif
                     @if($entry->plot_area)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Plot Area</span><strong style="font-size:16px; color:#0b2c3d;">{{ number_format($entry->plot_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Plot Area</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->plot_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
+                    </div>
                     @endif
                     @if($entry->built_up_area)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Built-up Area</span><strong style="font-size:16px; color:#0b2c3d;">{{ number_format($entry->built_up_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong></div>
-                    @endif
-                    @if($entry->carpet_area)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Carpet Area</span><strong style="font-size:16px; color:#0b2c3d;">{{ number_format($entry->carpet_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Built-up Area</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->built_up_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
+                    </div>
                     @endif
                     @if($entry->available_area)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Available Area</span><strong style="font-size:16px; color:#0b2c3d;">{{ number_format($entry->available_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Available Area</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ number_format($entry->available_area, 0) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</strong>
+                    </div>
                     @endif
                     @if($entry->clear_height_highest)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Clear Height</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->clear_height_highest }} ft (highest)</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Clear Height</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->clear_height_highest }} ft</strong>
+                    </div>
                     @endif
                     @if($entry->number_of_floors)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Floors</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->number_of_floors }}</strong></div>
-                    @endif
-                    @if($entry->tenure)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Tenure</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->tenure }}</strong></div>
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Floors</span>
+                        <strong style="font-size:18px; color:#0b2c3d;">{{ $entry->number_of_floors }}</strong>
+                    </div>
                     @endif
                 </div>
             </div>
 
-            {{-- Dock & Loading --}}
+            {{-- Two Column Layout for Facilities --}}
             @if($entry->dock_door_count || $entry->dock_type)
             <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
                 <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Dock & Loading Facilities</h2>
