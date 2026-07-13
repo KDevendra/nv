@@ -129,6 +129,35 @@ class HomeController extends Controller
                 break;
         }
         $properties = $query->paginate(12)->withQueryString();
+
+        // ── Merge approved PropertyEntry records (admin approved + show on website) ──
+        $entryQuery = \App\Models\PropertyEntry::with(['photos'])
+            ->where('admin_status', 'approved')
+            ->where('show_on_website', true);
+
+        // Filter by facility_type when a property type slug is active
+        if ($selectedPropertyType) {
+            $entryQuery->where('facility_type', 'like', '%' . $selectedPropertyType->name . '%');
+        }
+        // Search filter
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $entryQuery->where(function ($q) use ($s) {
+                $q->where('name_full_address', 'like', "%{$s}%")
+                  ->orWhere('nearest_city', 'like', "%{$s}%")
+                  ->orWhere('facility_type', 'like', "%{$s}%")
+                  ->orWhere('code', 'like', "%{$s}%");
+            });
+        }
+        // City filter (by name match since entries don't have city_id FK)
+        if ($request->filled('city_id')) {
+            $cityName = \App\Models\City::find($request->city_id)?->name;
+            if ($cityName) {
+                $entryQuery->where('nearest_city', 'like', "%{$cityName}%");
+            }
+        }
+        $propertyEntries = $entryQuery->latest()->get();
+
         $cities = City::active()->ordered()->get();
         $locations = Location::active()->ordered()->get();
         $propertyTypes = PropertyType::active()->ordered()->get();
@@ -175,7 +204,7 @@ class HomeController extends Controller
             }
         }
         
-        return view('pages.properties', compact('properties', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder', 'selectedPropertyType'));
+        return view('pages.properties', compact('properties', 'propertyEntries', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder', 'selectedPropertyType'));
     }
 
     public function show(Property $property)

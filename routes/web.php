@@ -55,6 +55,7 @@ Route::get('/blogs', [HomeController::class, 'blogs'])->name('blogs.index');
 Route::get('/blog/{blog:slug}', [HomeController::class, 'blogShow'])->name('blogs.show');
 Route::get('/properties', [HomeController::class, 'properties'])->name('properties.index');
 Route::get('/properties/{property:slug}', [HomeController::class, 'show'])->name('properties.show');
+Route::get('/property-entries/{entry:code}', [HomeController::class, 'showEntry'])->name('property-entries.show');
 Route::get('/properties/search', [HomeController::class, 'search'])->name('properties.search');
 Route::get('/api/bhks-by-property-type', [HomeController::class, 'getBhksByPropertyType'])->name('api.bhks-by-property-type');
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('privacy-policy');
