@@ -11,6 +11,69 @@
 
 @section('content')
 
+    <!-- Request Callback Modal -->
+    <div id="callback-modal-overlay" class="inquiry-popup-overlay hidden">
+        <div class="inquiry-popup-content">
+            <button type="button" id="callback-modal-close-btn-x"
+                style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:#ef4444;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(239,68,68,0.3);transition:all 0.2s ease;z-index:10;"
+                onmouseover="this.style.background='#dc2626';this.style.transform='scale(1.1)'"
+                onmouseout="this.style.background='#ef4444';this.style.transform='scale(1)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                    stroke-linecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </button>
+            <div class="inquiry-popup-header">
+                <h5 class="inquiry-popup-title">Request a Callback</h5>
+                <p class="inquiry-popup-subtitle">Share your details and our team will call you with floor plans, pricing and exclusive offers.</p>
+            </div>
+
+            <div id="callback-modal-success-message" class="popup-message success">
+                Thank you! We'll contact you shortly.
+            </div>
+            <div id="callback-modal-error-message" class="popup-message error">
+                Something went wrong. Please try again.
+            </div>
+
+            <form id="callback-modal-form" action="{{ route('inquiries.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="property_entry_code" value="{{ $entry->code }}">
+
+                <div class="popup-form-group">
+                    <label class="popup-form-label">Your Name *</label>
+                    <input type="text" name="name" class="popup-form-input" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="popup-form-group">
+                    <label class="popup-form-label">Phone Number *</label>
+                    <input type="tel" name="phone" class="popup-form-input" placeholder="Enter your phone number" required>
+                </div>
+
+                <div class="popup-form-group">
+                    <label class="popup-form-label">Email Address</label>
+                    <input type="email" name="email" class="popup-form-input" placeholder="Enter your email (optional)">
+                </div>
+
+                <div class="popup-form-group">
+                    <label class="popup-form-label">Message</label>
+                    <textarea name="message" class="popup-form-textarea" placeholder="I am interested in {{ $entry->facility_type }} - {{ $entry->code }}..."></textarea>
+                </div>
+
+                <button type="submit" class="popup-submit-btn" id="callback-modal-submit-btn">
+                    <span class="popup-btn-text">Submit Request</span>
+                    <span class="popup-btn-loading" style="display:none;">
+                        <span class="popup-loading-spinner"></span>
+                        Submitting...
+                    </span>
+                </button>
+
+                <button type="button" class="popup-submit-btn" id="callback-modal-close-btn" style="background: #6b7280; margin-top: 10px;">
+                    Close
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- BANNER -->
     <section class="about-banner-section">
         <div class="about-banner-overlay"></div>
@@ -543,4 +606,129 @@
     </section>
     @endif
 
+@endsection
+
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gallery Slider
+    let slideIndex = 1;
+    showSlides(slideIndex);
+    function sgPlusSlides(n) { showSlides(slideIndex += n); }
+    function showSlides(n) {
+        let slides = document.getElementsByClassName("sg-slide");
+        if (!slides.length) return;
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+        for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+        slides[slideIndex - 1].style.display = "block";
+    }
+    window.sgPlusSlides = sgPlusSlides;
+
+    // Callback Modal
+    const callbackBtn = document.getElementById('open-callback-modal-btn');
+    const callbackOverlay = document.getElementById('callback-modal-overlay');
+    const callbackCloseBtn = document.getElementById('callback-modal-close-btn');
+    const callbackForm = document.getElementById('callback-modal-form');
+    const callbackSubmitBtn = document.getElementById('callback-modal-submit-btn');
+
+    if (callbackBtn) {
+        callbackBtn.addEventListener('click', () => {
+            callbackOverlay.classList.remove('hidden');
+        });
+    }
+
+    if (callbackCloseBtn) {
+        callbackCloseBtn.addEventListener('click', () => {
+            callbackOverlay.classList.add('hidden');
+        });
+    }
+
+    if (callbackOverlay) {
+        callbackOverlay.addEventListener('click', (e) => {
+            if (e.target === callbackOverlay) callbackOverlay.classList.add('hidden');
+        });
+    }
+
+    // Form submission
+    if (callbackForm) {
+        callbackForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const btnText = callbackSubmitBtn.querySelector('.popup-btn-text');
+            const btnLoading = callbackSubmitBtn.querySelector('.popup-btn-loading');
+            
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            callbackSubmitBtn.disabled = true;
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('callback-modal-success-message').style.display = 'block';
+                    callbackForm.reset();
+                    setTimeout(() => {
+                        callbackOverlay.classList.add('hidden');
+                        document.getElementById('callback-modal-success-message').style.display = 'none';
+                    }, 2000);
+                } else {
+                    document.getElementById('callback-modal-error-message').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('callback-modal-error-message').style.display = 'block';
+            } finally {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                callbackSubmitBtn.disabled = false;
+            }
+        });
+    }
+
+    // Inline callback form
+    const inlineForm = document.getElementById('callback-form');
+    if (inlineForm) {
+        inlineForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('callback-submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                if (response.ok) {
+                    document.getElementById('callback-success-message').style.display = 'block';
+                    inlineForm.reset();
+                    setTimeout(() => {
+                        document.getElementById('callback-success-message').style.display = 'none';
+                    }, 3000);
+                } else {
+                    document.getElementById('callback-error-message').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('callback-error-message').style.display = 'block';
+            } finally {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    }
+});
+</script>
 @endsection
