@@ -363,7 +363,12 @@ class PropertyEntryController extends Controller
                 $presence = ($cfg && $cfg->mandatory_field) ? 'required' : 'nullable';
             }
 
-            $rules[$field] = $presence . '|' . $typeConstraint;
+            // Build rule — typeConstraint can be a string or an array
+            if (is_array($typeConstraint)) {
+                $rules[$field] = array_merge([$presence], $typeConstraint);
+            } else {
+                $rules[$field] = $presence . '|' . $typeConstraint;
+            }
         }
 
         // Photos are always optional — not driven by field config
