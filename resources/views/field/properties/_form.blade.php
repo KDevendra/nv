@@ -184,7 +184,15 @@
         @if($fc('postal_address_pin')->keep_field)
         <div>
             <label class="{{ $lc }}">PIN Code {!! $ast('postal_address_pin') !!}</label>
-            <input type="text" name="postal_address_pin" value="{{ $v('postal_address_pin') }}" {{ $req('postal_address_pin') }} class="{{ $ic }}">
+            <input type="tel" name="postal_address_pin"
+                value="{{ $v('postal_address_pin') }}"
+                {{ $req('postal_address_pin') }}
+                pattern="[0-9]{6}"
+                maxlength="6"
+                inputmode="numeric"
+                placeholder="6-digit PIN"
+                title="Enter a valid 6-digit PIN code"
+                class="{{ $ic }}">
             @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             {!! $rmk('postal_address_pin') !!}
         </div>
@@ -238,7 +246,15 @@
         @if($fc('owner_contact_phone')->keep_field)
         <div>
             <label class="{{ $lc }}">Owner Contact Number {!! $ast('owner_contact_phone') !!}</label>
-            <input type="text" name="owner_contact_phone" value="{{ $v('owner_contact_phone') }}" {{ $req('owner_contact_phone') }} class="{{ $ic }}">
+            <input type="tel" name="owner_contact_phone"
+                value="{{ $v('owner_contact_phone') }}"
+                {{ $req('owner_contact_phone') }}
+                pattern="[6-9][0-9]{9}"
+                maxlength="10"
+                inputmode="numeric"
+                placeholder="10-digit mobile number"
+                title="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9"
+                class="{{ $ic }}">
             @error('owner_contact_phone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             {!! $rmk('owner_contact_phone') !!}
         </div>
