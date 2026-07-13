@@ -207,6 +207,12 @@ class HomeController extends Controller
         return view('pages.properties', compact('properties', 'propertyEntries', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder', 'selectedPropertyType'));
     }
 
+    public function showEntry(\App\Models\PropertyEntry $entry)
+    {
+        $entry->load(['photos']);
+        return view('pages.property-entry-detail', compact('entry'));
+    }
+
     public function show(Property $property)
     {
         $property->incrementViews();

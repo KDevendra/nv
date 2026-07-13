@@ -1625,8 +1625,13 @@
                     </div>
 
                     <!-- Property Cards -->
-                    @if ($properties->count() > 0)
+                    @php $totalCount = $properties->total() + $propertyEntries->count(); @endphp
+                    <p class="apw-listSub" style="margin-bottom:12px">Showing {{ $properties->count() + $propertyEntries->count() }} of {{ $totalCount }} properties</p>
+
+                    @if ($properties->count() > 0 || $propertyEntries->count() > 0)
                         <div class="apw-cardGrid">
+
+                            {{-- ── Regular Property cards ── --}}
                             @foreach ($properties as $property)
                                 <article class="apw-card">
                                     <div class="apw-cardMedia"
@@ -1673,12 +1678,71 @@
                                     </div>
                                 </article>
                             @endforeach
+
+                            {{-- ── PropertyEntry cards (admin-approved, show_on_website) ── --}}
+                            @foreach ($propertyEntries as $entry)
+                                @php
+                                    $entryPhoto = $entry->photos->first();
+                                    $entryImg   = $entryPhoto
+                                        ? asset('images/property_photos/' . basename($entryPhoto->file_path))
+                                        : 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=70';
+                                    $entryPrice = $entry->expected_rent
+                                        ? '₹' . number_format($entry->expected_rent, 2) . ' /sq ft/mo'
+                                        : ($entry->expected_sale_price
+                                            ? '₹' . number_format($entry->expected_sale_price / 100000, 2) . ' Lac'
+                                            : 'Price on Request');
+                                    $entryArea  = $entry->available_area
+                                        ? number_format($entry->available_area, 0) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft')
+                                        : ($entry->built_up_area ? number_format($entry->built_up_area, 0) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : null);
+                                @endphp
+                                <article class="apw-card">
+                                    <div class="apw-cardMedia"
+                                        style="background-image:url('{{ $entryImg }}');">
+                                        <span class="apw-tag apw-tagAlt">{{ $entry->deal_type ?? 'Available' }}</span>
+                                    </div>
+                                    <div class="apw-cardBody">
+                                        <h3 class="apw-cardTitle">{{ Str::limit($entry->name_full_address ?? $entry->facility_type, 55) }}</h3>
+                                        <p class="apw-cardMeta">
+                                            <span class="apw-miniSvg" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                                    <path d="M12 21s7-5.2 7-11A7 7 0 1 0 5 10c0 5.8 7 11 7 11z"
+                                                        stroke="#b39359" stroke-width="1.7" />
+                                                    <circle cx="12" cy="10" r="2.3" stroke="#b39359"
+                                                        stroke-width="1.7" />
+                                                </svg>
+                                            </span>
+                                            {{ $entry->nearest_city ?? $entry->district ?? '' }}
+                                            @if($entry->facility_type) • {{ $entry->facility_type }} @endif
+                                            @if($entryArea) • {{ $entryArea }} @endif
+                                        </p>
+                                        <div class="apw-cardRow">
+                                            <div class="apw-price">
+                                                <span class="apw-priceLabel">{{ $entry->expected_rent ? 'Rent' : 'Price' }}</span>
+                                                <span class="apw-priceVal">{{ $entryPrice }}</span>
+                                            </div>
+                                            <div class="apw-ctaRow">
+                                                <a class="apw-btnOutline"
+                                                    href="{{ route('property-entries.show', $entry->code) }}">View Details</a>
+                                            </div>
+                                        </div>
+                                        <div class="apw-amenities">
+                                            @if($entry->dock_door_count) <span>{{ $entry->dock_door_count }} Dock Doors</span> @endif
+                                            @if($entry->clear_height_highest) <span>{{ $entry->clear_height_highest }}ft Height</span> @endif
+                                            @if($entry->power_sanctioned_kva) <span>{{ $entry->power_sanctioned_kva }} KVA Power</span> @endif
+                                            @if($entry->fire_noc === 'Yes') <span>Fire NOC</span> @endif
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+
                         </div>
 
-                        <!-- Pagination -->
+                        <!-- Pagination (regular properties only) -->
+                        @if($properties->hasPages())
                         <div class="mt-8">
                             {{ $properties->links() }}
                         </div>
+                        @endif
                     @else
                         <div class="apw-empty">
                             <div class="apw-emptyBox">
