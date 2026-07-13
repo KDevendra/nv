@@ -209,87 +209,105 @@
             </div>
 
             {{-- Two Column Layout for Facilities --}}
-            @if($entry->dock_door_count || $entry->dock_type)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Dock & Loading Facilities</h2>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    @if($entry->dock_door_count)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Dock Doors</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->dock_door_count }} total</strong></div>
-                    @endif
-                    @if($entry->dock_type)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Dock Type</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->dock_type }}</strong></div>
-                    @endif
-                    @if($entry->dock_height)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Dock Height</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->dock_height }} ft</strong></div>
-                    @endif
-                    @if($entry->truck_movement)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Truck Movement</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->truck_movement }}</strong></div>
-                    @endif
-                </div>
-            </div>
-            @endif
+            {{-- Two Column Layout for Facilities --}}
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-bottom:32px;">
 
-            {{-- Utilities --}}
-            @if($entry->power_sanctioned_kva || $entry->water_source)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Utilities & Infrastructure</h2>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    @if($entry->power_sanctioned_kva)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Power Sanctioned</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->power_sanctioned_kva }} KVA</strong></div>
-                    @endif
-                    @if($entry->discom_name)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">DISCOM</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->discom_name }}</strong></div>
-                    @endif
-                    @if($entry->water_source)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Water Source</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->water_source }}</strong></div>
-                    @endif
-                    @if($entry->fire_fighting_system)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Fire Fighting System</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->fire_fighting_system }}</strong></div>
-                    @endif
-                    @if($entry->solar !== null)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Solar</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->solar ? 'Yes' : 'No' }}</strong></div>
-                    @endif
+                {{-- Dock & Loading --}}
+                @if($entry->dock_door_count || $entry->dock_type)
+                <div style="background:#fff; padding:28px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+                    <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:12px; border-bottom:2px solid #f0f2f5;">Dock & Loading</h2>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        @if($entry->dock_door_count)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Dock Doors</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_door_count }} total</strong>
+                        </div>
+                        @endif
+                        @if($entry->dock_type)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Dock Type</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_type }}</strong>
+                        </div>
+                        @endif
+                        @if($entry->dock_height)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Dock Height</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->dock_height }} ft</strong>
+                        </div>
+                        @endif
+                        @if($entry->truck_movement)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0;">
+                            <span style="font-size:14px; color:#5f738c;">Truck Movement</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->truck_movement }}</strong>
+                        </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
-            @endif
+                @endif
 
-            {{-- Facilities --}}
-            @if($entry->no_of_offices || $entry->canteen || $entry->washrooms)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Facilities</h2>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    @if($entry->no_of_offices)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Offices</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->no_of_offices }}</strong></div>
-                    @endif
-                    @if($entry->canteen)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Canteen</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->canteen ? 'Yes' : 'No' }}</strong></div>
-                    @endif
-                    @if($entry->washrooms)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Washrooms</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->washrooms }}</strong></div>
-                    @endif
-                    @if($entry->flooring_type)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Flooring</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->flooring_type }}</strong></div>
-                    @endif
-                    @if($entry->fire_sprinkler)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Fire Sprinkler</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->fire_sprinkler }}</strong></div>
-                    @endif
+                {{-- Utilities --}}
+                @if($entry->power_sanctioned_kva || $entry->water_source)
+                <div style="background:#fff; padding:28px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+                    <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:12px; border-bottom:2px solid #f0f2f5;">Utilities</h2>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        @if($entry->power_sanctioned_kva)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Power</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->power_sanctioned_kva }} KVA</strong>
+                        </div>
+                        @endif
+                        @if($entry->water_source)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Water Source</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->water_source }}</strong>
+                        </div>
+                        @endif
+                        @if($entry->fire_fighting_system)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f2f5;">
+                            <span style="font-size:14px; color:#5f738c;">Fire System</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->fire_fighting_system }}</strong>
+                        </div>
+                        @endif
+                        @if($entry->fire_noc)
+                        <div style="display:flex; justify-content:space-between; padding:10px 0;">
+                            <span style="font-size:14px; color:#5f738c;">Fire NOC</span>
+                            <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->fire_noc }}</strong>
+                        </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
-            @endif
+                @endif
 
-            {{-- Legal --}}
-            @if($entry->fire_noc || $entry->pollution_noc)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Legal & Compliance</h2>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                    @if($entry->fire_noc)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Fire NOC</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->fire_noc }}</strong></div>
+            </div>
+
+            {{-- Location --}}
+            @if($entry->nearest_city || $entry->nearest_highway)
+            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:32px;">
+                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 24px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Location & Connectivity</h2>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+                    @if($entry->nearest_city)
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Nearest City</span>
+                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_city }}</strong>
+                    </div>
                     @endif
-                    @if($entry->pollution_noc)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Pollution NOC</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->pollution_noc }}</strong></div>
+                    @if($entry->nearest_highway)
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Highway</span>
+                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_highway }}</strong>
+                    </div>
                     @endif
-                    @if($entry->occupancy_certificate)
-                    <div><span style="font-size:14px; color:#5f738c; display:block; margin-bottom:4px;">Occupancy Certificate</span><strong style="font-size:16px; color:#0b2c3d;">{{ $entry->occupancy_certificate }}</strong></div>
+                    @if($entry->nearest_railway_station)
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Railway Station</span>
+                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_railway_station }}</strong>
+                    </div>
+                    @endif
+                    @if($entry->nearest_airport)
+                    <div style="padding:16px; background:#f8f9fb; border-radius:8px;">
+                        <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Airport</span>
+                        <strong style="font-size:16px; color:#0b2c3d;">{{ $entry->nearest_airport }}</strong>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -297,102 +315,14 @@
 
             {{-- Remarks --}}
             @if($entry->remarks)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h2 style="font-size:20px; font-weight:700; color:#0b2c3d; margin:0 0 12px 0;">Remarks & Observations</h2>
-                <p style="font-size:15px; color:#5f738c; line-height:1.7; margin:0; white-space:pre-wrap;">{{ $entry->remarks }}</p>
+            <div style="background:#fff; padding:32px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+                <h2 style="font-size:24px; font-weight:700; color:#0b2c3d; margin:0 0 20px 0; padding-bottom:16px; border-bottom:2px solid #f0f2f5;">Remarks</h2>
+                <p style="font-size:16px; color:#5f738c; line-height:1.8; margin:0; white-space:pre-wrap;">{{ $entry->remarks }}</p>
             </div>
             @endif
 
         </div>
 
-        {{-- Sidebar --}}
-        <div>
+    </div>{{-- Close #sgdxp-page --}}
 
-            {{-- Pricing Card --}}
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px; position:sticky; top:100px;">
-                <h3 style="font-size:18px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Pricing & Details</h3>
-
-                @if($entry->expected_rent)
-                <div style="margin-bottom:16px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Expected Rent</span>
-                    <strong style="font-size:24px; color:#b39359; font-weight:700; display:block;">₹{{ number_format($entry->expected_rent, 2) }}</strong>
-                    <span style="font-size:12px; color:#5f738c;">/sq ft/month</span>
-                </div>
-                @endif
-
-                @if($entry->expected_sale_price)
-                <div style="margin-bottom:16px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Expected Sale Price</span>
-                    <strong style="font-size:24px; color:#b39359; font-weight:700; display:block;">₹{{ number_format($entry->expected_sale_price / 100000, 2) }} Lac</strong>
-                </div>
-                @endif
-
-                @if($entry->security_deposit_months)
-                <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #e9ebef;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:2px;">Security Deposit</span>
-                    <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->security_deposit_months }} months</strong>
-                </div>
-                @endif
-
-                @if($entry->lock_in_years)
-                <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #e9ebef;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:2px;">Lock-in Period</span>
-                    <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->lock_in_years }} years</strong>
-                </div>
-                @endif
-
-                @if($entry->deal_type)
-                <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #e9ebef;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:2px;">Deal Type</span>
-                    <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->deal_type }}</strong>
-                </div>
-                @endif
-
-                @if($entry->available_from)
-                <div style="margin-bottom:16px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:2px;">Available From</span>
-                    <strong style="font-size:15px; color:#0b2c3d;">{{ $entry->available_from->format('M d, Y') }}</strong>
-                </div>
-                @endif
-
-                <a href="{{ route('contact') }}" style="display:block; text-align:center; background:#b39359; color:#fff; padding:14px 24px; border-radius:8px; font-size:15px; font-weight:600; text-decoration:none; transition:all 0.25s ease;" onmouseover="this.style.background='#9a7f4d';" onmouseout="this.style.background='#b39359';">Inquire Now</a>
-
-            </div>
-
-            {{-- Location Card --}}
-            @if($entry->nearest_city || $entry->nearest_highway)
-            <div style="background:#fff; padding:24px; border-radius:12px; border:1px solid #e9ebef; margin-bottom:24px;">
-                <h3 style="font-size:18px; font-weight:700; color:#0b2c3d; margin:0 0 16px 0;">Location</h3>
-                @if($entry->nearest_city)
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Nearest City</span>
-                    <strong style="font-size:15px; color:#0b2c3d; display:block;">{{ $entry->nearest_city }}</strong>
-                </div>
-                @endif
-                @if($entry->nearest_highway)
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Road Connectivity</span>
-                    <strong style="font-size:15px; color:#0b2c3d; display:block;">{{ $entry->nearest_highway }}</strong>
-                </div>
-                @endif
-                @if($entry->nearest_railway_station)
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Nearest Railway Station</span>
-                    <strong style="font-size:15px; color:#0b2c3d; display:block;">{{ $entry->nearest_railway_station }}</strong>
-                </div>
-                @endif
-                @if($entry->nearest_airport)
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:13px; color:#5f738c; display:block; margin-bottom:4px;">Nearest Airport</span>
-                    <strong style="font-size:15px; color:#0b2c3d; display:block;">{{ $entry->nearest_airport }}</strong>
-                </div>
-                @endif
-            </div>
-            @endif
-
-        </div>
-
-    </div>
-
-</div>
 @endsection
