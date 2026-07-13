@@ -235,13 +235,13 @@ class PropertyEntryController extends Controller
             'district'                     => 'string|max:255',
             'state'                        => 'string|max:255',
             'country'                      => 'string|max:255',
-            'postal_address_pin'           => 'string|max:50',
+            'postal_address_pin'           => ['string', 'max:6', 'regex:/^[0-9]{6}$/'],
             'nearest_highway'              => 'string|max:255',
             'nearest_city'                 => 'string|max:255',
             'nearest_railway_station'      => 'string|max:255',
             'nearest_airport'              => 'string|max:255',
             'owner_contact_name'           => 'string|max:255',
-            'owner_contact_phone'          => 'string|max:50',
+            'owner_contact_phone'          => ['string', 'max:10', 'regex:/^[6-9][0-9]{9}$/'],
             'owner_email'                  => 'email|max:255',
             // B
             'tenure'                       => 'string|max:50',
@@ -371,7 +371,9 @@ class PropertyEntryController extends Controller
         $rules['photos.*'] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
 
         return $request->validate($rules, [
-            'photos.*.image' => 'Only camera photos are allowed.',
+            'photos.*.image'          => 'Only camera photos are allowed.',
+            'postal_address_pin.regex'   => 'PIN code must be exactly 6 digits.',
+            'owner_contact_phone.regex'  => 'Contact number must be a valid 10-digit Indian mobile number.',
         ]);
     }
 
