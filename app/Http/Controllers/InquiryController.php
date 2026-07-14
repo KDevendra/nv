@@ -78,7 +78,9 @@ class InquiryController extends Controller
     private function storePropertyInquiry(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'property_id' => 'required|exists:properties,id',
+            'property_id' => 'nullable|exists:properties,id',
+            'source' => 'nullable|string|max:50',
+            'source_code' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
@@ -101,8 +103,18 @@ class InquiryController extends Controller
             // Get the current page visit ID from session
             $pageVisitId = $request->session()->get('current_page_visit_id');
             
-            // Check if this visitor has already submitted an inquiry for this property
-            $existingInquiry = \App\Models\PropertyInquiry::where('property_id', $request->property_id)
+            // Check if this visitor has already submitted an inquiry
+            $existingInquiryQuery = \App\Models\PropertyInquiry::query();
+            
+            // Check by property_id if provided
+            if ($request->filled('property_id')) {
+                $existingInquiryQuery->where('property_id', $request->property_id);
+            } else {
+                // For property entries, check by source_code
+                $existingInquiryQuery->where('message', 'like', '%' . $request->source_code . '%');
+            }
+            
+            $existingInquiry = $existingInquiryQuery
                 ->where(function($query) use ($request, $pageVisitId) {
                     $query->where('ip_address', $request->ip());
                     if ($pageVisitId) {
@@ -124,7 +136,7 @@ class InquiryController extends Controller
             }
             
             \App\Models\PropertyInquiry::create([
-                'property_id' => $request->property_id,
+                'property_id' => $request->property_id, // Will be NULL for property entries
                 'page_visit_id' => $pageVisitId,
                 'name' => $request->name,
                 'phone' => $request->phone,
