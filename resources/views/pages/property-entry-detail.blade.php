@@ -1538,7 +1538,9 @@
 
                 <form id="callback-form" action="{{ route('inquiries.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="property_id" value="{{ $entry->id ?? '' }}">
+                    {{-- No property_id for property entries --}}
+                    <input type="hidden" name="source" value="property_entry">
+                    <input type="hidden" name="source_code" value="{{ $entry->code }}">
                     <div class="sg2-form-group">
                         <input type="text" name="name" class="sg2-input" placeholder="Your Name" required>
                     </div>
@@ -1549,7 +1551,7 @@
                         <input type="email" name="email" class="sg2-input" placeholder="Email">
                     </div>
                     <div class="sg2-form-group">
-                        <textarea name="message" class="sg2-textarea" placeholder="I am interested in {{ $entry->facility_type ?? 'this property' }}..."></textarea>
+                        <textarea name="message" class="sg2-textarea" placeholder="I am interested in {{ $entry->facility_type ?? 'this property' }} ({{ $entry->code }})...">I am interested in {{ $entry->facility_type ?? 'property' }} - {{ $entry->code }} at {{ $entry->name_full_address }}</textarea>
                     </div>
                     <div class="sg2-btn-wrap">
                         <button type="submit" class="sg2-btn" id="callback-submit-btn">
