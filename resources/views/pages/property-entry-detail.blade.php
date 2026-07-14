@@ -1538,9 +1538,7 @@
 
                 <form id="callback-form" action="{{ route('inquiries.store') }}" method="POST">
                     @csrf
-                    {{-- No property_id for property entries --}}
-                    <input type="hidden" name="source" value="property_entry">
-                    <input type="hidden" name="source_code" value="{{ $entry->code }}">
+                    <input type="hidden" name="property_entry_code" value="{{ $entry->code }}">
                     <div class="sg2-form-group">
                         <input type="text" name="name" class="sg2-input" placeholder="Your Name" required>
                     </div>

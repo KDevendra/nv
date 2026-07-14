@@ -79,8 +79,7 @@ class InquiryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'property_id' => 'nullable|exists:properties,id',
-            'source' => 'nullable|string|max:50',
-            'source_code' => 'nullable|string|max:50',
+            'property_entry_code' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
@@ -106,12 +105,11 @@ class InquiryController extends Controller
             // Check if this visitor has already submitted an inquiry
             $existingInquiryQuery = \App\Models\PropertyInquiry::query();
             
-            // Check by property_id if provided
+            // Check by property_id or property_entry_code
             if ($request->filled('property_id')) {
                 $existingInquiryQuery->where('property_id', $request->property_id);
-            } else {
-                // For property entries, check by source_code
-                $existingInquiryQuery->where('message', 'like', '%' . $request->source_code . '%');
+            } elseif ($request->filled('property_entry_code')) {
+                $existingInquiryQuery->where('property_entry_code', $request->property_entry_code);
             }
             
             $existingInquiry = $existingInquiryQuery
@@ -137,6 +135,7 @@ class InquiryController extends Controller
             
             \App\Models\PropertyInquiry::create([
                 'property_id' => $request->property_id, // Will be NULL for property entries
+                'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
                 'page_visit_id' => $pageVisitId,
                 'name' => $request->name,
                 'phone' => $request->phone,
