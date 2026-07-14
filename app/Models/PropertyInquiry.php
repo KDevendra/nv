@@ -9,6 +9,7 @@ class PropertyInquiry extends Model
 {
     protected $fillable = [
         'property_id',
+        'property_entry_code',
         'page_visit_id',
         'name',
         'email',
