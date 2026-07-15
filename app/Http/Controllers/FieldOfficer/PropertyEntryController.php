@@ -83,6 +83,11 @@ class PropertyEntryController extends Controller
         $isDraft = ($action === 'draft');
         
         $data = $this->validateEntry($request, $isDraft);
+        
+        // Decode office_sizes JSON string to array for proper storage
+        if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
+            $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
+        }
 
         if ($isDraft) {
             // Save as draft — no status change, no submitted_at, no log
@@ -181,6 +186,11 @@ class PropertyEntryController extends Controller
         $oldStatus = $property->status;
         
         $data = $this->validateEntry($request, $isDraft);
+        
+        // Decode office_sizes JSON string to array for proper storage
+        if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
+            $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
+        }
 
         if ($isDraft) {
             // Save as draft — keep current status if already draft, otherwise set to draft

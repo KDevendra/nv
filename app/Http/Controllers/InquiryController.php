@@ -85,7 +85,7 @@ class InquiryController extends Controller
             'email' => 'nullable|email|max:255',
             'message' => 'nullable|string|max:1000',
         ]);
-
+        
         if ($validator->fails()) {
             // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
