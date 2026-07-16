@@ -2299,6 +2299,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 @endauth
+
+// Login button handler for non-authenticated users
+document.addEventListener('DOMContentLoaded', function() {
+    const loginBtn = document.getElementById('wishlist-login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            document.getElementById('login-modal-overlay').classList.remove('hidden');
+        });
+    }
+    
+    // Close login modal
+    const closeLoginModal = document.getElementById('login-modal-close-btn');
+    if (closeLoginModal) {
+        closeLoginModal.addEventListener('click', function() {
+            document.getElementById('login-modal-overlay').classList.add('hidden');
+        });
+    }
+    
+    // Close on overlay click
+    const loginModalOverlay = document.getElementById('login-modal-overlay');
+    if (loginModalOverlay) {
+        loginModalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    }
+});
 </script>
 
 <style>
