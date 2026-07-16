@@ -18,8 +18,18 @@
         return $config->show_on_website;
     };
     
-    // Check if user needs to submit inquiry to see more details
-    $showInquiryPrompt = !$userHasSubmittedInquiry && auth()->check();
+    // Check if we should show inquiry prompt:
+    // - Show to guests (not logged in)
+    // - Show to authenticated users who haven't submitted inquiry
+    $showInquiryPrompt = !$userHasSubmittedInquiry;
+    
+    // Count how many fields are hidden
+    $hiddenFieldsCount = 0;
+    foreach($fieldConfigs as $key => $config) {
+        if (!$canShowField($key) && $config->show_after_verification) {
+            $hiddenFieldsCount++;
+        }
+    }
 @endphp
 
 @section('styles')
@@ -1579,103 +1589,25 @@
                             @endif
                         </tbody>
                     </table>
-                    @if($showInquiryPrompt)
+                    @if($showInquiryPrompt && $hiddenFieldsCount > 0)
                         <div class="locked-field-notice">
-                            <h3>🔒 Submit an Inquiry to View Full Details</h3>
-                            <p>Some property details are available only after you submit an inquiry. Click below to unlock complete information.</p>
+                            <h3>🔒 Submit an Inquiry to View {{ $hiddenFieldsCount }}+ Additional Details</h3>
+                            @if(auth()->check())
+                                <p>Submit an inquiry to unlock complete property specifications and details.</p>
+                            @else
+                                <p>Submit an inquiry to create your account and unlock complete property specifications and details.</p>
+                            @endif
                             <button type="button" onclick="document.getElementById('callback-modal-overlay').classList.remove('hidden')">
-                                Submit Inquiry to View More
+                                @auth
+                                    Submit Inquiry to View More
+                                @else
+                                    Submit Inquiry & Create Account
+                                @endauth
                             </button>
                         </div>
                     @endif
                 </div>
             </div>
-            <aside class="sg2-form-card">
-                <h2 class="sg2-form-title">Property Highlights</h2>
-                <p class="sg2-form-subtext">Key features and specifications of this property</p>
-
-                <div class="space-y-3 mt-4">
-                    @if($entry->facility_type)
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">{{ $entry->facility_type }}</p>
-                            <p class="text-gray-300 text-xs">Facility Type</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($entry->plot_area && $canShowField('plot_area'))
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">{{ number_format($entry->plot_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</p>
-                            <p class="text-gray-300 text-xs">Plot Area</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($entry->clear_height_highest && $canShowField('clear_height_highest'))
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">{{ $entry->clear_height_highest }} ft</p>
-                            <p class="text-gray-300 text-xs">Clear Height</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($entry->dock_door_count && $canShowField('dock_door_count'))
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">{{ $entry->dock_door_count }} Dock Doors</p>
-                            <p class="text-gray-300 text-xs">Loading Facilities</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($entry->power_sanctioned_kva && $canShowField('power_sanctioned_kva'))
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">{{ $entry->power_sanctioned_kva }} KVA</p>
-                            <p class="text-gray-300 text-xs">Power Available</p>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($entry->fire_noc && $canShowField('fire_noc'))
-                    <div class="flex items-start space-x-3 text-sm">
-                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <p class="font-medium text-white">Fire NOC Available</p>
-                            <p class="text-gray-300 text-xs">Legal Compliance</p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-
-                <div class="mt-6 pt-6 border-t border-white/20">
-                    <a href="tel:+917494010101" class="block w-full px-6 py-3 bg-zendo-gold text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors text-center">
-                        📞 Call: +91 74-94-01-01-01
-                    </a>
-                </div>
-                    </div>
-                </form>
-            </aside>
         </div>
     </section>
 
