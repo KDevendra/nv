@@ -1247,8 +1247,49 @@
                     </div>
                 </div>
 
-                <div class="sgdxp-request-btn">
+                <div class="sgdxp-request-btn" style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button type="button" id="open-callback-modal-btn">Request Callback</button>
+                    
+                    @auth
+                    <button type="button" 
+                            id="wishlist-toggle-btn"
+                            data-property-entry-code="{{ $entry->code }}"
+                            data-in-wishlist="{{ $isInWishlist ? 'true' : 'false' }}"
+                            style="background: {{ $isInWishlist ? '#B39359' : 'white' }}; 
+                                   color: {{ $isInWishlist ? 'white' : '#0B2C3D' }}; 
+                                   border: 2px solid #B39359;
+                                   padding: 12px 24px;
+                                   border-radius: 4px;
+                                   font-weight: 600;
+                                   cursor: pointer;
+                                   display: inline-flex;
+                                   align-items: center;
+                                   gap: 8px;
+                                   transition: all 0.3s;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="{{ $isInWishlist ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <span id="wishlist-text">{{ $isInWishlist ? 'Saved' : 'Save' }}</span>
+                    </button>
+                    @else
+                    <button type="button" 
+                            onclick="alert('Please login to save properties to your wishlist')"
+                            style="background: white; 
+                                   color: #0B2C3D; 
+                                   border: 2px solid #B39359;
+                                   padding: 12px 24px;
+                                   border-radius: 4px;
+                                   font-weight: 600;
+                                   cursor: pointer;
+                                   display: inline-flex;
+                                   align-items: center;
+                                   gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <span>Save</span>
+                    </button>
+                    @endauth
                 </div>
             </aside>
 

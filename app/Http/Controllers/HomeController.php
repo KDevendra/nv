@@ -216,13 +216,22 @@ class HomeController extends Controller
         
         // Check if current user has submitted inquiry for this entry
         $userHasSubmittedInquiry = false;
+        $isInWishlist = false;
+        
         if (auth()->check()) {
             $userHasSubmittedInquiry = \App\Models\PropertyInquiry::where('property_entry_code', $entry->code)
                 ->where('user_id', auth()->id())
                 ->exists();
+            
+            // Check if in wishlist
+            $isInWishlist = \App\Models\PropertyWishlist::isInWishlist(
+                auth()->id(), 
+                null, 
+                $entry->code
+            );
         }
         
-        return view('pages.property-entry-detail', compact('entry', 'fieldConfigs', 'userHasSubmittedInquiry'));
+        return view('pages.property-entry-detail', compact('entry', 'fieldConfigs', 'userHasSubmittedInquiry', 'isInWishlist'));
     }
 
     public function show(Property $property)
