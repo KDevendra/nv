@@ -28,6 +28,9 @@ class UserDashboardController extends Controller
             ->where('status', 'contacted')
             ->count();
         
+        // Get wishlist count
+        $wishlistCount = PropertyWishlist::where('user_id', $user->id)->count();
+        
         // Get recent inquiries
         $recentInquiries = PropertyInquiry::where('user_id', $user->id)
             ->with(['property', 'propertyEntry'])
@@ -39,6 +42,7 @@ class UserDashboardController extends Controller
             'totalInquiries',
             'pendingInquiries',
             'contactedInquiries',
+            'wishlistCount',
             'recentInquiries'
         ));
     }
@@ -128,16 +132,9 @@ class UserDashboardController extends Controller
         $user = auth()->user();
         
         $wishlists = PropertyWishlist::where('user_id', $user->id)
-            ->with(['property', 'property.builder'])
+            ->with(['property.mainImage', 'property.city', 'property.location', 'property.bhk', 'property.projectStatus', 'propertyEntry.photos'])
             ->orderBy('created_at', 'desc')
             ->paginate(12);
-        
-        // Load property entries for wishlists that have property_entry_code
-        foreach ($wishlists as $wishlist) {
-            if ($wishlist->property_entry_code) {
-                $wishlist->entry = PropertyEntry::where('code', $wishlist->property_entry_code)->first();
-            }
-        }
         
         return view('user.wishlist', compact('wishlists'));
     }
@@ -172,6 +169,7 @@ class UserDashboardController extends Controller
             
             return response()->json([
                 'success' => true,
+                'added' => false,
                 'action' => 'removed',
                 'message' => 'Removed from wishlist'
             ]);
@@ -185,6 +183,7 @@ class UserDashboardController extends Controller
             
             return response()->json([
                 'success' => true,
+                'added' => true,
                 'action' => 'added',
                 'message' => 'Added to wishlist'
             ]);
