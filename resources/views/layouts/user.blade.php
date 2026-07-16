@@ -87,6 +87,13 @@
                         class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('user.inquiries*') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
                         My Inquiries
                     </a>
+                    <a href="{{ route('user.wishlist') }}" 
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('user.wishlist') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
+                        <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
+                        Wishlist
+                    </a>
                     <a href="{{ route('properties.index') }}" 
                         class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-300 hover:text-white hover:bg-white/10">
                         Browse Properties
@@ -163,6 +170,13 @@
                 <a href="{{ route('user.inquiries') }}" 
                     class="block px-3 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('user.inquiries*') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
                     My Inquiries
+                </a>
+                <a href="{{ route('user.wishlist') }}" 
+                    class="block px-3 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('user.wishlist') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
+                    <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                    </svg>
+                    Wishlist
                 </a>
                 <a href="{{ route('properties.index') }}" 
                     class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:text-white hover:bg-white/10">
