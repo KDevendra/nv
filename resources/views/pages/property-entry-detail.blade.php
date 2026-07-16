@@ -7,7 +7,7 @@
     // Field visibility helper function
     $canShowField = function($fieldKey) use ($fieldConfigs, $userHasSubmittedInquiry) {
         $config = $fieldConfigs->get($fieldKey);
-        if (!$config) return true; // Show if no config exists
+        if (!$config) return true; // Show if no config exists (reverted back to true since all fields are now configured)
         
         // If user has submitted inquiry, show fields marked as show_after_verification
         if ($userHasSubmittedInquiry && $config->show_after_verification) {
@@ -1594,6 +1594,391 @@
                                 <td>{{ $srNo++ }}</td>
                                 <td>Available From</td>
                                 <td>{{ $entry->available_from ? $entry->available_from->format('M d, Y') : 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section A remaining fields --}}
+                            @if($canShowField('name_full_address'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Full Address</td>
+                                <td>{{ $entry->name_full_address ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('village'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Village</td>
+                                <td>{{ $entry->village ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('tehsil'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Tehsil</td>
+                                <td>{{ $entry->tehsil ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('district'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>District</td>
+                                <td>{{ $entry->district ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('state'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>State</td>
+                                <td>{{ $entry->state ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('country'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Country</td>
+                                <td>{{ $entry->country ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('postal_address_pin'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>PIN Code</td>
+                                <td>{{ $entry->postal_address_pin ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('owner_contact_name'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Owner Name</td>
+                                <td>{{ $entry->owner_contact_name ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('owner_contact_phone'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Owner Contact Number</td>
+                                <td>{{ $entry->owner_contact_phone ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('owner_email'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Owner E-mail</td>
+                                <td>{{ $entry->owner_email ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section B remaining fields --}}
+                            @if($canShowField('approved_land_use'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Approved Land Use</td>
+                                <td>{{ $entry->approved_land_use ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('clu_conversion_status'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>CLU / Conversion Status</td>
+                                <td>{{ $entry->clu_conversion_status ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('pollution_category'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Pollution Category</td>
+                                <td>{{ $entry->pollution_category ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section C remaining fields --}}
+                            @if($canShowField('shed_width'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Shed Width</td>
+                                <td>{{ $entry->shed_width ? $entry->shed_width . ' ft' : 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('shed_length'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Shed Length</td>
+                                <td>{{ $entry->shed_length ? $entry->shed_length . ' ft' : 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('fsi_far'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>FSI / FAR</td>
+                                <td>{{ $entry->fsi_far ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section D — Dock, Exit & Width Details (combined) --}}
+                            @if($canShowField('dock_front') || $canShowField('dock_left') || $canShowField('dock_right') || $canShowField('dock_back'))
+                            @php $dockDoors = collect(['Front' => $entry->dock_front, 'Left' => $entry->dock_left, 'Right' => $entry->dock_right, 'Back' => $entry->dock_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Doors by Direction</td>
+                                <td>{{ $dockDoors->isEmpty() ? 'N/A' : $dockDoors->map(fn($v, $k) => "$k: $v")->join(', ') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('dock_leveller_front') || $canShowField('dock_leveller_left') || $canShowField('dock_leveller_right') || $canShowField('dock_leveller_back'))
+                            @php $dockLevellers = collect(['Front' => $entry->dock_leveller_front, 'Left' => $entry->dock_leveller_left, 'Right' => $entry->dock_leveller_right, 'Back' => $entry->dock_leveller_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Levellers by Direction</td>
+                                <td>{{ $dockLevellers->isEmpty() ? 'N/A' : $dockLevellers->map(fn($v, $k) => "$k: $v")->join(', ') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('fire_exit_front') || $canShowField('fire_exit_left') || $canShowField('fire_exit_right') || $canShowField('fire_exit_back'))
+                            @php $fireExits = collect(['Front' => $entry->fire_exit_front, 'Left' => $entry->fire_exit_left, 'Right' => $entry->fire_exit_right, 'Back' => $entry->fire_exit_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Fire Exit Doors by Direction</td>
+                                <td>{{ $fireExits->isEmpty() ? 'N/A' : $fireExits->map(fn($v, $k) => "$k: $v")->join(', ') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('canopy_width_front') || $canShowField('canopy_width_left') || $canShowField('canopy_width_right') || $canShowField('canopy_width_back'))
+                            @php $canopyWidths = collect(['Front' => $entry->canopy_width_front, 'Left' => $entry->canopy_width_left, 'Right' => $entry->canopy_width_right, 'Back' => $entry->canopy_width_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Canopy Width by Direction</td>
+                                <td>{{ $canopyWidths->isEmpty() ? 'N/A' : $canopyWidths->map(fn($v, $k) => "$k: $v")->join(', ') . ' ft' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('canopy_length_front') || $canShowField('canopy_length_left') || $canShowField('canopy_length_right') || $canShowField('canopy_length_back'))
+                            @php $canopyLengths = collect(['Front' => $entry->canopy_length_front, 'Left' => $entry->canopy_length_left, 'Right' => $entry->canopy_length_right, 'Back' => $entry->canopy_length_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Canopy Length by Direction</td>
+                                <td>{{ $canopyLengths->isEmpty() ? 'N/A' : $canopyLengths->map(fn($v, $k) => "$k: $v")->join(', ') . ' ft' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('road_width_front') || $canShowField('road_width_left') || $canShowField('road_width_right') || $canShowField('road_width_back'))
+                            @php $roadWidths = collect(['Front' => $entry->road_width_front, 'Left' => $entry->road_width_left, 'Right' => $entry->road_width_right, 'Back' => $entry->road_width_back])->filter(); @endphp
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Road Width by Direction</td>
+                                <td>{{ $roadWidths->isEmpty() ? 'N/A' : $roadWidths->map(fn($v, $k) => "$k: $v")->join(', ') . ' ft' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section E remaining fields --}}
+                            @if($canShowField('canteen_size'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Canteen Size</td>
+                                <td>{{ $entry->canteen_size ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('stp_plant'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>STP Plant</td>
+                                <td>{{ $entry->stp_plant ? 'Yes' : ($entry->stp_plant === '0' || $entry->stp_plant === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('stp_capacity'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>STP Capacity</td>
+                                <td>{{ $entry->stp_capacity ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('no_of_urinals'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>No. of Urinals</td>
+                                <td>{{ $entry->no_of_urinals ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('no_of_closets'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>No. of Closets</td>
+                                <td>{{ $entry->no_of_closets ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('female_washroom'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Female Washroom</td>
+                                <td>{{ $entry->female_washroom ? 'Yes' : ($entry->female_washroom === '0' || $entry->female_washroom === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('driver_rest_room'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Driver Rest Room</td>
+                                <td>{{ $entry->driver_rest_room ? 'Yes' : ($entry->driver_rest_room === '0' || $entry->driver_rest_room === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('mezzanine'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Mezzanine</td>
+                                <td>{{ $entry->mezzanine ? 'Yes' : ($entry->mezzanine === '0' || $entry->mezzanine === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('mezzanine_size'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Mezzanine Size</td>
+                                <td>{{ $entry->mezzanine_size ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('structure_type'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Structure Type</td>
+                                <td>{{ $entry->structure_type ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('ventilation_lighting'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Ventilation & Lighting</td>
+                                <td>{{ $entry->ventilation_lighting ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('insulation_roof'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Roof Insulation</td>
+                                <td>{{ $entry->insulation_roof ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('insulation_side'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Side Insulation</td>
+                                <td>{{ $entry->insulation_side ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('fire_sprinkler'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Fire Sprinkler</td>
+                                <td>{{ $entry->fire_sprinkler ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('scrap_yard'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Scrap Yard</td>
+                                <td>{{ $entry->scrap_yard ? 'Yes' : ($entry->scrap_yard === '0' || $entry->scrap_yard === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('no_of_companies_same_premise'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>No. of Companies in Same Premise</td>
+                                <td>{{ $entry->no_of_companies_same_premise ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('extension_possible'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Extension Possible</td>
+                                <td>{{ $entry->extension_possible ? 'Yes' : ($entry->extension_possible === '0' || $entry->extension_possible === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section F remaining fields --}}
+                            @if($canShowField('truck_movement'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Truck Movement</td>
+                                <td>{{ $entry->truck_movement ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('office_cabin_area'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Office / Cabin Area</td>
+                                <td>{{ $entry->office_cabin_area ? $entry->office_cabin_area . ' sq ft' : 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section G remaining fields --}}
+                            @if($canShowField('water_tank_capacity'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Water Tank Capacity</td>
+                                <td>{{ $entry->water_tank_capacity ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('solar'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Solar</td>
+                                <td>{{ $entry->solar ? 'Yes' : ($entry->solar === '0' || $entry->solar === 0 ? 'No' : 'N/A') }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section H remaining field --}}
+                            @if($canShowField('deal_type'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Lease / Sale Status</td>
+                                <td>{{ $entry->deal_type ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section I — Surroundings & Environment --}}
+                            @if($canShowField('approach_road_width'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Approach Road Width</td>
+                                <td>{{ $entry->approach_road_width ? $entry->approach_road_width . ' ft' : 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('top_neighbouring_companies'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Top Neighbouring Companies</td>
+                                <td>{{ $entry->top_neighbouring_companies ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('flood_risk'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Flood / Water-Logging Risk</td>
+                                <td>{{ $entry->flood_risk ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section J — Health & Emergency Nearby --}}
+                            @if($canShowField('nearest_hospital_km'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Hospital</td>
+                                <td>{{ $entry->nearest_hospital_km ?? 'N/A' }} km</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('nearest_fire_station_km'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Fire Station</td>
+                                <td>{{ $entry->nearest_fire_station_km ?? 'N/A' }} km</td>
+                            </tr>
+                            @endif
+                            @if($canShowField('nearest_police_station_km'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Nearest Police Station</td>
+                                <td>{{ $entry->nearest_police_station_km ?? 'N/A' }} km</td>
+                            </tr>
+                            @endif
+
+                            {{-- Section L — General Remarks --}}
+                            @if($canShowField('remarks'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Remarks / Observations</td>
+                                <td>{{ $entry->remarks ?? 'N/A' }}</td>
                             </tr>
                             @endif
                         </tbody>
