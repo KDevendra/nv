@@ -145,9 +145,6 @@ class PropertyEntryController extends Controller
 
         PropertyEntryLog::logAction($entry, 'submitted', null, 'submitted');
 
-        // Regenerate session for security while keeping user logged in
-        $request->session()->regenerate();
-
         return redirect()->route('field.dashboard')
             ->with('success', 'Property entry submitted successfully. Code: ' . $entry->code);
     }
