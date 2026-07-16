@@ -23,7 +23,7 @@
     $isLocked = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields);
 
     $__sfm = [
-        'A. Location & Identification'   => ['facility_type','name_full_address','village','tehsil','district','state','country','postal_address_pin','nearest_city','nearest_highway','nearest_railway_station','nearest_airport','owner_contact_name','owner_contact_phone','owner_email'],
+        'A. Location & Identification'   => ['facility_type','property_name','name_full_address','village','tehsil','district','state','country','postal_address_pin','nearest_city','nearest_highway','nearest_railway_station','nearest_airport','owner_contact_name','owner_contact_phone','owner_email'],
         'B. Legal & Statutory Compliance'=> ['tenure','approved_land_use','fire_noc','clu_conversion_status','pollution_noc','pollution_category','occupancy_certificate'],
         'C. Property Dimensions'         => ['plot_area','built_up_area','carpet_area','available_area','clear_height_highest','clear_height_side','shed_width','shed_length','number_of_floors','fsi_far'],
         'D. Dock, Exit & Width Details'  => ['dock_door_count','dock_front','dock_left','dock_right','dock_back','dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back','fire_exit_front','fire_exit_left','fire_exit_right','fire_exit_back','canopy_width_front','canopy_width_left','canopy_width_right','canopy_width_back','road_width_front','road_width_left','road_width_right','road_width_back'],
@@ -124,6 +124,15 @@
             </select>
             @error('facility_type')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             {!! $rmk('facility_type') !!}
+        </div>
+        @endif
+
+        @if($fc('property_name')->keep_field)
+        <div class="sm:col-span-2">
+            <label class="{{ $lc }}">Name of Property {!! $ast('property_name') !!}</label>
+            <input type="text" name="property_name" value="{{ $v('property_name') }}" {{ $req('property_name') }} class="{{ $ic }}" placeholder="Enter property name">
+            @error('property_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+            {!! $rmk('property_name') !!}
         </div>
         @endif
 
