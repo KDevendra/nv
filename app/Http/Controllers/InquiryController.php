@@ -139,20 +139,33 @@ class InquiryController extends Controller
             
             // ── Auto-create user if not logged in ──
             $user = Auth::user();
-            if (!$user && $request->filled('email')) {
-                // Check if user exists by email
-                $user = User::where('email', $request->email)->first();
+            $userWasCreated = false;
+            
+            if (!$user) {
+                // Try to find existing user by email or phone
+                $existingUser = null;
                 
-                if (!$user) {
-                    // Create new user
+                if ($request->filled('email')) {
+                    $existingUser = User::where('email', $request->email)->first();
+                }
+                
+                if (!$existingUser && $request->filled('phone')) {
+                    $existingUser = User::where('phone', $request->phone)->first();
+                }
+                
+                if ($existingUser) {
+                    $user = $existingUser;
+                } else {
+                    // Create new user - email is optional now
                     $user = User::create([
                         'name' => $request->name,
-                        'email' => $request->email,
+                        'email' => $request->email ?: null,
                         'phone' => $request->phone,
-                        'password' => Hash::make(Str::random(16)), // Random password
+                        'password' => Hash::make($request->phone), // Random password
                         'role' => 'user',
-                        'email_verified_at' => now(), // Auto-verify
+                        'email_verified_at' => $request->filled('email') ? now() : null, // Only auto-verify if email provided
                     ]);
+                    $userWasCreated = true;
                 }
                 
                 // Auto-login the user
@@ -178,9 +191,9 @@ class InquiryController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Thank you for your inquiry! We will contact you shortly.',
-                    'user_created' => isset($user) && $user->wasRecentlyCreated,
+                    'user_created' => $userWasCreated,
                     'logged_in' => Auth::check(),
-                    'reload_required' => isset($user) // Signal frontend to reload page
+                    'reload_required' => $userWasCreated || !$user // Signal frontend to reload page if user was created or logged in
                 ], 200);
             }
 
