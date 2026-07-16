@@ -582,7 +582,13 @@
             lev_right: {{ (int)($entry?->dock_leveller_right ?? 0) }},
             lev_back:  {{ (int)($entry?->dock_leveller_back  ?? 0) }},
             get total() { if(this.hasLev!==true)return 0; return (parseInt(this.lev_front)||0)+(parseInt(this.lev_left)||0)+(parseInt(this.lev_right)||0)+(parseInt(this.lev_back)||0); },
-            setNo() { this.hasLev=false; this.lev_front=0; this.lev_left=0; this.lev_right=0; this.lev_back=0; }
+            setNo() { 
+                this.hasLev=false; 
+                this.lev_front=0; 
+                this.lev_left=0; 
+                this.lev_right=0; 
+                this.lev_back=0; 
+            }
         }">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Dock Levellers</h4>
             <div class="flex items-center gap-4 mb-4">
@@ -602,32 +608,53 @@
                     </label>
                 </div>
             </div>
-            <div x-show="hasLev===true" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                 @if($fc('dock_leveller_front')->keep_field)
-                <div><label class="{{ $lc }}">Front</label><input type="number" min="0" name="dock_leveller_front" x-model.number="lev_front" class="{{ $ic }}"></div>
+                <div>
+                    <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Front</label>
+                    <input type="number" min="0" name="dock_leveller_front" 
+                           x-model.number="lev_front" 
+                           :readonly="hasLev===false"
+                           :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
+                </div>
                 @endif
                 @if($fc('dock_leveller_left')->keep_field)
-                <div><label class="{{ $lc }}">Left</label><input type="number" min="0" name="dock_leveller_left" x-model.number="lev_left" class="{{ $ic }}"></div>
+                <div>
+                    <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Left</label>
+                    <input type="number" min="0" name="dock_leveller_left" 
+                           x-model.number="lev_left" 
+                           :readonly="hasLev===false"
+                           :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
+                </div>
                 @endif
                 @if($fc('dock_leveller_right')->keep_field)
-                <div><label class="{{ $lc }}">Right</label><input type="number" min="0" name="dock_leveller_right" x-model.number="lev_right" class="{{ $ic }}"></div>
+                <div>
+                    <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Right</label>
+                    <input type="number" min="0" name="dock_leveller_right" 
+                           x-model.number="lev_right" 
+                           :readonly="hasLev===false"
+                           :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
+                </div>
                 @endif
                 @if($fc('dock_leveller_back')->keep_field)
-                <div><label class="{{ $lc }}">Back</label><input type="number" min="0" name="dock_leveller_back" x-model.number="lev_back" class="{{ $ic }}"></div>
+                <div>
+                    <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Back</label>
+                    <input type="number" min="0" name="dock_leveller_back" 
+                           x-model.number="lev_back" 
+                           :readonly="hasLev===false"
+                           :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
+                </div>
                 @endif
                 <div>
-                    <label class="{{ $lc }} flex items-center gap-1">Total <span class="text-[10px] text-gray-400 font-normal">(auto)</span></label>
-                    <div class="relative"><input type="number" :value="total" readonly class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 cursor-not-allowed font-semibold"><span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">= F+L+R+B</span></div>
+                    <label class="{{ $lc }} flex items-center gap-1" :class="hasLev===false ? 'text-gray-400' : ''">
+                        Total <span class="text-[10px] text-gray-400 font-normal">(auto)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" :value="total" readonly 
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 cursor-not-allowed font-semibold">
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">= F+L+R+B</span>
+                    </div>
                 </div>
-            </div>
-            <div x-show="hasLev===false" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
-                @foreach(['dock_leveller_front'=>'Front','dock_leveller_left'=>'Left','dock_leveller_right'=>'Right','dock_leveller_back'=>'Back'] as $fk=>$lbl)
-                <div>
-                    <label class="{{ $lc }} text-gray-400">{{ $lbl }}</label>
-                    <input type="number" name="{{ $fk }}" value="0" readonly class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
-                </div>
-                @endforeach
-                <div><label class="{{ $lc }} text-gray-400">Total</label><input type="number" value="0" readonly class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed font-semibold"></div>
             </div>
         </div>
 
