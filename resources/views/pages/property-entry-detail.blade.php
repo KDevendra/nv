@@ -1739,15 +1739,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 
-                if (response.ok) {
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
                     document.getElementById('callback-modal-success-message').style.display = 'block';
                     callbackForm.reset();
-                    setTimeout(() => {
-                        callbackOverlay.classList.add('hidden');
-                        document.getElementById('callback-modal-success-message').style.display = 'none';
-                    }, 2000);
+                    
+                    // If user was created/logged in, reload page to show more fields
+                    if (data.reload_required || data.user_created) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            callbackOverlay.classList.add('hidden');
+                            document.getElementById('callback-modal-success-message').style.display = 'none';
+                        }, 2000);
+                    }
                 } else {
                     document.getElementById('callback-modal-error-message').style.display = 'block';
+                    document.getElementById('callback-modal-error-message').textContent = data.message || 'Something went wrong. Please try again.';
                 }
             } catch (error) {
                 document.getElementById('callback-modal-error-message').style.display = 'block';
@@ -1780,14 +1791,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 
-                if (response.ok) {
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
                     document.getElementById('callback-success-message').style.display = 'block';
                     inlineForm.reset();
-                    setTimeout(() => {
-                        document.getElementById('callback-success-message').style.display = 'none';
-                    }, 3000);
+                    
+                    // If user was created/logged in, reload page to show more fields
+                    if (data.reload_required || data.user_created) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            document.getElementById('callback-success-message').style.display = 'none';
+                        }, 3000);
+                    }
                 } else {
                     document.getElementById('callback-error-message').style.display = 'block';
+                    document.getElementById('callback-error-message').textContent = data.message || 'Something went wrong. Please try again.';
                 }
             } catch (error) {
                 document.getElementById('callback-error-message').style.display = 'block';
