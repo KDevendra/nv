@@ -82,7 +82,25 @@ class PropertyEntryController extends Controller
         $action = $request->input('action', 'submit');
         $isDraft = ($action === 'draft');
         
+        // Debug dock levellers data
+        \Log::info('Dock Levellers Debug - Raw Request Data:', [
+            'has_dock_leveller' => $request->input('has_dock_leveller'),
+            'dock_leveller_front' => $request->input('dock_leveller_front'),
+            'dock_leveller_left' => $request->input('dock_leveller_left'),
+            'dock_leveller_right' => $request->input('dock_leveller_right'),
+            'dock_leveller_back' => $request->input('dock_leveller_back'),
+        ]);
+        
         $data = $this->validateEntry($request, $isDraft);
+        
+        // Debug validated data
+        \Log::info('Dock Levellers Debug - Validated Data:', [
+            'has_dock_leveller' => $data['has_dock_leveller'] ?? 'NOT_SET',
+            'dock_leveller_front' => $data['dock_leveller_front'] ?? 'NOT_SET',
+            'dock_leveller_left' => $data['dock_leveller_left'] ?? 'NOT_SET',
+            'dock_leveller_right' => $data['dock_leveller_right'] ?? 'NOT_SET',
+            'dock_leveller_back' => $data['dock_leveller_back'] ?? 'NOT_SET',
+        ]);
         
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
@@ -185,7 +203,27 @@ class PropertyEntryController extends Controller
         $isDraft = ($action === 'draft');
         $oldStatus = $property->status;
         
+        // Debug dock levellers data
+        \Log::info('Dock Levellers Update Debug - Raw Request Data:', [
+            'property_id' => $property->id,
+            'has_dock_leveller' => $request->input('has_dock_leveller'),
+            'dock_leveller_front' => $request->input('dock_leveller_front'),
+            'dock_leveller_left' => $request->input('dock_leveller_left'),
+            'dock_leveller_right' => $request->input('dock_leveller_right'),
+            'dock_leveller_back' => $request->input('dock_leveller_back'),
+        ]);
+        
         $data = $this->validateEntry($request, $isDraft);
+        
+        // Debug validated data
+        \Log::info('Dock Levellers Update Debug - Validated Data:', [
+            'property_id' => $property->id,
+            'has_dock_leveller' => $data['has_dock_leveller'] ?? 'NOT_SET',
+            'dock_leveller_front' => $data['dock_leveller_front'] ?? 'NOT_SET',
+            'dock_leveller_left' => $data['dock_leveller_left'] ?? 'NOT_SET',
+            'dock_leveller_right' => $data['dock_leveller_right'] ?? 'NOT_SET',
+            'dock_leveller_back' => $data['dock_leveller_back'] ?? 'NOT_SET',
+        ]);
         
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
