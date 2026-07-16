@@ -279,9 +279,6 @@ class PropertyEntryController extends Controller
             'submitted'
         );
 
-        // Regenerate session for security while keeping user logged in
-        $request->session()->regenerate();
-
         return redirect()->route('field.properties.index')
             ->with('success', 'Entry resubmitted successfully. Code: ' . $property->code);
     }

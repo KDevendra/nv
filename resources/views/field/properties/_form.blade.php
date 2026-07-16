@@ -1381,8 +1381,8 @@
             </button>
 
             {{-- Submit to Office (shown only on last step) --}}
-            <button type="button" id="wiz-submit-btn" name="action" value="submit"
-                onclick="wizardSubmit()"
+            <button type="submit" id="wiz-submit-btn" name="action" value="submit"
+                onclick="return confirm('Submit this property entry to the office?');"
                 style="display:none"
                 class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
                 Submit to Office
@@ -1569,56 +1569,6 @@ function wizardNext() {
 }
 
 function wizardPrev() { wizardGoTo(wizCurrent - 1); }
-
-function wizardSubmit() {
-    if (!wizardValidateAll()) return; // navigate to first step with errors
-    if (!confirm('Submit this property entry to the office?')) return;
-    
-    // Show loading state
-    const submitBtn = document.getElementById('wiz-submit-btn');
-    const originalText = submitBtn.innerText;
-    submitBtn.disabled = true;
-    submitBtn.innerText = 'Submitting...';
-    
-    // Add submit action to form
-    const form = document.querySelector('form');
-    
-    // Remove any existing action inputs
-    const existingAction = form.querySelector('input[name="action"]');
-    if (existingAction) {
-        existingAction.remove();
-    }
-    
-    // Add new action input
-    const hidden = document.createElement('input');
-    hidden.type = 'hidden';
-    hidden.name = 'action';
-    hidden.value = 'submit';
-    form.appendChild(hidden);
-    
-    // Set form properties
-    form.noValidate = false;
-    form.method = 'POST';
-    
-    // Add error handler
-    form.addEventListener('submit', function(e) {
-        // Set a timeout to re-enable button if something goes wrong
-        setTimeout(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = originalText;
-        }, 30000); // 30 seconds
-    }, { once: true });
-    
-    // Submit the form
-    try {
-        form.submit();
-    } catch (error) {
-        console.error('Form submission error:', error);
-        submitBtn.disabled = false;
-        submitBtn.innerText = originalText;
-        alert('Form submission failed. Please try again.');
-    }
-}
 
 // Remove error highlight when user fills in a field
 document.addEventListener('input', function(e) {
