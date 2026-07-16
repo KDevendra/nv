@@ -988,6 +988,49 @@
                 display: block !important;
             }
         }
+
+        /* Wishlist Button Styles */
+        .sgdxp-wishlist-btn {
+            margin-top: 10px;
+        }
+
+        .sgdxp-wishlist-btn button {
+            width: 100%;
+            border-radius: 999px;
+            border: 2px solid var(--zendo-gold);
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: var(--zendo-gold);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sgdxp-wishlist-btn button:hover {
+            background: var(--zendo-gold);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .sgdxp-wishlist-btn button.in-wishlist {
+            background: var(--zendo-gold);
+            color: #fff;
+        }
+
+        .sgdxp-wishlist-btn button.in-wishlist:hover {
+            background: #a1814b;
+        }
+
+        .wishlist-heart-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
     </style>
 @endsection
 
@@ -1254,6 +1297,17 @@
                 <div class="sgdxp-request-btn">
                     <button type="button" id="open-callback-modal-btn">Request Callback</button>
                 </div>
+
+                @auth
+                <div class="sgdxp-wishlist-btn">
+                    <button type="button" id="wishlist-toggle-btn" class="{{ $isInWishlist ? 'in-wishlist' : '' }}" data-property-id="{{ $property->id }}">
+                        <svg class="wishlist-heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <span class="wishlist-btn-text">{{ $isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</span>
+                    </button>
+                </div>
+                @endauth
             </aside>
 
         </div>
