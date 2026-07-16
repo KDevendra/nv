@@ -1453,25 +1453,25 @@
                                 <td>{{ $entry->power_sanctioned_kva }} KVA</td>
                             </tr>
                             @endif
-                            @if($entry->discom_name && $canShowField('discom_name'))
+                            @if($canShowField('discom_name'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>DISCOM</td>
-                                <td>{{ $entry->discom_name }}</td>
+                                <td>{{ $entry->discom_name ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->water_source && $canShowField('water_source'))
+                            @if($canShowField('water_source'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Water Source</td>
-                                <td>{{ $entry->water_source }}</td>
+                                <td>{{ $entry->water_source ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->fire_fighting_system && $canShowField('fire_fighting_system'))
+                            @if($canShowField('fire_fighting_system'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Fire Fighting System</td>
-                                <td>{{ $entry->fire_fighting_system }}</td>
+                                <td>{{ $entry->fire_fighting_system ?? 'N/A' }}</td>
                             </tr>
                             @endif
                             @if($entry->fire_noc && $canShowField('fire_noc'))
