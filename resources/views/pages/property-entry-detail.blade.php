@@ -30,6 +30,8 @@
             $hiddenFieldsCount++;
         }
     }
+
+    // dd($entry);
 @endphp
 
 @section('styles')
@@ -1450,7 +1452,7 @@
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Power Sanctioned</td>
-                                <td>{{ $entry->power_sanctioned_kva }} KVA</td>
+                                <td>{{ $entry->power_sanctioned_kva ?? 'N/A' }} KVA</td>
                             </tr>
                             @endif
                             @if($canShowField('discom_name'))
@@ -1474,124 +1476,124 @@
                                 <td>{{ $entry->fire_fighting_system ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->fire_noc && $canShowField('fire_noc'))
+                            @if($canShowField('fire_noc'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Fire NOC</td>
-                                <td>{{ $entry->fire_noc }}</td>
+                                <td>{{ $entry->fire_noc ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->pollution_noc && $canShowField('pollution_noc'))
+                            @if($canShowField('pollution_noc'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Pollution NOC</td>
-                                <td>{{ $entry->pollution_noc }}</td>
+                                <td>{{ $entry->pollution_noc ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->occupancy_certificate && $canShowField('occupancy_certificate'))
+                            @if($canShowField('occupancy_certificate'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Occupancy Certificate</td>
-                                <td>{{ $entry->occupancy_certificate }}</td>
+                                <td>{{ $entry->occupancy_certificate ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->no_of_offices && $canShowField('no_of_offices'))
+                            @if($canShowField('no_of_offices'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Number of Offices</td>
-                                <td>{{ $entry->no_of_offices }}</td>
+                                <td>{{ $entry->no_of_offices ?? 'N/A' }}</td>
                             </tr>
                             @endif
 
-                            @if($entry->canteen && $canShowField('canteen'))
+                            @if($canShowField('canteen'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Canteen</td>
-                                <td>{{ $entry->canteen ? 'Yes' : 'No' }}</td>
+                                <td>{{ $entry->canteen ? 'Yes' : ($entry->canteen === '0' || $entry->canteen === 0 ? 'No' : 'N/A') }}</td>
                             </tr>
                             @endif
-                            @if($entry->washrooms && $canShowField('washrooms'))
+                            @if($canShowField('washrooms'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Washrooms</td>
-                                <td>{{ $entry->washrooms }}</td>
+                                <td>{{ $entry->washrooms ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->flooring_type && $canShowField('flooring_type'))
+                            @if($canShowField('flooring_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Flooring Type</td>
-                                <td>{{ $entry->flooring_type }}</td>
+                                <td>{{ $entry->flooring_type ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->tenure && $canShowField('tenure'))
+                            @if($canShowField('tenure'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Tenure</td>
-                                <td>{{ $entry->tenure }}</td>
+                                <td>{{ $entry->tenure ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_city && $canShowField('nearest_city'))
+                            @if($canShowField('nearest_city'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest City</td>
-                                <td>{{ $entry->nearest_city }}</td>
+                                <td>{{ $entry->nearest_city ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_highway && $canShowField('nearest_highway'))
+                            @if($canShowField('nearest_highway'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Highway</td>
-                                <td>{{ $entry->nearest_highway }}</td>
+                                <td>{{ $entry->nearest_highway ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_railway_station && $canShowField('nearest_railway_station'))
+                            @if($canShowField('nearest_railway_station'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Railway Station</td>
-                                <td>{{ $entry->nearest_railway_station }}</td>
+                                <td>{{ $entry->nearest_railway_station ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_airport && $canShowField('nearest_airport'))
+                            @if($canShowField('nearest_airport'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Airport</td>
-                                <td>{{ $entry->nearest_airport }}</td>
+                                <td>{{ $entry->nearest_airport ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->expected_rent && $canShowField('expected_rent'))
+                            @if($canShowField('expected_rent'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Expected Rent</td>
-                                <td>₹{{ number_format($entry->expected_rent, 2) }} /sq ft/month</td>
+                                <td>{{ $entry->expected_rent ? '₹' . number_format($entry->expected_rent, 2) . ' /sq ft/month' : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->expected_sale_price && $canShowField('expected_sale_price'))
+                            @if($canShowField('expected_sale_price'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Expected Sale Price</td>
-                                <td>₹{{ number_format($entry->expected_sale_price / 100000, 2) }} Lac</td>
+                                <td>{{ $entry->expected_sale_price ? '₹' . number_format($entry->expected_sale_price / 100000, 2) . ' Lac' : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->security_deposit_months && $canShowField('security_deposit_months'))
+                            @if($canShowField('security_deposit_months'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Security Deposit</td>
-                                <td>{{ $entry->security_deposit_months }} months</td>
+                                <td>{{ $entry->security_deposit_months ?? 'N/A' }} months</td>
                             </tr>
                             @endif
-                            @if($entry->lock_in_years && $canShowField('lock_in_years'))
+                            @if($canShowField('lock_in_years'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Lock-in Period</td>
-                                <td>{{ $entry->lock_in_years }} years</td>
+                                <td>{{ $entry->lock_in_years ?? 'N/A' }} years</td>
                             </tr>
                             @endif
-                            @if($entry->available_from)
+                            @if($canShowField('available_from'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Available From</td>
-                                <td>{{ $entry->available_from->format('M d, Y') }}</td>
+                                <td>{{ $entry->available_from ? $entry->available_from->format('M d, Y') : 'N/A' }}</td>
                             </tr>
                             @endif
                         </tbody>
