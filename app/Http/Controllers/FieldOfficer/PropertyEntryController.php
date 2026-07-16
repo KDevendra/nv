@@ -77,6 +77,10 @@ class PropertyEntryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Increase memory limit for large form processing
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300); // 5 minutes
+        
         // Debug session and auth state
         \Log::info('PropertyEntry Store - Session Debug:', [
             'session_id' => session()->getId(),
@@ -92,7 +96,19 @@ class PropertyEntryController extends Controller
         $action = $request->input('action', 'submit');
         $isDraft = ($action === 'draft');
         
-        $data = $this->validateEntry($request, $isDraft);
+        try {
+            $data = $this->validateEntry($request, $isDraft);
+        } catch (\Exception $e) {
+            \Log::error('Store Form validation failed:', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'session_id' => session()->getId()
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['form_error' => 'Form validation failed. Please check your data and try again.']);
+        }
         
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
@@ -128,6 +144,9 @@ class PropertyEntryController extends Controller
         $this->handlePhotos($entry, $request);
 
         PropertyEntryLog::logAction($entry, 'submitted', null, 'submitted');
+
+        // Regenerate session for security while keeping user logged in
+        $request->session()->regenerate();
 
         return redirect()->route('field.dashboard')
             ->with('success', 'Property entry submitted successfully. Code: ' . $entry->code);
@@ -185,6 +204,10 @@ class PropertyEntryController extends Controller
 
     public function update(Request $request, PropertyEntry $property): RedirectResponse
     {
+        // Increase memory limit for large form processing
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300); // 5 minutes
+        
         // Debug session and auth state
         \Log::info('PropertyEntry Update - Session Debug:', [
             'session_id' => session()->getId(),
@@ -206,7 +229,20 @@ class PropertyEntryController extends Controller
         $isDraft = ($action === 'draft');
         $oldStatus = $property->status;
         
-        $data = $this->validateEntry($request, $isDraft);
+        try {
+            $data = $this->validateEntry($request, $isDraft);
+        } catch (\Exception $e) {
+            \Log::error('Update Form validation failed:', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'property_id' => $property->id,
+                'session_id' => session()->getId()
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['form_error' => 'Form validation failed. Please check your data and try again.']);
+        }
         
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
@@ -245,6 +281,9 @@ class PropertyEntryController extends Controller
             $oldStatus,
             'submitted'
         );
+
+        // Regenerate session for security while keeping user logged in
+        $request->session()->regenerate();
 
         return redirect()->route('field.properties.index')
             ->with('success', 'Entry resubmitted successfully. Code: ' . $property->code);

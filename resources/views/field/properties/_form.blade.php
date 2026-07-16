@@ -1573,13 +1573,28 @@ function wizardPrev() { wizardGoTo(wizCurrent - 1); }
 function wizardSubmit() {
     if (!wizardValidateAll()) return; // navigate to first step with errors
     if (!confirm('Submit this property entry to the office?')) return;
-    // Programmatically submit with action=submit
-    const form = document.querySelector('form');
-    const hidden = document.createElement('input');
-    hidden.type = 'hidden'; hidden.name = 'action'; hidden.value = 'submit';
-    form.appendChild(hidden);
-    form.noValidate = false;
-    form.submit();
+    
+    // Refresh CSRF token before submission to prevent token expiry
+    fetch('/csrf-token')
+        .then(response => response.json())
+        .then(data => {
+            const tokenInput = document.querySelector('input[name="_token"]');
+            if (tokenInput && data.csrf_token) {
+                tokenInput.value = data.csrf_token;
+            }
+        })
+        .catch(error => {
+            console.warn('CSRF token refresh failed:', error);
+        })
+        .finally(() => {
+            // Programmatically submit with action=submit
+            const form = document.querySelector('form');
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden'; hidden.name = 'action'; hidden.value = 'submit';
+            form.appendChild(hidden);
+            form.noValidate = false;
+            form.submit();
+        });
 }
 
 // Remove error highlight when user fills in a field
