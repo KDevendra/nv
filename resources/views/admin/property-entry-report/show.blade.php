@@ -12,6 +12,7 @@
     $sections = [
         'A. Location & Identification' => [
             'facility_type' => 'Facility Type',
+            'property_name' => 'Name of Property',
             'name_full_address' => 'Address',
             'village' => 'Village',
             'tehsil' => 'Tehsil',

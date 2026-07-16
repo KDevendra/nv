@@ -72,7 +72,7 @@
                 // Complete list of all 98 data fields across all sections
                 $sections = [
                     ['key' => 'A', 'title' => 'Location & Identification', 'fields' => [
-                        'facility_type','name_full_address','village','tehsil','district','state','country',
+                        'facility_type','property_name','name_full_address','village','tehsil','district','state','country',
                         'postal_address_pin','nearest_city','nearest_highway','nearest_railway_station',
                         'nearest_airport','owner_contact_name','owner_contact_phone','owner_email'
                     ]],
