@@ -84,7 +84,7 @@
                             </button>
                             <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
                                 <div class="py-2">
-                                    @if(Auth::user()->hasRole('user'))
+                                    @if(Auth::user()->role === 'user')
                                         <a href="{{ route('user.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">
                                             <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -239,7 +239,7 @@
                             </svg>
                             <span class="font-highlight font-semibold text-zendo-navy">{{ Auth::user()->name }}</span>
                         </div>
-                        @if(Auth::user()->hasRole('user'))
+                        @if(Auth::user()->role === 'user')
                             <a href="{{ route('user.dashboard') }}"
                                 class="block px-3 py-2 rounded-md font-highlight font-semibold text-gray-700 hover:bg-gray-100 hover:text-zendo-navy">
                                 Dashboard

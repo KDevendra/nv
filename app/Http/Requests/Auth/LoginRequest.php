@@ -41,11 +41,20 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Determine if the login field is email or phone
+        $loginField = $this->input('login_field');
+        $isEmail = filter_var($loginField, FILTER_VALIDATE_EMAIL);
+        
+        $credentials = [
+            $isEmail ? 'email' : 'phone' => $loginField,
+            'password' => $this->input('password')
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login_field' => trans('auth.failed'),
             ]);
         }
 
@@ -56,7 +65,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Your account has been deactivated. Please contact the administrator.',
+                'login_field' => 'Your account has been deactivated. Please contact the administrator.',
             ]);
         }
 
