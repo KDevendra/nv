@@ -103,6 +103,14 @@ class InquiryController extends Controller
         }
 
         try {
+            \Log::info('Processing property inquiry', [
+                'property_entry_code' => $request->property_entry_code,
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'user_logged_in' => Auth::check()
+            ]);
+            
             // Get the current page visit ID from session
             $pageVisitId = $request->session()->get('current_page_visit_id');
             
@@ -172,7 +180,7 @@ class InquiryController extends Controller
                 Auth::login($user);
             }
             
-            \App\Models\PropertyInquiry::create([
+            $inquiry = \App\Models\PropertyInquiry::create([
                 'property_id' => $request->property_id, // Will be NULL for property entries
                 'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
                 'page_visit_id' => $pageVisitId,
@@ -184,6 +192,12 @@ class InquiryController extends Controller
                 'inquiry_type' => $request->input('inquiry_type', 'call_back'),
                 'status' => 'pending',
                 'ip_address' => $request->ip()
+            ]);
+            
+            \Log::info('Property inquiry created', [
+                'inquiry_id' => $inquiry->id,
+                'user_id' => $user ? $user->id : null,
+                'property_entry_code' => $request->property_entry_code
             ]);
 
             // Check if this is an AJAX request
