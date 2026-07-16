@@ -604,16 +604,16 @@
             </div>
             <div x-show="hasLev===true" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                 @if($fc('dock_leveller_front')->keep_field)
-                <div><label class="{{ $lc }}">Front</label><input type="number" min="0" name="dock_leveller_front" x-model.number="lev_front" value="{{ $v('dock_leveller_front') }}" class="{{ $ic }}"></div>
+                <div><label class="{{ $lc }}">Front</label><input type="number" min="0" name="dock_leveller_front" x-model.number="lev_front" class="{{ $ic }}"></div>
                 @endif
                 @if($fc('dock_leveller_left')->keep_field)
-                <div><label class="{{ $lc }}">Left</label><input type="number" min="0" name="dock_leveller_left" x-model.number="lev_left" value="{{ $v('dock_leveller_left') }}" class="{{ $ic }}"></div>
+                <div><label class="{{ $lc }}">Left</label><input type="number" min="0" name="dock_leveller_left" x-model.number="lev_left" class="{{ $ic }}"></div>
                 @endif
                 @if($fc('dock_leveller_right')->keep_field)
-                <div><label class="{{ $lc }}">Right</label><input type="number" min="0" name="dock_leveller_right" x-model.number="lev_right" value="{{ $v('dock_leveller_right') }}" class="{{ $ic }}"></div>
+                <div><label class="{{ $lc }}">Right</label><input type="number" min="0" name="dock_leveller_right" x-model.number="lev_right" class="{{ $ic }}"></div>
                 @endif
                 @if($fc('dock_leveller_back')->keep_field)
-                <div><label class="{{ $lc }}">Back</label><input type="number" min="0" name="dock_leveller_back" x-model.number="lev_back" value="{{ $v('dock_leveller_back') }}" class="{{ $ic }}"></div>
+                <div><label class="{{ $lc }}">Back</label><input type="number" min="0" name="dock_leveller_back" x-model.number="lev_back" class="{{ $ic }}"></div>
                 @endif
                 <div>
                     <label class="{{ $lc }} flex items-center gap-1">Total <span class="text-[10px] text-gray-400 font-normal">(auto)</span></label>
@@ -622,7 +622,10 @@
             </div>
             <div x-show="hasLev===false" x-cloak class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                 @foreach(['dock_leveller_front'=>'Front','dock_leveller_left'=>'Left','dock_leveller_right'=>'Right','dock_leveller_back'=>'Back'] as $fk=>$lbl)
-                <div><label class="{{ $lc }} text-gray-400">{{ $lbl }}</label><input type="number" name="{{ $fk }}" value="0" readonly class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed"></div>
+                <div>
+                    <label class="{{ $lc }} text-gray-400">{{ $lbl }}</label>
+                    <input type="number" name="{{ $fk }}" value="0" readonly class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                </div>
                 @endforeach
                 <div><label class="{{ $lc }} text-gray-400">Total</label><input type="number" value="0" readonly class="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed font-semibold"></div>
             </div>
