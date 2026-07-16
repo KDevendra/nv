@@ -32,10 +32,12 @@ class PropertyWishlist extends Model
 
     /**
      * Get the property entry associated with this wishlist item.
-     * Uses a hasOne through the code column.
+     * property_wishlists.property_entry_code → property_entries.code
      */
-    public function propertyEntry()
+    public function propertyEntry(): HasOne
     {
+        // hasOne(Related, foreignKey on related table, localKey on this table)
+        // property_entries.code = property_wishlists.property_entry_code
         return $this->hasOne(PropertyEntry::class, 'code', 'property_entry_code');
     }
 

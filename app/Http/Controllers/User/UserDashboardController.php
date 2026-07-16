@@ -132,7 +132,14 @@ class UserDashboardController extends Controller
         $user = auth()->user();
         
         $wishlists = PropertyWishlist::where('user_id', $user->id)
-            ->with(['property.mainImage', 'property.city', 'property.location', 'property.bhk', 'property.projectStatus', 'propertyEntry', 'propertyEntry.photos'])
+            ->with([
+                'property.mainImage',
+                'property.city',
+                'property.location',
+                'property.bhk',
+                'property.projectStatus',
+                'propertyEntry.photos',
+            ])
             ->orderBy('created_at', 'desc')
             ->paginate(12);
         
