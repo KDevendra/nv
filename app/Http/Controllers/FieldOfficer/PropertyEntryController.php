@@ -77,6 +77,16 @@ class PropertyEntryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Debug session and auth state
+        \Log::info('PropertyEntry Store - Session Debug:', [
+            'session_id' => session()->getId(),
+            'user_id' => auth()->id(),
+            'user_role' => auth()->user()?->role,
+            'csrf_token' => $request->header('X-CSRF-TOKEN') ?: $request->input('_token'),
+            'form_size' => strlen($request->getContent()),
+            'memory_usage' => memory_get_usage(true),
+        ]);
+        
         abort_if(auth()->user()->role !== 'field_officer', 403);
 
         $action = $request->input('action', 'submit');
@@ -175,6 +185,17 @@ class PropertyEntryController extends Controller
 
     public function update(Request $request, PropertyEntry $property): RedirectResponse
     {
+        // Debug session and auth state
+        \Log::info('PropertyEntry Update - Session Debug:', [
+            'session_id' => session()->getId(),
+            'user_id' => auth()->id(),
+            'user_role' => auth()->user()?->role,
+            'property_id' => $property->id,
+            'csrf_token' => $request->header('X-CSRF-TOKEN') ?: $request->input('_token'),
+            'form_size' => strlen($request->getContent()),
+            'memory_usage' => memory_get_usage(true),
+        ]);
+        
         abort_if(auth()->user()->role !== 'field_officer', 403);
         abort_if($property->field_officer_id !== auth()->id(), 403);
         
