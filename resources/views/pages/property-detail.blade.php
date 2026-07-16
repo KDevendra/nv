@@ -2190,6 +2190,54 @@
         if (originalForm) {
             attachFormHandler(originalForm);
         }
+
+        // Wishlist Toggle Handler
+        const wishlistBtn = document.getElementById('wishlist-toggle-btn');
+        if (wishlistBtn) {
+            wishlistBtn.addEventListener('click', function() {
+                const propertyId = this.dataset.propertyId;
+                const isInWishlist = this.classList.contains('in-wishlist');
+                const btnText = this.querySelector('.wishlist-btn-text');
+                
+                // Disable button during request
+                this.disabled = true;
+                
+                fetch('{{ route("user.wishlist.toggle") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        property_id: propertyId,
+                        property_entry_code: null
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Toggle the button state
+                        this.classList.toggle('in-wishlist');
+                        
+                        if (data.added) {
+                            btnText.textContent = 'Remove from Wishlist';
+                        } else {
+                            btnText.textContent = 'Add to Wishlist';
+                        }
+                    } else {
+                        alert(data.message || 'Failed to update wishlist');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                });
+            });
+        }
     });
 </script>
 
