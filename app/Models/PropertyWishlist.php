@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PropertyWishlist extends Model
 {
@@ -31,10 +32,11 @@ class PropertyWishlist extends Model
 
     /**
      * Get the property entry associated with this wishlist item.
+     * Uses a hasOne through the code column.
      */
     public function propertyEntry()
     {
-        return PropertyEntry::where('code', $this->property_entry_code)->first();
+        return $this->hasOne(PropertyEntry::class, 'code', 'property_entry_code');
     }
 
     /**

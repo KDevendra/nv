@@ -2241,29 +2241,28 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // Update button state
-                const newState = data.action === 'added';
-                wishlistBtn.dataset.inWishlist = newState ? 'true' : 'false';
-                
-                // Update button styling
-                wishlistBtn.style.background = newState ? '#B39359' : 'white';
-                wishlistBtn.style.color = newState ? 'white' : '#0B2C3D';
-                
-                // Update heart icon
-                const svg = wishlistBtn.querySelector('svg');
-                svg.setAttribute('fill', newState ? 'currentColor' : 'none');
-                
-                // Update text
-                document.getElementById('wishlist-text').textContent = newState ? 'Saved' : 'Save';
-                
-                // Show feedback message
-                const message = newState ? 'Added to wishlist!' : 'Removed from wishlist';
-                showWishlistMessage(message, 'success');
-            } else {
-                showWishlistMessage('Failed to update wishlist', 'error');
-            }
-        })
+                if (data.success) {
+                    // Update button state
+                    const newState = data.action === 'added';
+                    wishlistBtn.dataset.inWishlist = newState ? 'true' : 'false';
+                    
+                    // Update button styling
+                    wishlistBtn.style.background = newState ? '#B39359' : 'white';
+                    wishlistBtn.style.color = newState ? 'white' : '#0B2C3D';
+                    
+                    // Update text
+                    const wishlistText = document.getElementById('wishlist-text');
+                    if (wishlistText) {
+                        wishlistText.textContent = newState ? 'Saved' : 'Save';
+                    }
+                    
+                    // Show feedback message
+                    const message = newState ? 'Added to wishlist!' : 'Removed from wishlist';
+                    showWishlistMessage(message, 'success');
+                } else {
+                    showWishlistMessage('Failed to update wishlist', 'error');
+                }
+            })
         .catch(error => {
             console.error('Wishlist error:', error);
             showWishlistMessage('An error occurred', 'error');
