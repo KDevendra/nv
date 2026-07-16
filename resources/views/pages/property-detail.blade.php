@@ -997,13 +997,14 @@
         .sgdxp-wishlist-btn button {
             width: 100%;
             border-radius: 999px;
-            border: 2px solid var(--zendo-gold);
-            padding: 12px 18px;
+            border: none;
+            padding: 14px 18px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            background: transparent;
-            color: var(--zendo-gold);
+            background: var(--zendo-gold);
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, .25);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -1012,18 +1013,17 @@
         }
 
         .sgdxp-wishlist-btn button:hover {
-            background: var(--zendo-gold);
-            color: #fff;
+            background: #a1814b;
             transform: translateY(-2px);
         }
 
         .sgdxp-wishlist-btn button.in-wishlist {
-            background: var(--zendo-gold);
-            color: #fff;
+            background: #dc2626;
+            box-shadow: 0 14px 28px rgba(220, 38, 38, .25);
         }
 
         .sgdxp-wishlist-btn button.in-wishlist:hover {
-            background: #a1814b;
+            background: #b91c1c;
         }
 
         .wishlist-heart-icon {
