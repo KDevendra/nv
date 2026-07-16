@@ -1436,49 +1436,49 @@
                                 <td>{{ $entry->power_sanctioned_kva }} KVA</td>
                             </tr>
                             @endif
-                            @if($entry->discom_name)
+                            @if($entry->discom_name && $canShowField('discom_name'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>DISCOM</td>
                                 <td>{{ $entry->discom_name }}</td>
                             </tr>
                             @endif
-                            @if($entry->water_source)
+                            @if($entry->water_source && $canShowField('water_source'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Water Source</td>
                                 <td>{{ $entry->water_source }}</td>
                             </tr>
                             @endif
-                            @if($entry->fire_fighting_system)
+                            @if($entry->fire_fighting_system && $canShowField('fire_fighting_system'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Fire Fighting System</td>
                                 <td>{{ $entry->fire_fighting_system }}</td>
                             </tr>
                             @endif
-                            @if($entry->fire_noc)
+                            @if($entry->fire_noc && $canShowField('fire_noc'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Fire NOC</td>
                                 <td>{{ $entry->fire_noc }}</td>
                             </tr>
                             @endif
-                            @if($entry->pollution_noc)
+                            @if($entry->pollution_noc && $canShowField('pollution_noc'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Pollution NOC</td>
                                 <td>{{ $entry->pollution_noc }}</td>
                             </tr>
                             @endif
-                            @if($entry->occupancy_certificate)
+                            @if($entry->occupancy_certificate && $canShowField('occupancy_certificate'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Occupancy Certificate</td>
                                 <td>{{ $entry->occupancy_certificate }}</td>
                             </tr>
                             @endif
-                            @if($entry->no_of_offices)
+                            @if($entry->no_of_offices && $canShowField('no_of_offices'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Number of Offices</td>
@@ -1486,84 +1486,84 @@
                             </tr>
                             @endif
 
-                            @if($entry->canteen)
+                            @if($entry->canteen && $canShowField('canteen'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Canteen</td>
                                 <td>{{ $entry->canteen ? 'Yes' : 'No' }}</td>
                             </tr>
                             @endif
-                            @if($entry->washrooms)
+                            @if($entry->washrooms && $canShowField('washrooms'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Washrooms</td>
                                 <td>{{ $entry->washrooms }}</td>
                             </tr>
                             @endif
-                            @if($entry->flooring_type)
+                            @if($entry->flooring_type && $canShowField('flooring_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Flooring Type</td>
                                 <td>{{ $entry->flooring_type }}</td>
                             </tr>
                             @endif
-                            @if($entry->tenure)
+                            @if($entry->tenure && $canShowField('tenure'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Tenure</td>
                                 <td>{{ $entry->tenure }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_city)
+                            @if($entry->nearest_city && $canShowField('nearest_city'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest City</td>
                                 <td>{{ $entry->nearest_city }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_highway)
+                            @if($entry->nearest_highway && $canShowField('nearest_highway'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Highway</td>
                                 <td>{{ $entry->nearest_highway }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_railway_station)
+                            @if($entry->nearest_railway_station && $canShowField('nearest_railway_station'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Railway Station</td>
                                 <td>{{ $entry->nearest_railway_station }}</td>
                             </tr>
                             @endif
-                            @if($entry->nearest_airport)
+                            @if($entry->nearest_airport && $canShowField('nearest_airport'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Nearest Airport</td>
                                 <td>{{ $entry->nearest_airport }}</td>
                             </tr>
                             @endif
-                            @if($entry->expected_rent)
+                            @if($entry->expected_rent && $canShowField('expected_rent'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Expected Rent</td>
                                 <td>₹{{ number_format($entry->expected_rent, 2) }} /sq ft/month</td>
                             </tr>
                             @endif
-                            @if($entry->expected_sale_price)
+                            @if($entry->expected_sale_price && $canShowField('expected_sale_price'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Expected Sale Price</td>
                                 <td>₹{{ number_format($entry->expected_sale_price / 100000, 2) }} Lac</td>
                             </tr>
                             @endif
-                            @if($entry->security_deposit_months)
+                            @if($entry->security_deposit_months && $canShowField('security_deposit_months'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Security Deposit</td>
                                 <td>{{ $entry->security_deposit_months }} months</td>
                             </tr>
                             @endif
-                            @if($entry->lock_in_years)
+                            @if($entry->lock_in_years && $canShowField('lock_in_years'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Lock-in Period</td>
@@ -1669,10 +1669,9 @@
                 </div>
 
                 <div class="mt-6 pt-6 border-t border-white/20">
-                    <button type="button" onclick="document.getElementById('callback-modal-overlay').classList.remove('hidden')"
-                        class="w-full px-6 py-3 bg-zendo-gold text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors">
-                        📞 Request Callback
-                    </button>
+                    <a href="tel:+917494010101" class="block w-full px-6 py-3 bg-zendo-gold text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors text-center">
+                        📞 Call: +91 74-94-01-01-01
+                    </a>
                 </div>
                     </div>
                 </form>
