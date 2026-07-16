@@ -1574,27 +1574,50 @@ function wizardSubmit() {
     if (!wizardValidateAll()) return; // navigate to first step with errors
     if (!confirm('Submit this property entry to the office?')) return;
     
-    // Refresh CSRF token before submission to prevent token expiry
-    fetch('/csrf-token')
-        .then(response => response.json())
-        .then(data => {
-            const tokenInput = document.querySelector('input[name="_token"]');
-            if (tokenInput && data.csrf_token) {
-                tokenInput.value = data.csrf_token;
-            }
-        })
-        .catch(error => {
-            console.warn('CSRF token refresh failed:', error);
-        })
-        .finally(() => {
-            // Programmatically submit with action=submit
-            const form = document.querySelector('form');
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden'; hidden.name = 'action'; hidden.value = 'submit';
-            form.appendChild(hidden);
-            form.noValidate = false;
-            form.submit();
-        });
+    // Show loading state
+    const submitBtn = document.getElementById('wiz-submit-btn');
+    const originalText = submitBtn.innerText;
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Submitting...';
+    
+    // Add submit action to form
+    const form = document.querySelector('form');
+    
+    // Remove any existing action inputs
+    const existingAction = form.querySelector('input[name="action"]');
+    if (existingAction) {
+        existingAction.remove();
+    }
+    
+    // Add new action input
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'action';
+    hidden.value = 'submit';
+    form.appendChild(hidden);
+    
+    // Set form properties
+    form.noValidate = false;
+    form.method = 'POST';
+    
+    // Add error handler
+    form.addEventListener('submit', function(e) {
+        // Set a timeout to re-enable button if something goes wrong
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        }, 30000); // 30 seconds
+    }, { once: true });
+    
+    // Submit the form
+    try {
+        form.submit();
+    } catch (error) {
+        console.error('Form submission error:', error);
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+        alert('Form submission failed. Please try again.');
+    }
 }
 
 // Remove error highlight when user fills in a field

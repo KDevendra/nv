@@ -212,4 +212,9 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
     });
 });
 
+// CSRF Token refresh route for long forms
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+})->middleware('auth');
+
 require __DIR__.'/auth.php';
