@@ -261,6 +261,16 @@ class HomeController extends Controller
             }
         }
 
+        // Check if in wishlist
+        $isInWishlist = false;
+        if (auth()->check()) {
+            $isInWishlist = \App\Models\PropertyWishlist::isInWishlist(
+                auth()->id(), 
+                $property->id, 
+                null
+            );
+        }
+
         $similarProperties = Property::with(['propertyType', 'bhk', 'city', 'mainImage'])
             ->active()->published()
             ->where('id', '!=', $property->id)
@@ -268,7 +278,7 @@ class HomeController extends Controller
             ->where('city_id', $property->city_id)
             ->limit(3)->get();
 
-        return view('pages.property-detail', compact('property', 'similarProperties'));
+        return view('pages.property-detail', compact('property', 'similarProperties', 'isInWishlist'));
     }
 
     public function about()

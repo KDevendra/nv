@@ -2173,3 +2173,101 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
+
+<script>
+// Wishlist toggle functionality
+@auth
+document.addEventListener('DOMContentLoaded', function() {
+    const wishlistBtn = document.getElementById('wishlist-toggle-btn');
+    if (!wishlistBtn) return;
+    
+    wishlistBtn.addEventListener('click', function() {
+        const propertyEntryCode = this.dataset.propertyEntryCode;
+        const isInWishlist = this.dataset.inWishlist === 'true';
+        
+        // Disable button during request
+        wishlistBtn.disabled = true;
+        
+        fetch('{{ route("user.wishlist.toggle") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                property_entry_code: propertyEntryCode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update button state
+                const newState = data.action === 'added';
+                wishlistBtn.dataset.inWishlist = newState ? 'true' : 'false';
+                
+                // Update button styling
+                wishlistBtn.style.background = newState ? '#B39359' : 'white';
+                wishlistBtn.style.color = newState ? 'white' : '#0B2C3D';
+                
+                // Update heart icon
+                const svg = wishlistBtn.querySelector('svg');
+                svg.setAttribute('fill', newState ? 'currentColor' : 'none');
+                
+                // Update text
+                document.getElementById('wishlist-text').textContent = newState ? 'Saved' : 'Save';
+                
+                // Show feedback message
+                const message = newState ? 'Added to wishlist!' : 'Removed from wishlist';
+                showWishlistMessage(message, 'success');
+            } else {
+                showWishlistMessage('Failed to update wishlist', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Wishlist error:', error);
+            showWishlistMessage('An error occurred', 'error');
+        })
+        .finally(() => {
+            wishlistBtn.disabled = false;
+        });
+    });
+    
+    function showWishlistMessage(message, type) {
+        // Create temporary message
+        const msg = document.createElement('div');
+        msg.textContent = message;
+        msg.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${type === 'success' ? '#10b981' : '#ef4444'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(msg);
+        
+        setTimeout(() => {
+            msg.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => msg.remove(), 300);
+        }, 2000);
+    }
+});
+@endauth
+</script>
+
+<style>
+@keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+}
+</style>
