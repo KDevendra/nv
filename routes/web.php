@@ -109,6 +109,15 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
     
+    // User Panel Routes
+    Route::prefix('user')->name('user.')->middleware('verified')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\User\UserDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/inquiries', [\App\Http\Controllers\User\UserDashboardController::class, 'inquiries'])->name('inquiries');
+        Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\User\UserDashboardController::class, 'showInquiry'])->name('inquiries.show');
+        Route::get('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'profile'])->name('profile');
+        Route::put('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'updateProfile'])->name('profile.update');
+    });
+    
     // Field Role Dashboard (supply_head & field_officer)
     Route::get('/field/dashboard', [FieldDashboardController::class, 'index'])->name('field.dashboard');
 

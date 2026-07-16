@@ -1583,7 +1583,7 @@
                         <div class="locked-field-notice">
                             <h3>🔒 Submit an Inquiry to View Full Details</h3>
                             <p>Some property details are available only after you submit an inquiry. Click below to unlock complete information.</p>
-                            <button type="button" onclick="document.getElementById('inquiry-popup').classList.remove('hidden')">
+                            <button type="button" onclick="document.getElementById('callback-modal-overlay').classList.remove('hidden')">
                                 Submit Inquiry to View More
                             </button>
                         </div>
