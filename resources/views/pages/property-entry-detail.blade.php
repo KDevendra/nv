@@ -49,40 +49,47 @@
         }
         
         .locked-field-notice {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 2px solid #f59e0b;
+            background: linear-gradient(135deg, #0B2C3D 0%, #1a4a62 100%);
+            border: 2px solid #B39359;
             border-radius: 12px;
-            padding: 20px;
+            padding: 30px;
             margin: 20px 0;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(179, 147, 89, 0.2);
         }
         
         .locked-field-notice h3 {
-            color: #92400e;
-            font-size: 1.25rem;
+            color: #B39359;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-family: 'Forum', cursive;
         }
         
         .locked-field-notice p {
-            color: #78350f;
-            margin-bottom: 15px;
+            color: #e6edf8;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
         }
         
         .locked-field-notice button {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            background: linear-gradient(135deg, #B39359 0%, #8b7444 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 32px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(179, 147, 89, 0.3);
         }
         
         .locked-field-notice button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 6px 16px rgba(179, 147, 89, 0.4);
+            background: linear-gradient(135deg, #c4a566 0%, #9a8350 100%);
         }
 
         /* Popup Modal Styles */
@@ -1355,91 +1362,91 @@
                         </thead>
                         <tbody>
                             @php $srNo = 1; @endphp
-                            @if($entry->facility_type && $canShowField('facility_type'))
+                            @if($canShowField('facility_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Facility Type</td>
-                                <td>{{ $entry->facility_type }}</td>
+                                <td>{{ $entry->facility_type ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->property_name && $canShowField('property_name'))
+                            @if($canShowField('property_name'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Property Name</td>
-                                <td>{{ $entry->property_name }}</td>
+                                <td>{{ $entry->property_name ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->plot_area && $canShowField('plot_area'))
+                            @if($canShowField('plot_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Plot Area</td>
-                                <td>{{ number_format($entry->plot_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                                <td>{{ $entry->plot_area ? number_format($entry->plot_area) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->built_up_area && $canShowField('built_up_area'))
+                            @if($canShowField('built_up_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Built-up Area</td>
-                                <td>{{ number_format($entry->built_up_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                                <td>{{ $entry->built_up_area ? number_format($entry->built_up_area) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->carpet_area && $canShowField('carpet_area'))
+                            @if($canShowField('carpet_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Carpet Area</td>
-                                <td>{{ number_format($entry->carpet_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                                <td>{{ $entry->carpet_area ? number_format($entry->carpet_area) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->available_area && $canShowField('available_area'))
+                            @if($canShowField('available_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Available Area</td>
-                                <td>{{ number_format($entry->available_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
+                                <td>{{ $entry->available_area ? number_format($entry->available_area) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->clear_height_highest && $canShowField('clear_height_highest'))
+                            @if($canShowField('clear_height_highest'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Clear Height (Highest)</td>
-                                <td>{{ $entry->clear_height_highest }} ft</td>
+                                <td>{{ $entry->clear_height_highest ? $entry->clear_height_highest . ' ft' : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->clear_height_lowest && $canShowField('clear_height_side'))
+                            @if($canShowField('clear_height_side'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
-                                <td>Clear Height (Lowest)</td>
-                                <td>{{ $entry->clear_height_lowest }} ft</td>
+                                <td>Clear Height (Side)</td>
+                                <td>{{ $entry->clear_height_side ? $entry->clear_height_side . ' ft' : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->number_of_floors && $canShowField('number_of_floors'))
+                            @if($canShowField('number_of_floors'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Number of Floors</td>
-                                <td>{{ $entry->number_of_floors }}</td>
+                                <td>{{ $entry->number_of_floors ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_door_count && $canShowField('dock_door_count'))
+                            @if($canShowField('dock_door_count'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Doors</td>
-                                <td>{{ $entry->dock_door_count }}</td>
+                                <td>{{ $entry->dock_door_count ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_type && $canShowField('dock_type'))
+                            @if($canShowField('dock_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Type</td>
-                                <td>{{ $entry->dock_type }}</td>
+                                <td>{{ $entry->dock_type ?? 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_height && $canShowField('dock_height'))
+                            @if($canShowField('dock_height'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Height</td>
-                                <td>{{ $entry->dock_height }} ft</td>
+                                <td>{{ $entry->dock_height ? $entry->dock_height . ' ft' : 'N/A' }}</td>
                             </tr>
                             @endif
-                            @if($entry->power_sanctioned_kva && $canShowField('power_sanctioned_kva'))
+                            @if($canShowField('power_sanctioned_kva'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Power Sanctioned</td>
