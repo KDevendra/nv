@@ -94,6 +94,7 @@
         <h3 class="text-sm font-semibold text-zendo-navy mb-4 pb-2 border-b border-gray-100">A. Location &amp; Identification</h3>
         <dl class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {!! $dl('Facility Type', $property->facility_type) !!}
+            {!! $dl('Property Name', $property->property_name) !!}
             {!! $dl('Nearest City', $property->nearest_city) !!}
             {!! $dl('Village / Town / District', $property->village_town_district) !!}
             {!! $dl('PIN Code', $property->postal_address_pin) !!}
