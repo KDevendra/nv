@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class InquiryController extends Controller
 {
@@ -133,10 +137,33 @@ class InquiryController extends Controller
                 return back()->with('info', 'You have already submitted an inquiry for this property.');
             }
             
+            // ── Auto-create user if not logged in ──
+            $user = Auth::user();
+            if (!$user && $request->filled('email')) {
+                // Check if user exists by email
+                $user = User::where('email', $request->email)->first();
+                
+                if (!$user) {
+                    // Create new user
+                    $user = User::create([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'password' => Hash::make(Str::random(16)), // Random password
+                        'role' => 'user',
+                        'email_verified_at' => now(), // Auto-verify
+                    ]);
+                }
+                
+                // Auto-login the user
+                Auth::login($user);
+            }
+            
             \App\Models\PropertyInquiry::create([
                 'property_id' => $request->property_id, // Will be NULL for property entries
                 'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
                 'page_visit_id' => $pageVisitId,
+                'user_id' => $user ? $user->id : null, // Link to user if logged in
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -150,7 +177,10 @@ class InquiryController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Thank you for your inquiry! We will contact you shortly.'
+                    'message' => 'Thank you for your inquiry! We will contact you shortly.',
+                    'user_created' => isset($user) && $user->wasRecentlyCreated,
+                    'logged_in' => Auth::check(),
+                    'reload_required' => isset($user) // Signal frontend to reload page
                 ], 200);
             }
 
