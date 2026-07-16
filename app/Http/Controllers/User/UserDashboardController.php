@@ -4,6 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\PropertyInquiry;
+use App\Models\PropertyWishlist;
+use App\Models\Property;
+use App\Models\PropertyEntry;
 use Illuminate\Http\Request;
 
 class UserDashboardController extends Controller
@@ -115,5 +118,76 @@ class UserDashboardController extends Controller
         $user->update($validated);
         
         return back()->with('success', 'Profile updated successfully!');
+    }
+
+    /**
+     * Display user's wishlist
+     */
+    public function wishlist()
+    {
+        $user = auth()->user();
+        
+        $wishlists = PropertyWishlist::where('user_id', $user->id)
+            ->with(['property', 'property.builder'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+        
+        // Load property entries for wishlists that have property_entry_code
+        foreach ($wishlists as $wishlist) {
+            if ($wishlist->property_entry_code) {
+                $wishlist->entry = PropertyEntry::where('code', $wishlist->property_entry_code)->first();
+            }
+        }
+        
+        return view('user.wishlist', compact('wishlists'));
+    }
+
+    /**
+     * Toggle wishlist item (add or remove)
+     */
+    public function toggleWishlist(Request $request)
+    {
+        $validated = $request->validate([
+            'property_id' => 'nullable|exists:properties,id',
+            'property_entry_code' => 'nullable|string|max:50',
+        ]);
+        
+        $user = auth()->user();
+        
+        // Check if already in wishlist
+        $wishlist = PropertyWishlist::where('user_id', $user->id)
+            ->where(function($query) use ($validated) {
+                if (!empty($validated['property_id'])) {
+                    $query->where('property_id', $validated['property_id']);
+                }
+                if (!empty($validated['property_entry_code'])) {
+                    $query->where('property_entry_code', $validated['property_entry_code']);
+                }
+            })
+            ->first();
+        
+        if ($wishlist) {
+            // Remove from wishlist
+            $wishlist->delete();
+            
+            return response()->json([
+                'success' => true,
+                'action' => 'removed',
+                'message' => 'Removed from wishlist'
+            ]);
+        } else {
+            // Add to wishlist
+            PropertyWishlist::create([
+                'user_id' => $user->id,
+                'property_id' => $validated['property_id'] ?? null,
+                'property_entry_code' => $validated['property_entry_code'] ?? null,
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'action' => 'added',
+                'message' => 'Added to wishlist'
+            ]);
+        }
     }
 }
