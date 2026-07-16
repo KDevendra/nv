@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('property_entry_code')->nullable();
             $table->timestamps();
 
-            // Composite unique constraint to prevent duplicate entries
-            $table->unique(['user_id', 'property_id', 'property_entry_code']);
+            // Composite unique constraint to prevent duplicate entries (with custom short name)
+            $table->unique(['user_id', 'property_id', 'property_entry_code'], 'wishlist_user_prop_unique');
             
             // Indexes for faster queries
             $table->index('user_id');
