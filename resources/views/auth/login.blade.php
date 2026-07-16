@@ -14,10 +14,10 @@
         <form method="POST" action="{{ route('login') }}" class="space-y-6">
             @csrf
 
-            <!-- Email Address -->
+            <!-- Email or Phone -->
             <div>
-                <label for="email" class="block text-sm font-semibold text-gray-700 font-highlight mb-2">
-                    Email Address
+                <label for="login_field" class="block text-sm font-semibold text-gray-700 font-highlight mb-2">
+                    Email Address or Phone Number
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -25,16 +25,23 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                         </svg>
                     </div>
-                    <input id="email" 
-                           type="email" 
-                           name="email" 
-                           value="{{ old('email') }}" 
+                    <input id="login_field" 
+                           type="text" 
+                           name="login_field" 
+                           value="{{ old('login_field') }}" 
                            required 
                            autofocus 
                            autocomplete="username"
                            class="form-input block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-zendo-gold focus:border-zendo-gold font-body transition-all duration-200"
-                           placeholder="Enter your email address">
+                           placeholder="Enter your email or phone number">
                 </div>
+                @if($errors->get('login_field'))
+                    <div class="mt-2 text-sm text-red-600 font-body">
+                        @foreach($errors->get('login_field') as $error)
+                            <p>{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
                 @if($errors->get('email'))
                     <div class="mt-2 text-sm text-red-600 font-body">
                         @foreach($errors->get('email') as $error)
