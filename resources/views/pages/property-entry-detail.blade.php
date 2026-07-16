@@ -1259,7 +1259,7 @@
                                    color: {{ $isInWishlist ? 'white' : '#0B2C3D' }}; 
                                    border: 2px solid #B39359;
                                    padding: 12px 24px;
-                                   border-radius: 4px;
+                                   border-radius: 50px;
                                    font-weight: 600;
                                    cursor: pointer;
                                    display: block;
@@ -1270,7 +1270,7 @@
                     </button>
                     @else
                     <button type="button" 
-                            onclick="alert('Please login to save properties to your wishlist')"
+                            id="wishlist-login-btn"
                             style="background: white; 
                                    color: #0B2C3D; 
                                    border: 2px solid #B39359;
@@ -1280,7 +1280,11 @@
                                    cursor: pointer;
                                    display: block;
                                    align-items: center;
-                                   gap: 8px;">
+                                   gap: 8px;
+                                   transition: all 0.3s;">
+                        <svg style="width: 18px; height: 18px; display: inline-block; margin-right: 4px; vertical-align: middle;" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
                         <span>Save</span>
                     </button>
                     @endauth
