@@ -8,7 +8,7 @@
             </a>
 
             <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center space-x-8">
+            <nav class="hidden md:flex items-center space-x-6">
                 <a href="{{ route('about') }}" class="header-nav-link font-highlight font-medium">About Us</a>
                 
                 <!-- Services Dropdown -->
@@ -72,17 +72,17 @@
                 @if (Route::has('login'))
                     @auth
                         <!-- User Dropdown -->
-                        <div class="relative group ml-4">
-                            <button class="header-nav-link font-highlight font-medium flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="relative group">
+                            <button class="header-nav-link font-highlight font-medium flex items-center max-w-48 truncate">
+                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
-                                {{ Auth::user()->name }}
-                                <svg class="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span class="truncate">{{ Auth::user()->name }}</span>
+                                <svg class="w-4 h-4 ml-2 flex-shrink-0 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2 z-50">
                                 <div class="py-2">
                                     @if(Auth::user()->role === 'user')
                                         <a href="{{ route('user.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">
@@ -127,25 +127,27 @@
                             </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="header-nav-link font-highlight font-medium ml-4">
-                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                            </svg>
-                            Login
-                        </a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="header-nav-link font-highlight font-medium ml-4">
-                                <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        <div class="flex items-center space-x-3">
+                            <a href="{{ route('login') }}" class="header-nav-link font-highlight font-medium flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                                 </svg>
-                                Register
+                                Login
                             </a>
-                        @endif
+                            @if (Route::has('register'))
+                                <a href="{{ route('register') }}" class="header-nav-link font-highlight font-medium flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                    </svg>
+                                    Register
+                                </a>
+                            @endif
+                        </div>
                     @endauth
                 @endif
                 
                 <a href="tel:+917494010101"
-                    class="header-button btn-anim ml-4 mr-4 px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105">+91 74-94-01-01-01</a>
+                    class="header-button btn-anim px-5 py-2.5 rounded-full font-highlight font-medium shadow-lg transform hover:scale-105 whitespace-nowrap">+91 74-94-01-01-01</a>
             </nav>
 
             <!-- Mobile Menu Button -->
