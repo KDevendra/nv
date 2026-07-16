@@ -1591,52 +1591,89 @@
                 </div>
             </div>
             <aside class="sg2-form-card">
-                <h2 class="sg2-form-title">Request a Callback</h2>
-                <p class="sg2-form-subtext">Share your details and our team will call you with floor plans, pricing and
-                    exclusive offers.</p>
+                <h2 class="sg2-form-title">Property Highlights</h2>
+                <p class="sg2-form-subtext">Key features and specifications of this property</p>
 
-                <!-- Success Message -->
-                <div id="callback-success-message"
-                    style="display:none;background:#10b981;color:#fff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;">
-                    Thank you! We'll contact you shortly.
+                <div class="space-y-3 mt-4">
+                    @if($entry->facility_type)
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">{{ $entry->facility_type }}</p>
+                            <p class="text-gray-300 text-xs">Facility Type</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($entry->plot_area && $canShowField('plot_area'))
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">{{ number_format($entry->plot_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</p>
+                            <p class="text-gray-300 text-xs">Plot Area</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($entry->clear_height_highest && $canShowField('clear_height_highest'))
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">{{ $entry->clear_height_highest }} ft</p>
+                            <p class="text-gray-300 text-xs">Clear Height</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($entry->dock_door_count && $canShowField('dock_door_count'))
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">{{ $entry->dock_door_count }} Dock Doors</p>
+                            <p class="text-gray-300 text-xs">Loading Facilities</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($entry->power_sanctioned_kva && $canShowField('power_sanctioned_kva'))
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">{{ $entry->power_sanctioned_kva }} KVA</p>
+                            <p class="text-gray-300 text-xs">Power Available</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($entry->fire_noc && $canShowField('fire_noc'))
+                    <div class="flex items-start space-x-3 text-sm">
+                        <svg class="w-5 h-5 text-zendo-gold flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-medium text-white">Fire NOC Available</p>
+                            <p class="text-gray-300 text-xs">Legal Compliance</p>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
-                <!-- Error Message -->
-                <div id="callback-error-message"
-                    style="display:none;background:#ef4444;color:#fff;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;">
-                    Something went wrong. Please try again.
+                <div class="mt-6 pt-6 border-t border-white/20">
+                    <button type="button" onclick="document.getElementById('callback-modal-overlay').classList.remove('hidden')"
+                        class="w-full px-6 py-3 bg-zendo-gold text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors">
+                        📞 Request Callback
+                    </button>
                 </div>
-
-                <form id="callback-form" action="{{ route('inquiries.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="property_entry_code" value="{{ $entry->code }}">
-                    <div class="sg2-form-group">
-                        <input type="text" name="name" class="sg2-input" placeholder="Your Name" required>
-                    </div>
-                    <div class="sg2-form-group">
-                        <input type="tel" name="phone" class="sg2-input" placeholder="Phone Number" required>
-                    </div>
-                    <div class="sg2-form-group">
-                        <input type="email" name="email" class="sg2-input" placeholder="Email">
-                    </div>
-                    <div class="sg2-form-group">
-                        <textarea name="message" class="sg2-textarea" placeholder="I am interested in {{ $entry->facility_type ?? 'this property' }} ({{ $entry->code }})...">I am interested in {{ $entry->facility_type ?? 'property' }} - {{ $entry->code }} at {{ $entry->name_full_address }}</textarea>
-                    </div>
-                    <div class="sg2-btn-wrap">
-                        <button type="submit" class="sg2-btn" id="callback-submit-btn">
-                            <span class="btn-text">Get Best Price</span>
-                            <span class="btn-loading" style="display:none;">
-                                <svg class="animate-spin h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                        stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                                Sending...
-                            </span>
-                        </button>
                     </div>
                 </form>
             </aside>
@@ -1764,57 +1801,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnText.style.display = 'inline';
                 btnLoading.style.display = 'none';
                 callbackSubmitBtn.disabled = false;
-            }
-        });
-    }
-
-    // Inline callback form
-    const inlineForm = document.getElementById('callback-form');
-    if (inlineForm) {
-        inlineForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const submitBtn = document.getElementById('callback-submit-btn');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const btnLoading = submitBtn.querySelector('.btn-loading');
-            
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline';
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    document.getElementById('callback-success-message').style.display = 'block';
-                    inlineForm.reset();
-                    
-                    // If user was created/logged in, reload page to show more fields
-                    if (data.reload_required || data.user_created) {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        setTimeout(() => {
-                            document.getElementById('callback-success-message').style.display = 'none';
-                        }, 3000);
-                    }
-                } else {
-                    document.getElementById('callback-error-message').style.display = 'block';
-                    document.getElementById('callback-error-message').textContent = data.message || 'Something went wrong. Please try again.';
-                }
-            } catch (error) {
-                document.getElementById('callback-error-message').style.display = 'block';
-            } finally {
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
-                submitBtn.disabled = false;
             }
         });
     }
