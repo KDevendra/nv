@@ -73,7 +73,7 @@ Route::get('/properties/search', [HomeController::class, 'search'])->name('prope
 Route::get('/api/bhks-by-property-type', [HomeController::class, 'getBhksByPropertyType'])->name('api.bhks-by-property-type');
 Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy'])->name('privacy-policy');
 Route::get('/terms-and-conditions', [HomeController::class, 'termsAndConditions'])->name('terms-and-conditions');
-Route::post('/inquiries', [InquiryController::class, 'store'])->name('inquiries.store');
+Route::post('/inquiries', [InquiryController::class, 'storePropertyInquiry'])->name('inquiries.store');
 Route::post('/inquiries/check-submission', [InquiryController::class, 'checkSubmission'])->name('inquiries.checkSubmission');
 Route::post('/consultations', [ConsultationController::class, 'store'])->name('consultations.store');
 Route::get('/calculators/acre-to-bigha', [HomeController::class, 'acreToBigha'])->name('calculators.acre-to-bigha');
