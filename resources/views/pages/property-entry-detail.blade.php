@@ -3,6 +3,25 @@
 @section('title', ($entry->property_name ?? $entry->facility_type ?? 'Property') . ' - ' . ($entry->nearest_city ?? '') . ' - ZendoIndia')
 @section('description', Str::limit($entry->name_full_address ?? $entry->remarks ?? '', 160))
 
+@php
+    // Field visibility helper function
+    $canShowField = function($fieldKey) use ($fieldConfigs, $userHasSubmittedInquiry) {
+        $config = $fieldConfigs->get($fieldKey);
+        if (!$config) return true; // Show if no config exists
+        
+        // If user has submitted inquiry, show fields marked as show_after_verification
+        if ($userHasSubmittedInquiry && $config->show_after_verification) {
+            return true;
+        }
+        
+        // Otherwise, only show fields marked as show_on_website
+        return $config->show_on_website;
+    };
+    
+    // Check if user needs to submit inquiry to see more details
+    $showInquiryPrompt = !$userHasSubmittedInquiry && auth()->check();
+@endphp
+
 @section('styles')
     <style>
         :root {
@@ -17,6 +36,43 @@
             font-size: 1.125rem;
             line-height: 1.7;
             overflow-x: hidden;
+        }
+        
+        .locked-field-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .locked-field-notice h3 {
+            color: #92400e;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .locked-field-notice p {
+            color: #78350f;
+            margin-bottom: 15px;
+        }
+        
+        .locked-field-notice button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .locked-field-notice button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
         }
 
         /* Popup Modal Styles */
@@ -1279,6 +1335,16 @@
                 <h2 class="sg2-title-main">Specifications</h2>
                 <hr class="sg2-hr">
 
+                @if($showInquiryPrompt)
+                <div class="locked-field-notice">
+                    <h3>🔒 Submit an Inquiry to View Full Details</h3>
+                    <p>Some property details are available only after you submit an inquiry. Click below to unlock complete information.</p>
+                    <button type="button" onclick="document.getElementById('inquiry-popup').classList.remove('hidden')">
+                        Submit Inquiry to View More
+                    </button>
+                </div>
+                @endif
+
                 <div class="apw-table-wrap">
                     <table class="apw-table">
                         <thead>
@@ -1290,91 +1356,91 @@
                         </thead>
                         <tbody>
                             @php $srNo = 1; @endphp
-                            @if($entry->facility_type)
+                            @if($entry->facility_type && $canShowField('facility_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Facility Type</td>
                                 <td>{{ $entry->facility_type }}</td>
                             </tr>
                             @endif
-                            @if($entry->property_name)
+                            @if($entry->property_name && $canShowField('property_name'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Property Name</td>
                                 <td>{{ $entry->property_name }}</td>
                             </tr>
                             @endif
-                            @if($entry->plot_area)
+                            @if($entry->plot_area && $canShowField('plot_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Plot Area</td>
                                 <td>{{ number_format($entry->plot_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
                             </tr>
                             @endif
-                            @if($entry->built_up_area)
+                            @if($entry->built_up_area && $canShowField('built_up_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Built-up Area</td>
                                 <td>{{ number_format($entry->built_up_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
                             </tr>
                             @endif
-                            @if($entry->carpet_area)
+                            @if($entry->carpet_area && $canShowField('carpet_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Carpet Area</td>
                                 <td>{{ number_format($entry->carpet_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
                             </tr>
                             @endif
-                            @if($entry->available_area)
+                            @if($entry->available_area && $canShowField('available_area'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Available Area</td>
                                 <td>{{ number_format($entry->available_area) }} {{ str_replace('_', ' ', $entry->area_unit ?? 'sq ft') }}</td>
                             </tr>
                             @endif
-                            @if($entry->clear_height_highest)
+                            @if($entry->clear_height_highest && $canShowField('clear_height_highest'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Clear Height (Highest)</td>
                                 <td>{{ $entry->clear_height_highest }} ft</td>
                             </tr>
                             @endif
-                            @if($entry->clear_height_lowest)
+                            @if($entry->clear_height_lowest && $canShowField('clear_height_side'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Clear Height (Lowest)</td>
                                 <td>{{ $entry->clear_height_lowest }} ft</td>
                             </tr>
                             @endif
-                            @if($entry->number_of_floors)
+                            @if($entry->number_of_floors && $canShowField('number_of_floors'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Number of Floors</td>
                                 <td>{{ $entry->number_of_floors }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_door_count)
+                            @if($entry->dock_door_count && $canShowField('dock_door_count'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Doors</td>
                                 <td>{{ $entry->dock_door_count }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_type)
+                            @if($entry->dock_type && $canShowField('dock_type'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Type</td>
                                 <td>{{ $entry->dock_type }}</td>
                             </tr>
                             @endif
-                            @if($entry->dock_height)
+                            @if($entry->dock_height && $canShowField('dock_height'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Dock Height</td>
                                 <td>{{ $entry->dock_height }} ft</td>
                             </tr>
                             @endif
-                            @if($entry->power_sanctioned_kva)
+                            @if($entry->power_sanctioned_kva && $canShowField('power_sanctioned_kva'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
                                 <td>Power Sanctioned</td>
