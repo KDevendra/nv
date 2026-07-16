@@ -32,6 +32,11 @@ class PropertyInquiry extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function propertyEntry()
+    {
+        return $this->hasOne(\App\Models\PropertyEntry::class, 'code', 'property_entry_code');
+    }
+
     public function pageVisit(): BelongsTo
     {
         return $this->belongsTo(PageVisit::class);

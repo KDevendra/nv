@@ -1334,17 +1334,6 @@
                 <!-- Specifications Table -->
                 <h2 class="sg2-title-main">Specifications</h2>
                 <hr class="sg2-hr">
-
-                @if($showInquiryPrompt)
-                <div class="locked-field-notice">
-                    <h3>🔒 Submit an Inquiry to View Full Details</h3>
-                    <p>Some property details are available only after you submit an inquiry. Click below to unlock complete information.</p>
-                    <button type="button" onclick="document.getElementById('inquiry-popup').classList.remove('hidden')">
-                        Submit Inquiry to View More
-                    </button>
-                </div>
-                @endif
-
                 <div class="apw-table-wrap">
                     <table class="apw-table">
                         <thead>
@@ -1590,9 +1579,18 @@
                             @endif
                         </tbody>
                     </table>
+                    @if($showInquiryPrompt)
+                        <div class="locked-field-notice">
+                            <h3>🔒 Submit an Inquiry to View Full Details</h3>
+                            <p>Some property details are available only after you submit an inquiry. Click below to unlock complete information.</p>
+                            <button type="button" onclick="document.getElementById('inquiry-popup').classList.remove('hidden')">
+                                Submit Inquiry to View More
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
- <aside class="sg2-form-card">
+            <aside class="sg2-form-card">
                 <h2 class="sg2-form-title">Request a Callback</h2>
                 <p class="sg2-form-subtext">Share your details and our team will call you with floor plans, pricing and
                     exclusive offers.</p>
