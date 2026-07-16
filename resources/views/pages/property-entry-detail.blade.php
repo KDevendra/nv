@@ -1297,6 +1297,13 @@
                                 <td>{{ $entry->facility_type }}</td>
                             </tr>
                             @endif
+                            @if($entry->property_name)
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Property Name</td>
+                                <td>{{ $entry->property_name }}</td>
+                            </tr>
+                            @endif
                             @if($entry->plot_area)
                             <tr>
                                 <td>{{ $srNo++ }}</td>

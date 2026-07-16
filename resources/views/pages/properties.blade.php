@@ -1701,7 +1701,7 @@
                                         <span class="apw-tag apw-tagAlt">{{ $entry->deal_type ?? 'Available' }}</span>
                                     </div>
                                     <div class="apw-cardBody">
-                                        <h3 class="apw-cardTitle">{{ Str::limit($entry->name_full_address ?? $entry->facility_type, 55) }}</h3>
+                                        <h3 class="apw-cardTitle">{{ $entry->property_name ?? Str::limit($entry->name_full_address ?? $entry->facility_type, 55) }}</h3>
                                         <p class="apw-cardMeta">
                                             <span class="apw-miniSvg" aria-hidden="true">
                                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
