@@ -8,7 +8,7 @@
             </a>
 
             <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center space-x-6">
+            <nav class="hidden md:flex items-center space-x-3">
                 <a href="{{ route('about') }}" class="header-nav-link font-highlight font-medium">About Us</a>
                 
                 <!-- Services Dropdown -->
