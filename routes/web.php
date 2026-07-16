@@ -10,6 +10,7 @@ use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\FieldOfficer\PropertyEntryController as FieldOfficerPropertyEntryController;
 use App\Http\Controllers\SupplyHead\PropertyEntryController as SupplyHeadPropertyEntryController;
 use App\Http\Controllers\Admin\RolePermissionController;
+use App\Http\Controllers\User\UserDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\FaqController;
@@ -203,6 +204,11 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::resource('areas', AreaController::class);
         Route::patch('areas/{area}/toggle-status', [AreaController::class, 'toggleStatus'])->name('areas.toggle-status');
         Route::get('areas-by-region', [AreaController::class, 'getByRegion'])->name('areas.by-region');
+    });
+    
+    // CSRF Token refresh route for long forms
+    Route::get('/csrf-token', function () {
+        return response()->json(['csrf_token' => csrf_token()]);
     });
 });
 
