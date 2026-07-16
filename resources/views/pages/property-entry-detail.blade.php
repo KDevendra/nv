@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', ($entry->facility_type ?? 'Property') . ' - ' . ($entry->nearest_city ?? '') . ' - ZendoIndia')
+@section('title', ($entry->property_name ?? $entry->facility_type ?? 'Property') . ' - ' . ($entry->nearest_city ?? '') . ' - ZendoIndia')
 @section('description', Str::limit($entry->name_full_address ?? $entry->remarks ?? '', 160))
 
 @section('styles')
@@ -1062,7 +1062,7 @@
         <div class="about-banner-overlay"></div>
         <div class="about-banner-container">
             <div class="about-banner-left">
-                <h1 class="about-banner-heading">{{ $entry->facility_type ?? 'Property Details' }}</h1>
+                <h1 class="about-banner-heading">{{ $entry->property_name ?? $entry->facility_type ?? 'Property Details' }}</h1>
                 <div class="about-breadcrumb">
                     <a href="{{ route('home') }}">Home</a>
                     <span>/</span>
@@ -1084,7 +1084,7 @@
                     @endif
                     <span class="sgdxp-badge sgdxp-badge-status">Verified</span>
                 </div>
-                <h1 class="sgdxp-title">{{ Str::limit($entry->name_full_address ?? $entry->facility_type, 80) }}</h1>
+                <h1 class="sgdxp-title">{{ $entry->property_name ?? Str::limit($entry->name_full_address ?? $entry->facility_type, 80) }}</h1>
                 <div class="sgdxp-location-line">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                         <path fill="#b39359" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
