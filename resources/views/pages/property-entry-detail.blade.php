@@ -1132,6 +1132,48 @@
         </div>
     </div>
 
+    <!-- Login Modal for Wishlist -->
+    <div id="login-modal-overlay" class="inquiry-popup-overlay hidden">
+        <div class="inquiry-popup-content">
+            <button type="button" id="login-modal-close-btn"
+                style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:#ef4444;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(239,68,68,0.3);transition:all 0.2s ease;z-index:10;"
+                onmouseover="this.style.background='#dc2626';this.style.transform='scale(1.1)'"
+                onmouseout="this.style.background='#ef4444';this.style.transform='scale(1)'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <div class="inquiry-popup-header">
+                <div style="width: 60px; height: 60px; background: #B39359; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <svg style="width: 32px; height: 32px;" fill="white" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h5 class="inquiry-popup-title">Save to Wishlist</h5>
+                <p class="inquiry-popup-subtitle">Please login to save properties to your wishlist and track them easily.</p>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <a href="{{ route('login') }}" 
+                   class="popup-submit-btn" 
+                   style="flex: 1; text-align: center; text-decoration: none; display: block; background: linear-gradient(135deg, #B39359 0%, #9a7c4d 100%);">
+                    Login to Continue
+                </a>
+                <button type="button" 
+                        onclick="document.getElementById('login-modal-overlay').classList.add('hidden')"
+                        class="popup-submit-btn" 
+                        style="flex: 1; background: #6b7280;">
+                    Cancel
+                </button>
+            </div>
+
+            <p class="popup-privacy-text" style="margin-top: 16px;">
+                Don't have an account? <a href="{{ route('register') }}" style="color: #B39359; font-weight: 600;">Create one now</a>
+            </p>
+        </div>
+    </div>
+
     <!-- BANNER -->
     <section class="about-banner-section">
         <div class="about-banner-overlay"></div>
