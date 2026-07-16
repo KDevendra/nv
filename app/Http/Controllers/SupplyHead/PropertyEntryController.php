@@ -50,6 +50,7 @@ class PropertyEntryController extends Controller
                 $q->where('code', 'like', "%{$search}%")
                   ->orWhere('nearest_city', 'like', "%{$search}%")
                   ->orWhere('facility_type', 'like', "%{$search}%")
+                  ->orWhere('property_name', 'like', "%{$search}%")
                   ->orWhereHas('fieldOfficer', fn($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
@@ -74,6 +75,7 @@ class PropertyEntryController extends Controller
                 $q->where('code', 'like', "%{$search}%")
                   ->orWhere('nearest_city', 'like', "%{$search}%")
                   ->orWhere('facility_type', 'like', "%{$search}%")
+                  ->orWhere('property_name', 'like', "%{$search}%")
                   ->orWhereHas('fieldOfficer', fn($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
@@ -302,8 +304,9 @@ class PropertyEntryController extends Controller
     private function getReviewableFields(PropertyEntry $property): array
     {
         return [
-            // A. Location & Identification (15 fields)
+            // A. Location & Identification (16 fields)
             ['name' => 'facility_type', 'label' => 'Facility Type', 'value' => $property->facility_type],
+            ['name' => 'property_name', 'label' => 'Name of Property', 'value' => $property->property_name],
             ['name' => 'name_full_address', 'label' => 'Address', 'value' => $property->name_full_address],
             ['name' => 'village', 'label' => 'Village', 'value' => $property->village],
             ['name' => 'tehsil', 'label' => 'Tehsil', 'value' => $property->tehsil],
