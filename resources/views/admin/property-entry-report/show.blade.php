@@ -495,6 +495,13 @@
                         if (in_array($fieldName, ['canteen', 'stp_plant', 'female_washroom', 'driver_rest_room', 'mezzanine', 'scrap_yard', 'extension_possible', 'solar'])) {
                             $value = $value === 1 ? 'Yes' : ($value === 0 ? 'No' : '—');
                         }
+                        // Format office_sizes array
+                        if ($fieldName === 'office_sizes' && is_array($value)) {
+                            $value = implode(', ', array_map(
+                                fn($o) => ($o['l'] ?? 0) . ' × ' . ($o['w'] ?? 0) . ' ft (' . (($o['l'] ?? 0) * ($o['w'] ?? 0)) . ' sq ft)', 
+                                array_filter($value, fn($o) => !empty($o['l']) || !empty($o['w']))
+                            )) ?: '—';
+                        }
                     @endphp
                     @if(in_array($fieldName, ['name_full_address', 'top_neighbouring_companies', 'remarks']))
                         {{-- Wide fields spanning full width --}}

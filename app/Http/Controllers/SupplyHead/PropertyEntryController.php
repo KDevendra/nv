@@ -368,7 +368,7 @@ class PropertyEntryController extends Controller
             
             // C. Facility Details (22 fields)
             ['name' => 'no_of_offices', 'label' => 'No. of Offices', 'value' => $property->no_of_offices],
-            ['name' => 'office_sizes', 'label' => 'Office Sizes', 'value' => is_array($property->office_sizes) ? implode(', ', array_map(fn($o) => $o['size'] . ' ' . $o['unit'], $property->office_sizes)) : $property->office_sizes],
+            ['name' => 'office_sizes', 'label' => 'Office Sizes', 'value' => is_array($property->office_sizes) ? implode(', ', array_map(fn($o) => ($o['l'] ?? 0) . ' × ' . ($o['w'] ?? 0) . ' ft (' . (($o['l'] ?? 0) * ($o['w'] ?? 0)) . ' sq ft)', array_filter($property->office_sizes, fn($o) => !empty($o['l']) || !empty($o['w'])))) : ($property->office_sizes ?: '—')],
             ['name' => 'canteen', 'label' => 'Canteen', 'value' => $property->canteen ? 'Yes' : 'No'],
             ['name' => 'canteen_size', 'label' => 'Canteen Size', 'value' => $property->canteen_size],
             ['name' => 'stp_plant', 'label' => 'STP Plant', 'value' => $property->stp_plant ? 'Yes' : 'No'],
