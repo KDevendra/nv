@@ -22,6 +22,7 @@ class User extends Authenticatable
         // ── Platform ──────────────────────────────────────────────────────
         'super_admin'                    => 'Super Admin',
         'admin'                          => 'Admin',
+        'user'                           => 'User', // Regular website users
 
         // ── Warehousing Division ──────────────────────────────────────────
         'chief_coordinator_warehousing'  => 'Chief Coordinator (Warehousing)',
