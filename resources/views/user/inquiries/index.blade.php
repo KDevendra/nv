@@ -147,7 +147,7 @@
             </div>
             <h3 class="text-lg font-semibold text-gray-900 mb-2">No Inquiries Found</h3>
             <p class="text-gray-600 mb-6">You haven't submitted any property inquiries yet, or your filters returned no results.</p>
-            <a href="{{ route('properties') }}" class="inline-flex items-center px-6 py-3 bg-zendo-gold text-white font-medium rounded-lg hover:bg-zendo-navy transition-colors">
+            <a href="{{ route('properties.index') }}" class="inline-flex items-center px-6 py-3 bg-zendo-gold text-white font-medium rounded-lg hover:bg-zendo-navy transition-colors">
                 Browse Properties
             </a>
         </div>

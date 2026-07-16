@@ -87,7 +87,7 @@
                         class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('user.inquiries*') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
                         My Inquiries
                     </a>
-                    <a href="{{ route('properties') }}" 
+                    <a href="{{ route('properties.index') }}" 
                         class="px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-300 hover:text-white hover:bg-white/10">
                         Browse Properties
                     </a>
@@ -164,7 +164,7 @@
                     class="block px-3 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('user.inquiries*') ? 'bg-zendo-gold text-white' : 'text-gray-300 hover:text-white hover:bg-white/10' }}">
                     My Inquiries
                 </a>
-                <a href="{{ route('properties') }}" 
+                <a href="{{ route('properties.index') }}" 
                     class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:text-white hover:bg-white/10">
                     Browse Properties
                 </a>
