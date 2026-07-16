@@ -130,7 +130,7 @@
         @if($fc('property_name')->keep_field)
         <div class="sm:col-span-2">
             <label class="{{ $lc }}">Name of Property {!! $ast('property_name') !!}</label>
-            <input type="text" name="property_name" value="{{ $v('property_name') }}" {{ $req('property_name') }} class="{{ $ic }}" placeholder="Enter property name">
+            <input type="text" name="property_name" value="{{ $v('property_name') }}" {{ $req('property_name') }} class="{{ $ic }}" >
             @error('property_name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             {!! $rmk('property_name') !!}
         </div>
@@ -199,7 +199,6 @@
                 pattern="[0-9]{6}"
                 maxlength="6"
                 inputmode="numeric"
-                placeholder="6-digit PIN"
                 title="Enter a valid 6-digit PIN code"
                 class="{{ $ic }}">
             @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
@@ -261,7 +260,6 @@
                 pattern="[6-9][0-9]{9}"
                 maxlength="10"
                 inputmode="numeric"
-                placeholder="10-digit mobile number"
                 title="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9"
                 class="{{ $ic }}">
             @error('owner_contact_phone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
@@ -670,12 +668,12 @@
                     <div class="flex items-center pt-6"><span class="text-sm font-semibold text-gray-600 w-14">{{ $sideLabel }}</span></div>
                     <div>
                         <label class="{{ $lc }}">Length (L) {!! $ast($lf) !!}</label>
-                        <input type="number" step="0.01" min="0" name="{{ $lf }}" value="{{ $v($lf) }}" {{ $req($lf) }} class="{{ $ic }}" placeholder="0.00">
+                        <input type="number" step="0.01" min="0" name="{{ $lf }}" value="{{ $v($lf) }}" {{ $req($lf) }} class="{{ $ic }}">
                         @error($lf)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="{{ $lc }}">Width (W) {!! $ast($wf) !!}</label>
-                        <input type="number" step="0.01" min="0" name="{{ $wf }}" value="{{ $v($wf) }}" {{ $req($wf) }} class="{{ $ic }}" placeholder="0.00">
+                        <input type="number" step="0.01" min="0" name="{{ $wf }}" value="{{ $v($wf) }}" {{ $req($wf) }} class="{{ $ic }}">
                         @error($wf)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
