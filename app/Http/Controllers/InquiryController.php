@@ -13,9 +13,73 @@ use Illuminate\Support\Str;
 class InquiryController extends Controller
 {
     /**
+     * Store a newly created inquiry in storage.
+     */
+    public function store(Request $request)
+    {
+        // Check if this is a property-specific inquiry
+        if ($request->has('property_id')) {
+            return $this->storePropertyInquiry($request);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'property_type' => 'nullable|string|max:100',
+            'message' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            // Check if this is an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $inquiry = Inquiry::create([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'property_type' => $request->property_type,
+                'message' => $request->message,
+                'status' => 'pending'
+            ]);
+
+            // Check if this is an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Thank you for your inquiry! We will get back to you soon.',
+                    'data' => $inquiry
+                ], 201);
+            }
+
+            return back()->with('success', 'Thank you for your inquiry! We will get back to you soon.');
+
+        } catch (\Exception $e) {
+            // Check if this is an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong. Please try again later.'
+                ], 500);
+            }
+            
+            return back()->with('error', 'Something went wrong. Please try again later.');
+        }
+    }
+
+    /**
      * Store a property-specific inquiry.
      */
-    private function storePropertyInquiry(Request $request)
+    public function storePropertyInquiry(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'property_id' => 'nullable|exists:properties,id',
@@ -116,7 +180,7 @@ class InquiryController extends Controller
                 Auth::login($user);
             }
             
-            $inquiry = \App\Models\PropertyInquiry::create([
+            \App\Models\PropertyInquiry::create([
                 'property_id' => $request->property_id, // Will be NULL for property entries
                 'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
                 'page_visit_id' => $pageVisitId,
@@ -128,12 +192,6 @@ class InquiryController extends Controller
                 'inquiry_type' => $request->input('inquiry_type', 'call_back'),
                 'status' => 'pending',
                 'ip_address' => $request->ip()
-            ]);
-            
-            \Log::info('Property inquiry created', [
-                'inquiry_id' => $inquiry->id,
-                'user_id' => $user ? $user->id : null,
-                'property_entry_code' => $request->property_entry_code
             ]);
 
             // Check if this is an AJAX request
