@@ -98,6 +98,8 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\User\UserDashboardController::class, 'showInquiry'])->name('inquiries.show');
         Route::get('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/wishlist', [\App\Http\Controllers\User\UserDashboardController::class, 'wishlist'])->name('wishlist');
+        Route::post('/wishlist/toggle', [\App\Http\Controllers\User\UserDashboardController::class, 'toggleWishlist'])->name('wishlist.toggle');
     });
     Route::get('/api/dashboard/visitor-analytics', [DashboardController::class, 'getVisitorAnalytics'])->middleware('permission')->name('dashboard.analytics');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

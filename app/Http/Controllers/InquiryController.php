@@ -114,36 +114,7 @@ class InquiryController extends Controller
             // Get the current page visit ID from session
             $pageVisitId = $request->session()->get('current_page_visit_id');
             
-            // Check if this visitor has already submitted an inquiry
-            $existingInquiryQuery = \App\Models\PropertyInquiry::query();
-            
-            // Check by property_id or property_entry_code
-            if ($request->filled('property_id')) {
-                $existingInquiryQuery->where('property_id', $request->property_id);
-            } elseif ($request->filled('property_entry_code')) {
-                $existingInquiryQuery->where('property_entry_code', $request->property_entry_code);
-            }
-            
-            $existingInquiry = $existingInquiryQuery
-                ->where(function($query) use ($request, $pageVisitId) {
-                    $query->where('ip_address', $request->ip());
-                    if ($pageVisitId) {
-                        $query->orWhere('page_visit_id', $pageVisitId);
-                    }
-                })
-                ->where('created_at', '>=', now()->subHours(24)) // Check last 24 hours
-                ->exists();
-            
-            if ($existingInquiry) {
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'You have already submitted an inquiry for this property.',
-                        'already_submitted' => true
-                    ], 200);
-                }
-                return back()->with('info', 'You have already submitted an inquiry for this property.');
-            }
+            // Note: Removed strict validation - users can now submit multiple inquiries for the same property
             
             // ── Auto-create user if not logged in ──
             $user = Auth::user();
