@@ -210,7 +210,19 @@ class HomeController extends Controller
     public function showEntry(\App\Models\PropertyEntry $entry)
     {
         $entry->load(['photos']);
-        return view('pages.property-entry-detail', compact('entry'));
+        
+        // Get field configurations
+        $fieldConfigs = \App\Models\PropertyFieldConfig::allKeyed();
+        
+        // Check if current user has submitted inquiry for this entry
+        $userHasSubmittedInquiry = false;
+        if (auth()->check()) {
+            $userHasSubmittedInquiry = \App\Models\PropertyInquiry::where('property_entry_code', $entry->code)
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
+        
+        return view('pages.property-entry-detail', compact('entry', 'fieldConfigs', 'userHasSubmittedInquiry'));
     }
 
     public function show(Property $property)

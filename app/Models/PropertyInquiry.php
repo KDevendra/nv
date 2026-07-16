@@ -11,6 +11,7 @@ class PropertyInquiry extends Model
         'property_id',
         'property_entry_code',
         'page_visit_id',
+        'user_id',
         'name',
         'email',
         'phone',
@@ -24,6 +25,11 @@ class PropertyInquiry extends Model
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function pageVisit(): BelongsTo
