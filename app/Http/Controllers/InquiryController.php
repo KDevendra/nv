@@ -181,7 +181,7 @@ class InquiryController extends Controller
             }
             
             \App\Models\PropertyInquiry::create([
-                'property_id' => $request->property_id, // Will be NULL for property entries
+                'property_id' => $request->filled('property_id') ? $request->property_id : null, // Only set if provided
                 'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
                 'page_visit_id' => $pageVisitId,
                 'user_id' => $user ? $user->id : null, // Link to user if logged in
