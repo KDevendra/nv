@@ -239,6 +239,7 @@ class PropertyEntryController extends Controller
         $typeRules = [
             // A
             'facility_type'                => 'string',
+            'property_name'                => 'string|max:255',
             'name_full_address'            => 'string',
             'village'                      => 'string|max:255',
             'tehsil'                       => 'string|max:255',

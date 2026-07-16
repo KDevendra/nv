@@ -27,8 +27,9 @@ class PropertyEntry extends Model
         'supply_head_viewed_at',
         // A
         'facility_type',
+        'property_name',
         'name_full_address',
-        'village_town_district',  // legacy — kept for compat
+        'village_town_district', 
         'village',
         'tehsil',
         'district',
