@@ -9,6 +9,7 @@ use App\Models\PropertyEntryLog;
 use App\Models\PropertyFieldConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -80,7 +81,7 @@ class PropertyEntryController extends Controller
         // Increase memory limit for large form processing
         ini_set('memory_limit', '256M');
         ini_set('max_execution_time', 300); // 5 minutes
-        
+
         // Debug session and auth state
         \Log::info('PropertyEntry Store - Session Debug:', [
             'session_id' => session()->getId(),
@@ -90,26 +91,37 @@ class PropertyEntryController extends Controller
             'form_size' => strlen($request->getContent()),
             'memory_usage' => memory_get_usage(true),
         ]);
-        
+
         abort_if(auth()->user()->role !== 'field_officer', 403);
 
         $action = $request->input('action', 'submit');
         $isDraft = ($action === 'draft');
-        
+
         try {
             $data = $this->validateEntry($request, $isDraft);
-        } catch (\Exception $e) {
-            \Log::error('Store Form validation failed:', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-                'session_id' => session()->getId()
+        } catch (ValidationException $e) {
+            // Real, human-readable, per-field messages (e.g. "The property
+            // name field is required.") are already inside $e->errors().
+            // Let Laravel's default handling take over so the $errors bag
+            // reaches the view intact — the blade's @error('field') tags
+            // and step-error badges depend on this. Do NOT flatten this
+            // into one generic message.
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('Store Form validation failed unexpectedly:', [
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
+                'user_id'    => auth()->id(),
+                'session_id' => session()->getId(),
             ]);
-            
+
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['form_error' => 'Form validation failed. Please check your data and try again.']);
+                ->withErrors([
+                    'form_error' => 'Something went wrong while saving your entry. Please try again, and if the problem continues, contact support with code: ' . now()->format('YmdHis'),
+                ]);
         }
-        
+
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
@@ -173,14 +185,14 @@ class PropertyEntryController extends Controller
     {
         abort_if(auth()->user()->role !== 'field_officer', 403);
         abort_if($property->field_officer_id !== auth()->id(), 403);
-        
+
         // Check if the property is editable using the model's isEditable() method
         abort_if(! $property->isEditable(), 403, 'This entry cannot be edited. It may have been permanently rejected or is in a non-editable state.');
 
         $property->load(['photos', 'fieldReviews']);
         $slots        = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
-        
+
         // Build field reviews map for easy lookup in the form (field_name => remark)
         $fieldRemarks = $property->fieldReviews()
             ->where('is_correct', false)
@@ -204,43 +216,51 @@ class PropertyEntryController extends Controller
         // Increase memory limit for large form processing
         ini_set('memory_limit', '256M');
         ini_set('max_execution_time', 300); // 5 minutes
-        
+
         // Debug session and auth state
         \Log::info('PropertyEntry Update - Session Debug:', [
-            'session_id' => session()->getId(),
-            'user_id' => auth()->id(),
-            'user_role' => auth()->user()?->role,
+            'session_id'  => session()->getId(),
+            'user_id'     => auth()->id(),
+            'user_role'   => auth()->user()?->role,
             'property_id' => $property->id,
-            'csrf_token' => $request->header('X-CSRF-TOKEN') ?: $request->input('_token'),
-            'form_size' => strlen($request->getContent()),
+            'csrf_token'  => $request->header('X-CSRF-TOKEN') ?: $request->input('_token'),
+            'form_size'   => strlen($request->getContent()),
             'memory_usage' => memory_get_usage(true),
         ]);
-        
+
         abort_if(auth()->user()->role !== 'field_officer', 403);
         abort_if($property->field_officer_id !== auth()->id(), 403);
-        
+
         // Check if the property is editable using the model's isEditable() method
         abort_if(! $property->isEditable(), 403, 'This entry cannot be edited. It may have been permanently rejected or is in a non-editable state.');
 
         $action = $request->input('action', 'submit');
         $isDraft = ($action === 'draft');
         $oldStatus = $property->status;
-        
+
         try {
             $data = $this->validateEntry($request, $isDraft);
-        } catch (\Exception $e) {
-            \Log::error('Update Form validation failed:', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
+        } catch (ValidationException $e) {
+            // Same reasoning as store(): let the real per-field messages
+            // flow through Laravel's normal error-bag redirect instead of
+            // being replaced with a generic sentence.
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('Update Form validation failed unexpectedly:', [
+                'error'       => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
+                'user_id'     => auth()->id(),
                 'property_id' => $property->id,
-                'session_id' => session()->getId()
+                'session_id'  => session()->getId(),
             ]);
-            
+
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['form_error' => 'Form validation failed. Please check your data and try again.']);
+                ->withErrors([
+                    'form_error' => 'Something went wrong while saving your entry. Please try again, and if the problem continues, contact support with code: ' . now()->format('YmdHis'),
+                ]);
         }
-        
+
         // Decode office_sizes JSON string to array for proper storage
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
@@ -284,6 +304,122 @@ class PropertyEntryController extends Controller
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
+
+    /**
+     * Human-readable labels used to build friendly validation messages
+     * (e.g. "The Owner E-mail field is required." instead of the raw
+     * snake_case attribute name "owner_email").
+     */
+    private const FIELD_LABELS = [
+        'facility_type'                => 'Facility Type',
+        'property_name'                => 'Name of Property',
+        'name_full_address'            => 'Address',
+        'village'                      => 'Village',
+        'tehsil'                       => 'Tehsil',
+        'district'                     => 'District',
+        'state'                        => 'State',
+        'country'                      => 'Country',
+        'postal_address_pin'           => 'PIN Code',
+        'nearest_highway'              => 'Nearest Highway',
+        'nearest_city'                 => 'Nearest City',
+        'nearest_railway_station'      => 'Nearest Railway Station',
+        'nearest_airport'              => 'Nearest Airport',
+        'owner_contact_name'           => 'Owner Name',
+        'owner_contact_phone'          => 'Owner Contact Number',
+        'owner_email'                  => 'Owner E-mail',
+        'tenure'                       => 'Tenure',
+        'approved_land_use'            => 'Approved Land Use',
+        'fire_noc'                     => 'Fire NOC Availability',
+        'clu_conversion_status'        => 'CLU / Conversion Status',
+        'occupancy_certificate'        => 'Occupancy Certificate',
+        'pollution_noc'                => 'Pollution NOC',
+        'pollution_category'           => 'Pollution Category',
+        'area_unit'                    => 'Area Unit',
+        'plot_area'                    => 'Plot Area',
+        'built_up_area'                => 'Built-up Area',
+        'carpet_area'                  => 'Carpet Area',
+        'available_area'               => 'Available Area',
+        'clear_height_highest'         => 'Clear Height — Highest',
+        'clear_height_side'            => 'Clear Height — Side Wall',
+        'shed_width'                   => 'Shed Width',
+        'shed_length'                  => 'Shed Length',
+        'number_of_floors'             => 'Number of Floors',
+        'fsi_far'                      => 'FSI / FAR',
+        'dock_door_count'              => 'Total Dock Doors',
+        'dock_front'                   => 'Dock Doors — Front',
+        'dock_left'                    => 'Dock Doors — Left',
+        'dock_right'                   => 'Dock Doors — Right',
+        'dock_back'                    => 'Dock Doors — Back',
+        'dock_leveller_front'          => 'Dock Leveller — Front',
+        'dock_leveller_left'           => 'Dock Leveller — Left',
+        'dock_leveller_right'          => 'Dock Leveller — Right',
+        'dock_leveller_back'           => 'Dock Leveller — Back',
+        'fire_exit_front'              => 'Fire Exit — Front',
+        'fire_exit_left'               => 'Fire Exit — Left',
+        'fire_exit_right'              => 'Fire Exit — Right',
+        'fire_exit_back'               => 'Fire Exit — Back',
+        'canopy_width_front'           => 'Canopy Width — Front',
+        'canopy_length_front'          => 'Canopy Length — Front',
+        'canopy_width_left'            => 'Canopy Width — Left',
+        'canopy_length_left'           => 'Canopy Length — Left',
+        'canopy_width_right'           => 'Canopy Width — Right',
+        'canopy_length_right'          => 'Canopy Length — Right',
+        'canopy_width_back'            => 'Canopy Width — Back',
+        'canopy_length_back'           => 'Canopy Length — Back',
+        'has_dock_leveller'            => 'Dock Levellers Available?',
+        'road_width_front'             => 'Road Width — Front',
+        'road_width_left'              => 'Road Width — Left',
+        'road_width_right'             => 'Road Width — Right',
+        'road_width_back'              => 'Road Width — Back',
+        'no_of_offices'                => 'No. of Offices',
+        'has_offices'                  => 'Offices Available?',
+        'office_sizes'                 => 'Office Sizes',
+        'canteen'                      => 'Canteen',
+        'canteen_size'                 => 'Canteen Size',
+        'stp_plant'                    => 'STP Plant',
+        'stp_capacity'                 => 'STP Capacity',
+        'no_of_urinals'                => 'No. of Urinals',
+        'no_of_closets'                => 'No. of Closets',
+        'female_washroom'              => 'Female Washroom',
+        'driver_rest_room'             => 'Driver Rest Room',
+        'mezzanine'                    => 'Mezzanine',
+        'mezzanine_size'               => 'Mezzanine Size',
+        'structure_type'               => 'Structure Type',
+        'insulation_roof'              => 'Roof Insulation',
+        'insulation_side'              => 'Side Insulation',
+        'fire_sprinkler'               => 'Fire Sprinkler',
+        'scrap_yard'                   => 'Scrap Yard',
+        'no_of_companies_same_premise' => 'No. of Companies in Same Premise',
+        'extension_possible'           => 'Extension Possible?',
+        'dock_type'                    => 'Dock Type',
+        'dock_height'                  => 'Dock Height',
+        'truck_movement'               => 'Truck Movement',
+        'flooring_type'                => 'Flooring Type',
+        'office_cabin_area'            => 'Office / Cabin Area',
+        'washrooms'                    => 'No. of Washrooms',
+        'ventilation_lighting'         => 'Ventilation & Lighting',
+        'power_sanctioned_kva'         => 'Power Sanctioned (KVA)',
+        'discom_name'                  => 'DISCOM Name',
+        'water_source'                 => 'Water Source',
+        'water_tank_capacity'          => 'Water Tank Capacity',
+        'fire_fighting_system'         => 'Fire Fighting System',
+        'solar'                        => 'Solar',
+        'deal_type'                    => 'Lease / Sale Status',
+        'expected_rent'                => 'Expected Rent',
+        'expected_sale_price'          => 'Expected Sale Price',
+        'security_deposit_months'      => 'Security Deposit (months)',
+        'lock_in_years'                => 'Lock-in Period (years)',
+        'available_from'               => 'Available From Date',
+        'approach_road_width'          => 'Approach Road Width',
+        'top_neighbouring_companies'   => 'Top Neighbouring Companies',
+        'flood_risk'                   => 'Flood / Water-Logging Risk',
+        'nearest_hospital_km'          => 'Nearest Hospital (km)',
+        'nearest_fire_station_km'      => 'Nearest Fire Station (km)',
+        'nearest_police_station_km'    => 'Nearest Police Station (km)',
+        'remarks'                      => 'Remarks / Observations',
+        'photos'                       => 'Photographs',
+        'photos.*'                     => 'Photograph',
+    ];
 
     private function validateEntry(Request $request, bool $isDraft = false): array
     {
@@ -441,10 +577,10 @@ class PropertyEntryController extends Controller
         $rules['photos.*'] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
 
         return $request->validate($rules, [
-            'photos.*.image'          => 'Only camera photos are allowed.',
-            'postal_address_pin.regex'   => 'PIN code must be exactly 6 digits.',
-            'owner_contact_phone.regex'  => 'Contact number must be a valid 10-digit Indian mobile number.',
-        ]);
+            'photos.*.image'            => 'Only camera photos are allowed for :attribute.',
+            'postal_address_pin.regex'  => 'PIN code must be exactly 6 digits.',
+            'owner_contact_phone.regex' => 'Contact number must be a valid 10-digit Indian mobile number.',
+        ], self::FIELD_LABELS); // <-- human-readable :attribute names instead of snake_case
     }
 
     // ── Photo Handler ─────────────────────────────────────────────────────────

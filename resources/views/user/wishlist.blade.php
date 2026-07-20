@@ -19,12 +19,22 @@
                 {{-- Regular Property --}}
                 @php
                     $property = $wishlist->property;
-                    $imageUrl = $property->mainImage ? asset('storage/' . $property->mainImage->image_path) : asset('images/property-placeholder.jpg');
                 @endphp
                 
                 <a href="{{ route('properties.show', $property->slug) }}" class="block">
-                    <div class="relative h-48 overflow-hidden">
-                        <img src="{{ $imageUrl }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
+                    <div class="relative h-48 overflow-hidden bg-gray-100">
+                        @if($property->mainImage)
+                            <img src="{{ asset('storage/' . $property->mainImage->image_path) }}" 
+                                 alt="{{ $property->title }}" 
+                                 class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                                <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <span class="text-xs text-gray-400 font-medium">No Image Available</span>
+                            </div>
+                        @endif
                         
                         @if($property->projectStatus)
                         <div class="absolute top-3 left-3">
@@ -79,15 +89,25 @@
                 {{-- Property Entry --}}
                 @php
                     $entry = $wishlist->propertyEntry;
-                    $imageUrl = $entry->photos->first() ? asset('storage/' . $entry->photos->first()->photo_path) : asset('images/property-placeholder.jpg');
                 @endphp
                 
                 <a href="{{ route('property-entries.show', $entry->code) }}" class="block">
-                    <div class="relative h-48 overflow-hidden">
-                        <img src="{{ $imageUrl }}" alt="{{ $entry->property_name ?? $entry->facility_type }}" class="w-full h-full object-cover">
-                        
+                    <div class="relative h-48 overflow-hidden bg-gray-100">
+                        @if($entry->photos->first())
+                            <img src="{{ asset('storage/' . $entry->photos->first()->photo_path) }}" 
+                                 alt="{{ $entry->property_name ?? $entry->facility_type }}" 
+                                 class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                                <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <span class="text-xs text-gray-400 font-medium">No Image Available</span>
+                            </div>
+                        @endif
+
                         <div class="absolute top-3 left-3">
-                            <span class="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                            <span class="px-3 py-1 bg-zendo-gold text-white text-xs font-semibold rounded-full">
                                 Entry #{{ $entry->code }}
                             </span>
                         </div>
