@@ -163,6 +163,16 @@ STEP 0 — A. Location & Identification
                 </div>
             @endif
 
+            @if($fc('postal_address_pin')->keep_field)
+                <div>
+                    <label class="{{ $lc }}">PIN Code {!! $ast('postal_address_pin') !!}</label>
+                    <input type="tel" name="postal_address_pin" value="{{ $v('postal_address_pin') }}" {{ $req('postal_address_pin') }} pattern="[0-9]{6}" maxlength="6" inputmode="numeric"
+                        title="Enter a valid 6-digit PIN code" class="{{ $ic }}">
+                    @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('postal_address_pin') !!}
+                </div>
+            @endif
+
             @if($fc('village')->keep_field)
                 <div>
                     <label class="{{ $lc }}">Village {!! $ast('village') !!}</label>
@@ -207,16 +217,6 @@ STEP 0 — A. Location & Identification
                         class="{{ $ic }}">
                     @error('country')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('country') !!}
-                </div>
-            @endif
-
-            @if($fc('postal_address_pin')->keep_field)
-                <div>
-                    <label class="{{ $lc }}">PIN Code {!! $ast('postal_address_pin') !!}</label>
-                    <input type="tel" name="postal_address_pin" value="{{ $v('postal_address_pin') }}" {{ $req('postal_address_pin') }} pattern="[0-9]{6}" maxlength="6" inputmode="numeric"
-                        title="Enter a valid 6-digit PIN code" class="{{ $ic }}">
-                    @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                    {!! $rmk('postal_address_pin') !!}
                 </div>
             @endif
 
