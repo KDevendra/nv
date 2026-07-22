@@ -57,7 +57,7 @@
                         <div class="text-sm text-gray-500">{{ $section->subtitle ?? 'N/A' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="text-sm text-gray-900">{{ $section->sectionImages->count() }} images</span>
+                        <span class="text-sm text-gray-900">{{ count($section->images ?? []) }} images</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="text-sm text-gray-900">{{ $section->order }}</span>

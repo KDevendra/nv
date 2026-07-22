@@ -64,19 +64,3 @@
     AddOutputFilterByType DEFLATE image/svg+xml
     AddOutputFilterByType DEFLATE font/woff font/woff2
 </IfModule>
-
-# PHP Configuration for large forms
-<IfModule mod_php.c>
-    php_value max_execution_time 300
-    php_value memory_limit 256M
-    php_value post_max_size 64M
-    php_value upload_max_filesize 32M
-    php_value max_input_vars 5000
-    php_value max_input_time 300
-</IfModule>
-
-# For PHP-FPM (if using)
-<IfModule mod_fcgid.c>
-    FcgidMaxRequestLen 67108864
-    FcgidIOTimeout 300
-</IfModule>

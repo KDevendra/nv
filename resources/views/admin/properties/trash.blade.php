@@ -60,7 +60,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
                                     @if($property->mainImage)
-                                        <img src="{{ asset($property->mainImage->image_path) }}"
+                                        <img src="{{ asset('storage/' . $property->mainImage->image_path) }}"
                                             class="w-14 h-14 object-cover rounded-lg mr-4 border border-gray-200 opacity-60">
                                     @else
                                         <div class="w-14 h-14 bg-gray-200 rounded-lg mr-4 flex items-center justify-center">
@@ -138,7 +138,7 @@
                 <div class="p-4">
                     <div class="flex items-start space-x-3 mb-3">
                         @if($property->mainImage)
-                            <img src="{{ asset($property->mainImage->image_path) }}"
+                            <img src="{{ asset('storage/' . $property->mainImage->image_path) }}"
                                 class="w-16 h-16 object-cover rounded-lg flex-shrink-0 opacity-60">
                         @else
                             <div class="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">

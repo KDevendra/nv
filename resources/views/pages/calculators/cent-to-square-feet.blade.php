@@ -35,12 +35,12 @@
       <div class="apw-calcHubV2__main">
 
         <!-- Heading -->
-        <div class="apw-calcHubV2__head">
+        <header class="apw-calcHubV2__head">
           <h2 class="apw-calcHubV2__title">Land Unit Calculator</h2>
           <p class="apw-calcHubV2__sub">
             Use this Cent to Square Feet converter to instantly calculate land area. Enter cents and see results with a visual graph.
           </p>
-        </div>
+        </header>
 
         <!-- SINGLE CALCULATOR -->
         <div class="apw-calcCardV2">

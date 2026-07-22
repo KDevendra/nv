@@ -166,8 +166,17 @@ STEP 0 — A. Location & Identification
             @if($fc('postal_address_pin')->keep_field)
                 <div>
                     <label class="{{ $lc }}">PIN Code {!! $ast('postal_address_pin') !!}</label>
-                    <input type="tel" name="postal_address_pin" value="{{ $v('postal_address_pin') }}" {{ $req('postal_address_pin') }} pattern="[0-9]{6}" maxlength="6" inputmode="numeric"
-                        title="Enter a valid 6-digit PIN code" class="{{ $ic }}">
+                   <input
+                        type="text"
+                        name="postal_address_pin"
+                        value="{{ $v('postal_address_pin') }}"
+                        {{ $req('postal_address_pin') }}
+                        maxlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        oninput="this.value=this.value.replace(/\D/g,'').slice(0,6);"
+                        class="{{ $ic }}"
+                    >
                     @error('postal_address_pin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('postal_address_pin') !!}
                 </div>
@@ -269,8 +278,18 @@ STEP 0 — A. Location & Identification
             @if($fc('owner_contact_phone')->keep_field)
                 <div>
                     <label class="{{ $lc }}">Owner Contact Number {!! $ast('owner_contact_phone') !!}</label>
-                    <input type="tel" name="owner_contact_phone" value="{{ $v('owner_contact_phone') }}" {{ $req('owner_contact_phone') }} pattern="[6-9][0-9]{9}" maxlength="10" inputmode="numeric"
-                        title="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9" class="{{ $ic }}">
+                   <input
+                        type="text"
+                        name="owner_contact_phone"
+                        value="{{ $v('owner_contact_phone') }}"
+                        {{ $req('owner_contact_phone') }}
+                        maxlength="10"
+                        inputmode="numeric"
+                        pattern="[6-9][0-9]{9}"
+                        oninput="this.value=this.value.replace(/\D/g,'').slice(0,10);"
+                        title="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9"
+                        class="{{ $ic }}"
+                    >
                     @error('owner_contact_phone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('owner_contact_phone') !!}
                 </div>
@@ -1769,6 +1788,48 @@ WIZARD — BOTTOM NAV BAR
         wizCurrent = errStep >= 0 ? errStep : (sessionStep >= 0 ? sessionStep : 0);
         wizardGoTo(wizCurrent);
     });
+
+     // ── Auto-strip non-numeric characters from all number inputs ──
+    document.addEventListener('input', function (e) {
+        const el = e.target;
+        if (el.tagName === 'INPUT' && el.type === 'number') {
+            let val = el.value;
+
+            // Allow only digits, one leading minus, and one decimal point
+            let cleaned = val
+                .replace(/[^0-9.\-]/g, '')      // strip letters, e, +, etc.
+                .replace(/(?!^)-/g, '')         // minus allowed only at start
+                .replace(/(\..*)\./g, '$1');    // only one decimal point
+
+            if (cleaned !== val) {
+                const cursorPos = el.selectionStart;
+                const diff = val.length - cleaned.length;
+                el.value = cleaned;
+                // try to keep cursor position sane after stripping
+                if (cursorPos !== null) {
+                    el.setSelectionRange(Math.max(0, cursorPos - diff), Math.max(0, cursorPos - diff));
+                }
+            }
+        }
+    }, true);
+
+    // ── Also block letter keys at keydown level (extra safety, blocks 'e', 'E' exponent too) ──
+    document.addEventListener('keydown', function (e) {
+        const el = e.target;
+        if (el.tagName === 'INPUT' && el.type === 'number') {
+            const allowedKeys = [
+                'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                'Home', 'End', '.', '-'
+            ];
+            const isCtrlCmd = e.ctrlKey || e.metaKey; // allow copy/paste/select-all shortcuts
+            if (isCtrlCmd || allowedKeys.includes(e.key)) return;
+
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        }
+    }, true);
 </script>
 
 

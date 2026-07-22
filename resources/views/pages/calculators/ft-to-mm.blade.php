@@ -82,13 +82,13 @@
                 <!-- LEFT (70%) -->
                 <div class="apw-calcHubV2__main">
 
-                    <div class="apw-calcHubV2__head">
+                    <header class="apw-calcHubV2__head">
                         <h2 class="apw-calcHubV2__title">Unit Converter</h2>
                         <p class="apw-calcHubV2__sub">
                             Use this Feet to Millimeter (mm) calculator to convert instantly and visualize the result with a
                             graph.
                         </p>
-                    </div>
+                    </header>
 
                     <!-- Calculator Card -->
                     <div class="apw-calcCardV2">

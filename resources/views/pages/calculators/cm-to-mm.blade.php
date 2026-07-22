@@ -34,12 +34,12 @@
       <div class="apw-calcHubV2__main">
 
         <!-- Heading -->
-        <div class="apw-calcHubV2__head">
+        <header class="apw-calcHubV2__head">
           <h2 class="apw-calcHubV2__title">Unit Converter</h2>
           <p class="apw-calcHubV2__sub">
             Use this CM to MM converter to instantly calculate length. Enter centimeters and see results with a visual graph.
           </p>
-        </div>
+        </header>
 
         <!-- SINGLE CALCULATOR -->
         <div class="apw-calcCardV2">
