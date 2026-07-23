@@ -28,6 +28,35 @@
         </a>
     </div>
 
+    {{-- Submitted Location — captured from the field officer's device at submit time --}}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-zendo-navy mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <div>
+                    <h3 class="text-sm font-semibold text-zendo-navy">Submitted Location</h3>
+                    @if($property->form_submited_location)
+                        <p class="text-sm text-gray-600 font-mono mt-0.5">{{ $property->form_submited_location }}</p>
+                    @else
+                        <p class="text-xs text-gray-400 mt-0.5">Not captured — the field officer's device didn't provide a location for this entry.</p>
+                    @endif
+                </div>
+            </div>
+            @if($property->form_submited_maps_url)
+                <a href="{{ $property->form_submited_maps_url }}" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zendo-navy text-white text-xs font-semibold hover:opacity-90 transition-opacity self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                    View on Google Maps
+                </a>
+            @endif
+        </div>
+    </div>
+
 
     {{-- Field Validation — Collapsible Sections --}}
     @if(in_array($property->status, ['submitted', 'recheck']) && isset($fields))
