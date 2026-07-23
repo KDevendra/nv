@@ -5,15 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\PageVisit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-
 class DashboardController extends Controller
 {
     /**
      * Display the dashboard.
      */
-    public function index(): View
+    public function index()
     {
+        $user = auth()->user();
+
+        if ($user) {
+            if (in_array($user->role, ['supply_head', 'field_officer'])) {
+                return redirect()->route('field.dashboard');
+            }
+
+            if ($user->role === 'user') {
+                return redirect()->route('user.dashboard');
+            }
+        }
+
+        // Admin, Super Admin and other roles
         return view('admin.dashboard');
     }
 
@@ -33,7 +44,7 @@ class DashboardController extends Controller
         // Get device stats
         $deviceStats = PageVisit::getVisitsByDevice();
         $totalDeviceVisits = $deviceStats->sum('count');
-        
+
         $devices = [
             'desktop' => [
                 'count' => $deviceStats->where('device_type', 'desktop')->first()->count ?? 0,
@@ -59,20 +70,20 @@ class DashboardController extends Controller
         // Get chart data
         $dailyVisits = PageVisit::getDailyVisits(7);
         $dailyInquiries = \App\Models\PropertyInquiry::getDailySubmissions(7);
-        
+
         // Merge visits and inquiries data by date
         $dates = $dailyVisits->pluck('date')->merge($dailyInquiries->pluck('date'))->unique()->sort()->values();
-        
+
         $visitsData = [];
         $inquiriesData = [];
-        
+
         foreach ($dates as $date) {
             $visitsData[] = $dailyVisits->where('date', $date)->first()->visits ?? 0;
             $inquiriesData[] = $dailyInquiries->where('date', $date)->first()->submissions ?? 0;
         }
-        
+
         $chartData = [
-            'labels' => $dates->map(function($date) {
+            'labels' => $dates->map(function ($date) {
                 return \Carbon\Carbon::parse($date)->format('M d');
             })->toArray(),
             'visits' => $visitsData,
@@ -81,14 +92,14 @@ class DashboardController extends Controller
 
         // Get device chart data
         $deviceChartData = [
-            'labels' => $deviceStats->pluck('device_type')->map(function($type) {
+            'labels' => $deviceStats->pluck('device_type')->map(function ($type) {
                 return ucfirst($type);
             })->toArray(),
             'data' => $deviceStats->pluck('count')->toArray()
         ];
 
         // Get most visited pages
-        $mostVisitedPages = PageVisit::getMostVisitedPages(5)->map(function($page) {
+        $mostVisitedPages = PageVisit::getMostVisitedPages(5)->map(function ($page) {
             return [
                 'name' => $page->page_name,
                 'visits' => $page->visits
@@ -96,7 +107,7 @@ class DashboardController extends Controller
         });
 
         // Get top browsers
-        $topBrowsers = PageVisit::getVisitsByBrowser(5)->map(function($browser) {
+        $topBrowsers = PageVisit::getVisitsByBrowser(5)->map(function ($browser) {
             return [
                 'name' => $browser->browser,
                 'count' => $browser->count
@@ -104,7 +115,7 @@ class DashboardController extends Controller
         });
 
         // Get recent activity
-        $recentActivity = PageVisit::getRecentVisits(5)->map(function($visit) {
+        $recentActivity = PageVisit::getRecentVisits(5)->map(function ($visit) {
             return [
                 'page_name' => $visit->page_name,
                 'device_type' => $visit->device_type,
@@ -132,7 +143,7 @@ class DashboardController extends Controller
      */
     private function getVisitsByPeriod(string $period): int
     {
-        return match($period) {
+        return match ($period) {
             'today' => PageVisit::getTodayVisits(),
             'week' => PageVisit::getWeekVisits(),
             'month' => PageVisit::getMonthVisits(),
