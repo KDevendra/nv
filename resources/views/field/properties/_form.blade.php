@@ -58,6 +58,10 @@
     $sb = 'px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
 @endphp
 
+{{-- Captured client-side via the browser's Geolocation API — see script at the bottom of this file --}}
+<input type="hidden" name="form_submited_location" id="form_submited_location"
+    value="{{ old('form_submited_location', $entry?->form_submited_location ?? '') }}">
+
 {{-- ═══════════════════════════════════════════════════
 WIZARD — TOP STEP PROGRESS BAR
 ═══════════════════════════════════════════════════ --}}
@@ -1832,6 +1836,165 @@ WIZARD — BOTTOM NAV BAR
     }, true);
 </script>
 
+
+<script>
+    // ── Capture the field officer's current location into the hidden
+    // form_submited_location field, so it's saved alongside the entry. ──
+    (function () {
+        const locInput = document.getElementById('form_submited_location');
+        if (!locInput) return;
+
+        function capture(options, hardCapMs) {
+            const geo = new Promise((resolve) => {
+                if (!('geolocation' in navigator)) return resolve(null);
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve(pos.coords.latitude.toFixed(6) + ',' + pos.coords.longitude.toFixed(6)),
+                    () => resolve(null), // denied / unavailable — fall back silently, field stays optional
+                    options
+                );
+            });
+            // Belt-and-braces: some browsers don't count time spent waiting on
+            // the permission prompt itself against getCurrentPosition's own
+            // `timeout`, which could otherwise stall this indefinitely. This
+            // guarantees we always move on within hardCapMs regardless.
+            const hardCap = new Promise((resolve) => setTimeout(() => resolve(null), hardCapMs));
+            return Promise.race([geo, hardCap]);
+        }
+
+        // Best-effort capture as soon as the page loads, so we have *something*
+        // even if the officer submits before a fresh GPS fix comes through.
+        capture({ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }, 9000).then((coords) => {
+            if (coords) locInput.value = coords;
+        });
+
+        // Re-capture right before the form actually submits, so the stored
+        // location reflects where the officer was at submit time rather than
+        // just page-load time. Falls back to the page-load value if a fresh
+        // fix isn't available within ~4s — never blocks submission longer than that.
+        const form = locInput.closest('form');
+        if (form) {
+            let resubmitting = false;
+            form.addEventListener('submit', function (e) {
+                if (resubmitting) return; // second pass (see requestSubmit below) — let it through
+                e.preventDefault();
+                resubmitting = true;
+                const submitter = e.submitter;
+                capture({ enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }, 4000).then((coords) => {
+                    if (coords) locInput.value = coords;
+                    if (form.requestSubmit) {
+                        form.requestSubmit(submitter);
+                    } else {
+                        form.submit();
+                    }
+                });
+            });
+        }
+    })();
+</script>
+
+
+<script>
+    // ── PIN code autofill — Village / Tehsil / District / State / Country ──
+    (function () {
+        const pinInput = document.querySelector('input[name="postal_address_pin"]');
+        if (!pinInput) return; // field not present in this form's config
+
+        const villageInput = document.querySelector('input[name="village"]');
+        const tehsilInput = document.querySelector('input[name="tehsil"]');
+        const districtInput = document.querySelector('input[name="district"]');
+        const stateInput = document.querySelector('input[name="state"]');
+        const countryInput = document.querySelector('input[name="country"]');
+
+        const statusEl = document.createElement('p');
+        statusEl.className = 'mt-1 text-xs text-gray-400';
+        pinInput.parentElement.appendChild(statusEl);
+
+        // Shown only when a PIN code covers more than one post office/locality,
+        // so the user can pick the right one instead of silently using the first.
+        let localitySelect = null;
+        if (villageInput) {
+            localitySelect = document.createElement('select');
+            localitySelect.className = 'mt-1 w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white hidden';
+            villageInput.parentElement.appendChild(localitySelect);
+        }
+
+        function setStatus(text, kind) {
+            statusEl.textContent = text;
+            statusEl.className = 'mt-1 text-xs ' + (kind === 'error' ? 'text-red-600' : kind === 'success' ? 'text-emerald-600' : 'text-gray-400');
+        }
+
+        function applyPostOffice(po) {
+            if (villageInput && po.Name) villageInput.value = po.Name;
+            if (tehsilInput) tehsilInput.value = (po.Block && po.Block !== 'NA') ? po.Block : (po.Division || '');
+            if (districtInput && po.District) districtInput.value = po.District;
+            if (stateInput && po.State) stateInput.value = po.State;
+            if (countryInput && po.Country) countryInput.value = po.Country;
+        }
+
+        function populateLocalityPicker(offices) {
+            if (!localitySelect) return;
+            if (offices.length <= 1) {
+                localitySelect.classList.add('hidden');
+                localitySelect.innerHTML = '';
+                return;
+            }
+            localitySelect.innerHTML = offices
+                .map((po, i) => `<option value="${i}">${po.Name}${po.Block && po.Block !== 'NA' ? ' — ' + po.Block : ''}</option>`)
+                .join('');
+            localitySelect.classList.remove('hidden');
+            localitySelect.onchange = () => applyPostOffice(offices[localitySelect.value]);
+        }
+
+        let lookupToken = 0;
+        async function lookupPincode(pin) {
+            const token = ++lookupToken;
+            setStatus('Looking up PIN code…', 'muted');
+            if (localitySelect) { localitySelect.classList.add('hidden'); localitySelect.innerHTML = ''; }
+
+            try {
+                const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+                const data = await res.json();
+                if (token !== lookupToken) return; // superseded by a newer lookup
+
+                const result = Array.isArray(data) ? data[0] : null;
+                const offices = result && result.Status === 'Success' ? (result.PostOffice || []) : [];
+
+                if (!offices.length) {
+                    setStatus('No location found for this PIN code.', 'error');
+                    return;
+                }
+
+                applyPostOffice(offices[0]);
+                populateLocalityPicker(offices);
+                setStatus(
+                    offices.length > 1
+                        ? `Auto-filled from ${offices[0].Name} — ${offices.length - 1} more nearby, pick below if needed.`
+                        : `Auto-filled from ${offices[0].Name}.`,
+                    'success'
+                );
+            } catch (e) {
+                if (token !== lookupToken) return;
+                setStatus('Could not reach PIN code lookup service.', 'error');
+            }
+        }
+
+        let debounceTimer = null;
+        let lastLookedUp = pinInput.value.trim().length === 6 ? pinInput.value.trim() : '';
+        pinInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            const pin = pinInput.value.trim();
+            if (pin.length !== 6) {
+                setStatus('', 'muted');
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                if (pin === lastLookedUp) return;
+                lastLookedUp = pin;
+                lookupPincode(pin);
+            }, 400);
+        });
+    })();
+</script>
 
 <script>
     // ── Camera API — direct camera capture, no file picker ──

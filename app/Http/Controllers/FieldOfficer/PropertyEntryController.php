@@ -419,6 +419,7 @@ class PropertyEntryController extends Controller
         'remarks'                      => 'Remarks / Observations',
         'photos'                       => 'Photographs',
         'photos.*'                     => 'Photograph',
+        'form_submited_location'       => 'Submitted Location',
     ];
 
     private function validateEntry(Request $request, bool $isDraft = false): array
@@ -544,6 +545,8 @@ class PropertyEntryController extends Controller
             'nearest_police_station_km'    => 'numeric|min:0',
             // K
             'remarks'                      => 'string',
+            // Metadata — captured client-side via the browser's Geolocation API, not driven by PropertyFieldConfig
+            'form_submited_location'       => 'nullable|string|max:64',
         ];
 
         $rules = [];

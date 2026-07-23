@@ -143,6 +143,7 @@ class PropertyEntry extends Model
         'nearest_police_station_km',
         // K
         'remarks',
+        'form_submited_location',
     ];
 
     protected $casts = [
@@ -294,6 +295,15 @@ class PropertyEntry extends Model
     public function isViewedBySupplyHead(): bool
     {
         return $this->supply_head_viewed_at !== null;
+    }
+
+    public function getFormSubmitedMapsUrlAttribute(): ?string
+    {
+        if (! $this->form_submited_location) {
+            return null;
+        }
+
+        return 'https://www.google.com/maps?q=' . urlencode($this->form_submited_location);
     }
 
     public function getStatusBadgeClassAttribute(): string
