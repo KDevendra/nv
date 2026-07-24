@@ -689,9 +689,17 @@ class PropertyEntryController extends Controller
             ])->filter()->unique()->implode(', ') ?: null;
         }
 
+        $country = $result['country'] ?? 'India';
+
+        // Mappls' formattedAddress already ends with "(<country>)" — strip it
+        // since the country is shown separately in front of the address.
+        if ($address && $country) {
+            $address = trim(preg_replace('/\s*\(' . preg_quote($country, '/') . '\)\s*$/i', '', $address));
+        }
+
         return response()->json([
             'address' => $address,
-            'country' => $result['country'] ?? 'India',
+            'country' => $country,
         ]);
     }
 }
