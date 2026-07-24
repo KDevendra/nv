@@ -323,7 +323,7 @@ STEP 0 — A. Location & Identification
                 View on Google Maps
             </a>
         </div>
-        <div id="mappls-map" class="w-full h-64 rounded-lg border border-gray-200 mt-2" style="display:none"></div>
+        <div id="mappls-map" class="w-full h-64 rounded-lg border border-gray-200 mt-2 bg-gray-100"></div>
     </div>
 </div>{{-- /step 0 --}}
 
@@ -1852,7 +1852,26 @@ WIZARD — BOTTOM NAV BAR
 
 
 @if(config('services.mappls.access_token'))
-    <script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ config('services.mappls.access_token') }}"></script>
+    <script>
+        // Resolved once the map SDK has loaded *and* the map itself has
+        // fired its own 'load' event — Mappls' script tag calls this by
+        // name (via callback=) once ready, which is more reliable than
+        // guessing whether `mappls` exists yet from other scripts.
+        window.__mapplsMapReady = new Promise((resolve) => {
+            window.initMapplsSDK = function () {
+                try {
+                    const map = new mappls.Map('mappls-map', { center: [20.5937, 78.9629], zoom: 5 });
+                    map.addListener('load', function () {
+                        resolve(map);
+                    });
+                } catch (e) {
+                    console.error('Mappls map init failed:', e);
+                }
+            };
+        });
+    </script>
+    <script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ config('services.mappls.access_token') }}&callback=initMapplsSDK"></script>
+    <script src="https://sdk.mappls.com/map/sdk/plugins?access_token={{ config('services.mappls.access_token') }}&v=3.0&libraries=direction"></script>
 @endif
 
 <script>
@@ -1909,37 +1928,32 @@ WIZARD — BOTTOM NAV BAR
             mapsLinkEl.classList.add('flex');
         }
 
-        // ── Live map preview (Mappls) — created on first fix, then just
-        // re-centered/re-marked on subsequent updates. Guarded throughout
-        // since the SDK script may not have loaded (no token configured,
-        // network hiccup, etc.) — the rest of the form must never depend on it. ──
+        // ── Live map preview (Mappls) — the map itself is created once, as
+        // soon as the SDK reports ready (see window.__mapplsMapReady in the
+        // script block that loads the SDK, above). We only place/move the
+        // marker here. Guarded throughout since the SDK may not have loaded
+        // (no token configured, network hiccup, etc.) — the rest of the
+        // form must never depend on it. ──
         const mapEl = document.getElementById('mappls-map');
-        let mapplsMap = null;
         let mapplsMarker = null;
 
         function updateMap(coords) {
-            if (!mapEl || !coords || typeof mappls === 'undefined') return;
+            if (!mapEl || !coords || !window.__mapplsMapReady) return;
             const [lat, lng] = coords.split(',').map(Number);
 
-            // Must be visible — and laid out — *before* the SDK measures the
-            // container, otherwise it initializes against a 0×0 hidden box
-            // and never renders anything even after we unhide it later.
-            mapEl.style.display = 'block';
-
-            setTimeout(() => {
+            window.__mapplsMapReady.then((map) => {
                 try {
-                    if (!mapplsMap) {
-                        mapplsMap = new mappls.Map('mappls-map', { center: { lat, lng }, zoom: 16 });
-                        mapplsMarker = new mappls.Marker({ map: mapplsMap, position: { lat, lng } });
-                    } else if (mapplsMarker && mapplsMarker.setPosition) {
+                    if (!mapplsMarker) {
+                        mapplsMarker = new mappls.Marker({ map: map, position: { lat, lng } });
+                    } else if (mapplsMarker.setPosition) {
                         mapplsMarker.setPosition({ lat, lng });
-                        if (mapplsMap.setCenter) mapplsMap.setCenter({ lat, lng });
                     }
+                    if (map.setCenter) map.setCenter([lat, lng]);
+                    if (map.setZoom) map.setZoom(16);
                 } catch (e) {
-                    console.error('Mappls map init failed:', e);
-                    mapEl.style.display = 'none'; // SDK present but failed to init — don't leave a broken box on the page
+                    console.error('Mappls marker update failed:', e);
                 }
-            }, 0);
+            });
         }
 
         // Resolves to { address, country } — empty strings if the lookup
