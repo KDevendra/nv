@@ -297,13 +297,53 @@ class PropertyEntry extends Model
         return $this->supply_head_viewed_at !== null;
     }
 
-    public function getFormSubmitedMapsUrlAttribute(): ?string
+    /**
+     * Decoded {address, country, lat, long} payload captured from the field
+     * officer's browser. Falls back to null for legacy "lat,lng" values
+     * saved before this was stored as JSON.
+     */
+    public function getFormSubmitedLocationDataAttribute(): ?array
     {
         if (! $this->form_submited_location) {
             return null;
         }
 
-        return 'https://www.google.com/maps?q=' . urlencode($this->form_submited_location);
+        $decoded = json_decode($this->form_submited_location, true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Human-readable "Country | address" string, matching the field
+     * officer's live location readout.
+     */
+    public function getFormSubmitedAddressAttribute(): ?string
+    {
+        $data = $this->form_submited_location_data;
+
+        if (! $data) {
+            return null;
+        }
+
+        return collect([$data['country'] ?? null, $data['address'] ?? null])
+            ->filter()
+            ->implode(' | ') ?: null;
+    }
+
+    public function getFormSubmitedMapsUrlAttribute(): ?string
+    {
+        $data = $this->form_submited_location_data;
+
+        if ($data && ! empty($data['lat']) && ! empty($data['long'])) {
+            return 'https://www.google.com/maps?q=' . urlencode($data['lat'] . ',' . $data['long']);
+        }
+
+        // Legacy records stored the raw "lat,lng" string directly.
+        if ($this->form_submited_location && preg_match('/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/', trim($this->form_submited_location))) {
+            return 'https://www.google.com/maps?q=' . urlencode($this->form_submited_location);
+        }
+
+        return null;
     }
 
     public function getStatusBadgeClassAttribute(): string

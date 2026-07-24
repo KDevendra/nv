@@ -546,7 +546,7 @@ class PropertyEntryController extends Controller
             // K
             'remarks'                      => 'string',
             // Metadata — captured client-side via the browser's Geolocation API, not driven by PropertyFieldConfig
-            'form_submited_location'       => 'nullable|string|max:64',
+            'form_submited_location'       => 'nullable|string|max:1000',
         ];
 
         $rules = [];
