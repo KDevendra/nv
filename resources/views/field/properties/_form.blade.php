@@ -1948,7 +1948,15 @@ WIZARD — BOTTOM NAV BAR
                     } else if (mapplsMarker.setPosition) {
                         mapplsMarker.setPosition({ lat, lng });
                     }
-                    if (map.setCenter) map.setCenter([lat, lng]);
+                    // Note the reversed order here vs. the constructor's `center`
+                    // option above: Mappls' setCenter() inherits directly from
+                    // the underlying MapLibre/Mapbox GL engine, which expects
+                    // [lng, lat] — confirmed by testing against the live SDK
+                    // (getCenter() after setCenter([lat,lng]) came back with
+                    // an invalid swapped result). The map constructor's own
+                    // `center` option is a separate Mappls-specific parameter
+                    // and stays [lat, lng].
+                    if (map.setCenter) map.setCenter([lng, lat]);
                     if (map.setZoom) map.setZoom(16);
                 } catch (e) {
                     console.error('Mappls marker update failed:', e);
