@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
     Route::put('/field/profile/password', [FieldProfileController::class, 'updatePassword'])->name('field.profile.password');
     Route::prefix('field')->name('field.')->group(function () {
         Route::resource('properties', FieldOfficerPropertyEntryController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show']);
+        Route::get('location/reverse-geocode', [FieldOfficerPropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
     });
     Route::prefix('supply-head')->name('supplyhead.')->group(function () {
         Route::get('properties', [SupplyHeadPropertyEntryController::class, 'index'])->name('properties.index');

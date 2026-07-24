@@ -7,8 +7,10 @@ use App\Models\PropertyEntry;
 use App\Models\PropertyEntryPhoto;
 use App\Models\PropertyEntryLog;
 use App\Models\PropertyFieldConfig;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Intervention\Image\ImageManager;
@@ -631,5 +633,65 @@ class PropertyEntryController extends Controller
                 'file_path'  => 'images/property_photos/' . $filename,
             ]);
         }
+    }
+
+    // ── Reverse Geocode (Mappls proxy) ───────────────────────────────────────
+    // Called client-side from the form's live location readout. Proxied
+    // through the backend (rather than calling Mappls directly from the
+    // browser) so the access token never appears in client-side JS/network
+    // requests, and only this server's IP needs to be whitelisted on the
+    // Mappls dashboard — not every field officer's changing mobile IP.
+    public function reverseGeocode(Request $request): JsonResponse
+    {
+        abort_if(auth()->user()->role !== 'field_officer', 403);
+
+        $data = $request->validate([
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+        ]);
+
+        $token = config('services.mappls.access_token');
+
+        if (! $token) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'not_configured']);
+        }
+
+        try {
+            $response = Http::timeout(5)->get('https://search.mappls.com/search/address/rev-geocode', [
+                'lat'          => $data['lat'],
+                'lng'          => $data['lng'],
+                'access_token' => $token,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'request_failed']);
+        }
+
+        if (! $response->successful()) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'upstream_error'], 200);
+        }
+
+        $result = $response->json('results.0');
+
+        if (! $result) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'no_result']);
+        }
+
+        $address = $result['formattedAddress'] ?? $result['formatted_address'] ?? null;
+
+        if (! $address) {
+            $address = collect([
+                $result['subLocality'] ?? null,
+                $result['locality'] ?? null,
+                $result['village'] ?? null,
+                $result['district'] ?? null,
+                $result['city'] ?? null,
+                $result['state'] ?? null,
+            ])->filter()->unique()->implode(', ') ?: null;
+        }
+
+        return response()->json([
+            'address' => $address,
+            'country' => $result['country'] ?? 'India',
+        ]);
     }
 }
