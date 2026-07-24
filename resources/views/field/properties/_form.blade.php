@@ -309,6 +309,21 @@ STEP 0 — A. Location & Identification
 
         </div>
     </div>
+
+    {{-- Field officer's current location — live GPS readout, reverse-geocoded --}}
+    <div class="mb-4">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Field Officer Current Location</p>
+        <div id="current-location-line" class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+            <span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
+            <span id="current-location-country" class="text-gray-500"></span>
+            <span id="current-location-sep" class="text-gray-300"></span>
+            <span id="current-location-rest" class="text-gray-400 flex-1">Detecting current location…</span>
+            <a id="current-location-maps-link" href="#" target="_blank" rel="noopener"
+                class="hidden items-center gap-1 text-xs font-semibold text-zendo-navy hover:underline flex-shrink-0 whitespace-nowrap">
+                View on Google Maps
+            </a>
+        </div>
+    </div>
 </div>{{-- /step 0 --}}
 
 
@@ -1859,10 +1874,95 @@ WIZARD — BOTTOM NAV BAR
             return Promise.race([geo, hardCap]);
         }
 
+        // ── Live "you are here" readout under Section A — reverse-geocodes
+        // the captured coordinates into a human-readable place name, and
+        // doubles as the source for what gets saved into form_submited_location. ──
+        const locCountryEl = document.getElementById('current-location-country');
+        const locSepEl = document.getElementById('current-location-sep');
+        const locRestEl = document.getElementById('current-location-rest');
+        const mapsLinkEl = document.getElementById('current-location-maps-link');
+
+        // Cache of the last successfully resolved address, reused at submit
+        // time so we don't re-hit the geocoding API (and its latency) right
+        // when the officer is trying to submit.
+        let lastAddress = '';
+        let lastCountry = '';
+
+        function setLocationLine(country, rest, muted) {
+            if (locCountryEl) locCountryEl.textContent = country || '';
+            if (locSepEl) locSepEl.textContent = (country && rest) ? '|' : '';
+            if (locRestEl) {
+                locRestEl.textContent = rest || '';
+                locRestEl.className = (muted ? 'text-gray-400' : 'font-semibold text-zendo-navy') + ' flex-1';
+            }
+        }
+
+        function updateMapsLink(coords) {
+            if (!mapsLinkEl || !coords) return;
+            mapsLinkEl.href = 'https://www.google.com/maps?q=' + coords;
+            mapsLinkEl.classList.remove('hidden');
+            mapsLinkEl.classList.add('flex');
+        }
+
+        function buildPayload(coords, address, country) {
+            const [lat, long] = coords.split(',');
+            return JSON.stringify({ address: address || '', country: country || '', lat: lat, long: long });
+        }
+
+        // Resolves to { address, country } — empty strings if the lookup
+        // fails. Also updates the visible readout as a side effect.
+        function reverseGeocode(coords) {
+            const [lat, lon] = coords.split(',');
+            return fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, {
+                headers: { 'Accept-Language': 'en' },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    const addr = data && data.address;
+                    if (!addr) {
+                        setLocationLine('', 'Location detected, but address lookup failed.', true);
+                        return { address: '', country: '' };
+                    }
+                    const locality = [addr.neighbourhood, addr.suburb, addr.city || addr.town || addr.village, addr.state]
+                        .filter(Boolean)
+                        .join(', ') || data.display_name || '';
+                    const country = addr.country || '';
+                    setLocationLine(country, locality, false);
+                    lastAddress = locality;
+                    lastCountry = country;
+                    return { address: locality, country: country };
+                })
+                .catch(() => {
+                    setLocationLine('', 'Location detected, but address lookup failed.', true);
+                    return { address: '', country: '' };
+                });
+        }
+
+        // Builds the final JSON payload for a set of coordinates — reuses the
+        // cached address if we already have one (fast path, no extra network
+        // call right before submitting); otherwise attempts a bounded lookup.
+        function resolvePayload(coords) {
+            if (lastAddress || lastCountry) {
+                return Promise.resolve(buildPayload(coords, lastAddress, lastCountry));
+            }
+            return Promise.race([
+                reverseGeocode(coords).then(({ address, country }) => buildPayload(coords, address, country)),
+                new Promise((resolve) => setTimeout(() => resolve(buildPayload(coords, '', '')), 2500)),
+            ]);
+        }
+
         // Best-effort capture as soon as the page loads, so we have *something*
         // even if the officer submits before a fresh GPS fix comes through.
         capture({ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }, 9000).then((coords) => {
-            if (coords) locInput.value = coords;
+            if (coords) {
+                updateMapsLink(coords);
+                locInput.value = buildPayload(coords, '', ''); // provisional, refined below once resolved
+                reverseGeocode(coords).then(({ address, country }) => {
+                    locInput.value = buildPayload(coords, address, country);
+                });
+            } else {
+                setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+            }
         });
 
         // Re-capture right before the form actually submits, so the stored
@@ -1878,12 +1978,19 @@ WIZARD — BOTTOM NAV BAR
                 resubmitting = true;
                 const submitter = e.submitter;
                 capture({ enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }, 4000).then((coords) => {
-                    if (coords) locInput.value = coords;
-                    if (form.requestSubmit) {
-                        form.requestSubmit(submitter);
-                    } else {
-                        form.submit();
+                    if (!coords) {
+                        if (form.requestSubmit) { form.requestSubmit(submitter); } else { form.submit(); }
+                        return;
                     }
+                    updateMapsLink(coords);
+                    resolvePayload(coords).then((payload) => {
+                        locInput.value = payload;
+                        if (form.requestSubmit) {
+                            form.requestSubmit(submitter);
+                        } else {
+                            form.submit();
+                        }
+                    });
                 });
             });
         }
