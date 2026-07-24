@@ -1686,6 +1686,13 @@
                                 <td>{{ $entry->name_full_address ?? 'N/A' }}</td>
                             </tr>
                             @endif
+                            @if($canShowField('postal_address_pin'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>PIN Code</td>
+                                <td>{{ $entry->postal_address_pin ?? 'N/A' }}</td>
+                            </tr>
+                            @endif
                             @if($canShowField('village'))
                             <tr>
                                 <td>{{ $srNo++ }}</td>
@@ -1719,13 +1726,6 @@
                                 <td>{{ $srNo++ }}</td>
                                 <td>Country</td>
                                 <td>{{ $entry->country ?? 'N/A' }}</td>
-                            </tr>
-                            @endif
-                            @if($canShowField('postal_address_pin'))
-                            <tr>
-                                <td>{{ $srNo++ }}</td>
-                                <td>PIN Code</td>
-                                <td>{{ $entry->postal_address_pin ?? 'N/A' }}</td>
                             </tr>
                             @endif
                             @if($canShowField('owner_contact_name'))
