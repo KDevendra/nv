@@ -1920,18 +1920,26 @@ WIZARD — BOTTOM NAV BAR
         function updateMap(coords) {
             if (!mapEl || !coords || typeof mappls === 'undefined') return;
             const [lat, lng] = coords.split(',').map(Number);
-            try {
-                if (!mapplsMap) {
-                    mapplsMap = new mappls.Map('mappls-map', { center: { lat, lng }, zoom: 16 });
-                    mapplsMarker = new mappls.Marker({ map: mapplsMap, position: { lat, lng } });
-                } else if (mapplsMarker && mapplsMarker.setPosition) {
-                    mapplsMarker.setPosition({ lat, lng });
-                    if (mapplsMap.setCenter) mapplsMap.setCenter({ lat, lng });
+
+            // Must be visible — and laid out — *before* the SDK measures the
+            // container, otherwise it initializes against a 0×0 hidden box
+            // and never renders anything even after we unhide it later.
+            mapEl.style.display = 'block';
+
+            setTimeout(() => {
+                try {
+                    if (!mapplsMap) {
+                        mapplsMap = new mappls.Map('mappls-map', { center: { lat, lng }, zoom: 16 });
+                        mapplsMarker = new mappls.Marker({ map: mapplsMap, position: { lat, lng } });
+                    } else if (mapplsMarker && mapplsMarker.setPosition) {
+                        mapplsMarker.setPosition({ lat, lng });
+                        if (mapplsMap.setCenter) mapplsMap.setCenter({ lat, lng });
+                    }
+                } catch (e) {
+                    console.error('Mappls map init failed:', e);
+                    mapEl.style.display = 'none'; // SDK present but failed to init — don't leave a broken box on the page
                 }
-                mapEl.style.display = 'block';
-            } catch (e) {
-                mapEl.style.display = 'none'; // SDK present but failed to init — don't leave a broken box on the page
-            }
+            }, 0);
         }
 
         // Resolves to { address, country } — empty strings if the lookup
