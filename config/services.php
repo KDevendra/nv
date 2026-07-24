@@ -39,4 +39,8 @@ return [
         'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    'mappls' => [
+        'access_token' => env('MAPPLS_ACCESS_TOKEN'),
+    ],
+
 ];

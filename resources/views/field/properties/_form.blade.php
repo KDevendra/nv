@@ -323,6 +323,7 @@ STEP 0 — A. Location & Identification
                 View on Google Maps
             </a>
         </div>
+        <div id="mappls-map" class="w-full h-64 rounded-lg border border-gray-200 mt-2" style="display:none"></div>
     </div>
 </div>{{-- /step 0 --}}
 
@@ -1850,6 +1851,10 @@ WIZARD — BOTTOM NAV BAR
 </script>
 
 
+@if(config('services.mappls.access_token'))
+    <script src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ config('services.mappls.access_token') }}"></script>
+@endif
+
 <script>
     // ── Capture the field officer's current location into the hidden
     // form_submited_location field, so it's saved alongside the entry. ──
@@ -1904,38 +1909,62 @@ WIZARD — BOTTOM NAV BAR
             mapsLinkEl.classList.add('flex');
         }
 
-        function buildPayload(coords, address, country) {
-            const [lat, long] = coords.split(',');
-            return JSON.stringify({ address: address || '', country: country || '', lat: lat, long: long });
+        // ── Live map preview (Mappls) — created on first fix, then just
+        // re-centered/re-marked on subsequent updates. Guarded throughout
+        // since the SDK script may not have loaded (no token configured,
+        // network hiccup, etc.) — the rest of the form must never depend on it. ──
+        const mapEl = document.getElementById('mappls-map');
+        let mapplsMap = null;
+        let mapplsMarker = null;
+
+        function updateMap(coords) {
+            if (!mapEl || !coords || typeof mappls === 'undefined') return;
+            const [lat, lng] = coords.split(',').map(Number);
+            try {
+                if (!mapplsMap) {
+                    mapplsMap = new mappls.Map('mappls-map', { center: { lat, lng }, zoom: 16 });
+                    mapplsMarker = new mappls.Marker({ map: mapplsMap, position: { lat, lng } });
+                } else if (mapplsMarker && mapplsMarker.setPosition) {
+                    mapplsMarker.setPosition({ lat, lng });
+                    if (mapplsMap.setCenter) mapplsMap.setCenter({ lat, lng });
+                }
+                mapEl.style.display = 'block';
+            } catch (e) {
+                mapEl.style.display = 'none'; // SDK present but failed to init — don't leave a broken box on the page
+            }
         }
 
         // Resolves to { address, country } — empty strings if the lookup
-        // fails. Also updates the visible readout as a side effect.
+        // fails. Proxied through our own backend (see FieldOfficer\PropertyEntryController::reverseGeocode)
+        // rather than calling Mappls directly, so the access token stays server-side.
+        // Also updates the visible readout as a side effect.
         function reverseGeocode(coords) {
-            const [lat, lon] = coords.split(',');
-            return fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`, {
-                headers: { 'Accept-Language': 'en' },
+            const [lat, lng] = coords.split(',');
+            return fetch(`{{ route('field.location.reverse-geocode') }}?lat=${lat}&lng=${lng}`, {
+                headers: { 'Accept': 'application/json' },
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    const addr = data && data.address;
-                    if (!addr) {
+                    if (!data || !data.address) {
                         setLocationLine('', 'Location detected, but address lookup failed.', true);
                         return { address: '', country: '' };
                     }
-                    const locality = [addr.neighbourhood, addr.suburb, addr.city || addr.town || addr.village, addr.state]
-                        .filter(Boolean)
-                        .join(', ') || data.display_name || '';
-                    const country = addr.country || '';
-                    setLocationLine(country, locality, false);
-                    lastAddress = locality;
+                    const address = data.address;
+                    const country = data.country || '';
+                    setLocationLine(country, address, false);
+                    lastAddress = address;
                     lastCountry = country;
-                    return { address: locality, country: country };
+                    return { address: address, country: country };
                 })
                 .catch(() => {
                     setLocationLine('', 'Location detected, but address lookup failed.', true);
                     return { address: '', country: '' };
                 });
+        }
+
+        function buildPayload(coords, address, country) {
+            const [lat, long] = coords.split(',');
+            return JSON.stringify({ address: address || '', country: country || '', lat: lat, long: long });
         }
 
         // Builds the final JSON payload for a set of coordinates — reuses the
@@ -1956,6 +1985,7 @@ WIZARD — BOTTOM NAV BAR
         capture({ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }, 9000).then((coords) => {
             if (coords) {
                 updateMapsLink(coords);
+                updateMap(coords);
                 locInput.value = buildPayload(coords, '', ''); // provisional, refined below once resolved
                 reverseGeocode(coords).then(({ address, country }) => {
                     locInput.value = buildPayload(coords, address, country);
@@ -1983,6 +2013,7 @@ WIZARD — BOTTOM NAV BAR
                         return;
                     }
                     updateMapsLink(coords);
+                    updateMap(coords);
                     resolvePayload(coords).then((payload) => {
                         locInput.value = payload;
                         if (form.requestSubmit) {
