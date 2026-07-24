@@ -1862,6 +1862,19 @@ WIZARD — BOTTOM NAV BAR
                 try {
                     const map = new mappls.Map('mappls-map', { center: [20.5937, 78.9629], zoom: 5 });
                     map.addListener('load', function () {
+                        // Mappls' SDK is built on MapLibre/Mapbox GL JS, which
+                        // only measures its container's size once at init and
+                        // never re-checks afterward. If that first measurement
+                        // happens before the surrounding layout has settled
+                        // (e.g. this section just became visible, or text
+                        // above it is still reflowing), the canvas gets stuck
+                        // at the wrong size — a squashed/partial map that never
+                        // corrects itself. A ResizeObserver keeps it in sync
+                        // with the container's *actual* size, whenever it changes.
+                        const mapContainer = document.getElementById('mappls-map');
+                        if (window.ResizeObserver && mapContainer) {
+                            new ResizeObserver(() => { if (map.resize) map.resize(); }).observe(mapContainer);
+                        }
                         resolve(map);
                     });
                 } catch (e) {
