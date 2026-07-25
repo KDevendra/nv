@@ -2010,19 +2010,32 @@ WIZARD — BOTTOM NAV BAR
             ]);
         }
 
+        function onInitialCoords(coords) {
+            updateMapsLink(coords);
+            updateMap(coords);
+            locInput.value = buildPayload(coords, '', ''); // provisional, refined below once resolved
+            reverseGeocode(coords).then(({ address, country }) => {
+                locInput.value = buildPayload(coords, address, country);
+            });
+        }
+
         // Best-effort capture as soon as the page loads, so we have *something*
         // even if the officer submits before a fresh GPS fix comes through.
-        capture({ enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }, 9000).then((coords) => {
+        // On mobile, a cold GPS fix after granting permission can easily take
+        // longer than desktop's near-instant Wi-Fi/IP-based fix, so we give it
+        // a generous window before falling back to a lower-accuracy attempt.
+        capture({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }, 20000).then((coords) => {
             if (coords) {
-                updateMapsLink(coords);
-                updateMap(coords);
-                locInput.value = buildPayload(coords, '', ''); // provisional, refined below once resolved
-                reverseGeocode(coords).then(({ address, country }) => {
-                    locInput.value = buildPayload(coords, address, country);
-                });
-            } else {
-                setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+                onInitialCoords(coords);
+                return;
             }
+            capture({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }, 12000).then((fallbackCoords) => {
+                if (fallbackCoords) {
+                    onInitialCoords(fallbackCoords);
+                } else {
+                    setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+                }
+            });
         });
 
         // Re-capture right before the form actually submits, so the stored
