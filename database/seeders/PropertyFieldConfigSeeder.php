@@ -79,6 +79,7 @@ class PropertyFieldConfigSeeder extends Seeder
             'dock_left'                  => [1, 1, 0, 0], 
             'dock_right'                 => [1, 1, 0, 0], 
             'dock_back'                  => [1, 1, 0, 0], 
+            'has_dock_leveller'          => [1, 1, 0, 0], 
             'dock_leveller_front'        => [1, 1, 0, 0], 
             'dock_leveller_left'         => [1, 1, 0, 0], 
             'dock_leveller_right'        => [1, 1, 0, 0], 

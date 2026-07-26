@@ -55,6 +55,7 @@
             'dock_left' => 'Dock Left',
             'dock_right' => 'Dock Right',
             'dock_back' => 'Dock Back',
+            'has_dock_leveller' => 'Dock Levellers Available?',
             'dock_leveller_front' => 'Dock Leveller Front',
             'dock_leveller_left' => 'Dock Leveller Left',
             'dock_leveller_right' => 'Dock Leveller Right',
@@ -492,7 +493,7 @@
                             $value = $value->format('d M Y');
                         }
                         // Format booleans
-                        if (in_array($fieldName, ['canteen', 'stp_plant', 'female_washroom', 'driver_rest_room', 'mezzanine', 'scrap_yard', 'extension_possible', 'solar'])) {
+                        if (in_array($fieldName, ['has_dock_leveller', 'canteen', 'stp_plant', 'female_washroom', 'driver_rest_room', 'mezzanine', 'scrap_yard', 'extension_possible', 'solar'])) {
                             $value = $value === 1 ? 'Yes' : ($value === 0 ? 'No' : '—');
                         }
                         // Format office_sizes array

@@ -343,12 +343,13 @@ class PropertyEntryController extends Controller
             ['name' => 'number_of_floors', 'label' => 'Number of Floors', 'value' => $property->number_of_floors],
             ['name' => 'fsi_far', 'label' => 'FSI / FAR', 'value' => $property->fsi_far],
 
-            // C. Dock, Exit & Width Details (21 fields)
+            // C. Dock, Exit & Width Details (22 fields)
             ['name' => 'dock_door_count', 'label' => 'Dock Door Count — Total', 'value' => $property->dock_door_count],
             ['name' => 'dock_front', 'label' => 'Dock Doors — Front', 'value' => $property->dock_front],
             ['name' => 'dock_left', 'label' => 'Dock Doors — Left', 'value' => $property->dock_left],
             ['name' => 'dock_right', 'label' => 'Dock Doors — Right', 'value' => $property->dock_right],
             ['name' => 'dock_back', 'label' => 'Dock Doors — Back', 'value' => $property->dock_back],
+            ['name' => 'has_dock_leveller', 'label' => 'Dock Levellers Available?', 'value' => is_null($property->has_dock_leveller) ? null : ($property->has_dock_leveller ? 'Yes' : 'No')],
             ['name' => 'dock_leveller_front', 'label' => 'Dock Leveller — Front', 'value' => $property->dock_leveller_front],
             ['name' => 'dock_leveller_left', 'label' => 'Dock Leveller — Left', 'value' => $property->dock_leveller_left],
             ['name' => 'dock_leveller_right', 'label' => 'Dock Leveller — Right', 'value' => $property->dock_leveller_right],
