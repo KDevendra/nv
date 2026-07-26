@@ -1805,6 +1805,13 @@
                                 <td>{{ $dockDoors->isEmpty() ? 'N/A' : $dockDoors->map(fn($v, $k) => "$k: $v")->join(', ') }}</td>
                             </tr>
                             @endif
+                            @if($canShowField('has_dock_leveller'))
+                            <tr>
+                                <td>{{ $srNo++ }}</td>
+                                <td>Dock Levellers Available</td>
+                                <td>{{ $entry->has_dock_leveller === null ? 'N/A' : ($entry->has_dock_leveller ? 'Yes' : 'No') }}</td>
+                            </tr>
+                            @endif
                             @if($canShowField('dock_leveller_front') || $canShowField('dock_leveller_left') || $canShowField('dock_leveller_right') || $canShowField('dock_leveller_back'))
                             @php $dockLevellers = collect(['Front' => $entry->dock_leveller_front, 'Left' => $entry->dock_leveller_left, 'Right' => $entry->dock_leveller_right, 'Back' => $entry->dock_leveller_back])->filter(); @endphp
                             <tr>

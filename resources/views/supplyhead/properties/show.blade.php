@@ -115,9 +115,9 @@
                         // Property Dimensions (10 fields)
                         'plot_area','built_up_area','carpet_area','available_area','clear_height_highest',
                         'clear_height_side','shed_width','shed_length','number_of_floors','fsi_far',
-                        // Dock, Exit & Width Details (21 fields)
+                        // Dock, Exit & Width Details (22 fields)
                         'dock_door_count','dock_front','dock_left','dock_right','dock_back',
-                        'dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back',
+                        'has_dock_leveller','dock_leveller_front','dock_leveller_left','dock_leveller_right','dock_leveller_back',
                         'fire_exit_front','fire_exit_left','fire_exit_right','fire_exit_back',
                         'canopy_width_front','canopy_width_left','canopy_width_right','canopy_width_back',
                         'road_width_front','road_width_left','road_width_right','road_width_back',
