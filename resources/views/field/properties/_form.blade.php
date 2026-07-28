@@ -825,7 +825,14 @@ STEP 0 — A. Location & Identification
                     error(s)</span>
             @endif
         </div>
-        <div class="{{ $sb }}">
+        <div class="{{ $sb }}" x-data="{
+            canteen: '{{ old('canteen', $entry?->canteen !== null && $entry?->canteen !== '' ? (string)(int)$entry?->canteen : '') }}',
+            canteen_size: '{{ addslashes(old('canteen_size', $entry?->canteen_size ?? '')) }}',
+            stp_plant: '{{ old('stp_plant', $entry?->stp_plant !== null && $entry?->stp_plant !== '' ? (string)(int)$entry?->stp_plant : '') }}',
+            stp_capacity: '{{ addslashes(old('stp_capacity', $entry?->stp_capacity ?? '')) }}',
+            mezzanine: '{{ old('mezzanine', $entry?->mezzanine !== null && $entry?->mezzanine !== '' ? (string)(int)$entry?->mezzanine : '') }}',
+            mezzanine_size: '{{ addslashes(old('mezzanine_size', $entry?->mezzanine_size ?? '')) }}'
+        }">
 
             @if($fc('no_of_offices')->keep_field)
                 @php
@@ -944,7 +951,7 @@ STEP 0 — A. Location & Identification
 
             @if($fc('canteen')->keep_field)
                 <div><label class="{{ $lc }}">Canteen {!! $ast('canteen') !!}</label>
-                    <select name="canteen" {{ $req('canteen') }} class="{{ $sc }}">
+                    <select name="canteen" x-model="canteen" @change="if(canteen !== '1') canteen_size = ''" {{ $req('canteen') }} class="{{ $sc }}">
                         <option value="">— Select —</option>
                         <option value="1" {{ $bv('canteen') === 1 ? 'selected' : '' }}>Yes</option>
                         <option value="0" {{ $bv('canteen') === 0 && $bv('canteen') !== '' ? 'selected' : '' }}>No</option>
@@ -955,17 +962,27 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('canteen_size')->keep_field)
-                <div><label class="{{ $lc }}">Canteen Size {!! $ast('canteen_size') !!}</label>
-                    <input type="text" name="canteen_size" value="{{ $v('canteen_size') }}" {{ $req('canteen_size') }}
+                <div x-show="canteen == '1'" x-cloak>
+                    <label class="{{ $lc }}">Canteen Size
+                        @if($fc('canteen_size')->mandatory_field)
+                            <span x-show="canteen == '1'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="text" name="canteen_size" x-model="canteen_size"
+                        :required="{{ $fc('canteen_size')->mandatory_field ? 'canteen == \'1\'' : 'false' }}"
+                        :disabled="canteen != '1'"
                         class="{{ $ic }}">
                     @error('canteen_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('canteen_size') !!}
+                </div>
+                <div x-show="canteen == '0'" x-cloak class="flex items-center">
+                    <span class="text-xs text-gray-400 italic">No canteen — size not required.</span>
                 </div>
             @endif
 
             @if($fc('stp_plant')->keep_field)
                 <div><label class="{{ $lc }}">STP Plant {!! $ast('stp_plant') !!}</label>
-                    <select name="stp_plant" {{ $req('stp_plant') }} class="{{ $sc }}">
+                    <select name="stp_plant" x-model="stp_plant" @change="if(stp_plant !== '1') stp_capacity = ''" {{ $req('stp_plant') }} class="{{ $sc }}">
                         <option value="">— Select —</option>
                         <option value="1" {{ $bv('stp_plant') === 1 ? 'selected' : '' }}>Yes</option>
                         <option value="0" {{ $bv('stp_plant') === 0 && $bv('stp_plant') !== '' ? 'selected' : '' }}>No</option>
@@ -976,11 +993,21 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('stp_capacity')->keep_field)
-                <div><label class="{{ $lc }}">STP Capacity {!! $ast('stp_capacity') !!}</label>
-                    <input type="text" name="stp_capacity" value="{{ $v('stp_capacity') }}" {{ $req('stp_capacity') }}
+                <div x-show="stp_plant == '1'" x-cloak>
+                    <label class="{{ $lc }}">STP Capacity
+                        @if($fc('stp_capacity')->mandatory_field)
+                            <span x-show="stp_plant == '1'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="text" name="stp_capacity" x-model="stp_capacity"
+                        :required="{{ $fc('stp_capacity')->mandatory_field ? 'stp_plant == \'1\'' : 'false' }}"
+                        :disabled="stp_plant != '1'"
                         class="{{ $ic }}">
                     @error('stp_capacity')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('stp_capacity') !!}
+                </div>
+                <div x-show="stp_plant == '0'" x-cloak class="flex items-center">
+                    <span class="text-xs text-gray-400 italic">No STP plant — capacity not required.</span>
                 </div>
             @endif
 
@@ -1009,7 +1036,7 @@ STEP 0 — A. Location & Identification
                 </div>
             @endif
 
-            @foreach(['female_washroom' => 'Female Washroom', 'driver_rest_room' => 'Driver Rest Room', 'mezzanine' => 'Mezzanine', 'scrap_yard' => 'Scrap Yard', 'extension_possible' => 'Extension Possible?'] as $fk => $flbl)
+            @foreach(['female_washroom' => 'Female Washroom', 'driver_rest_room' => 'Driver Rest Room', 'scrap_yard' => 'Scrap Yard', 'extension_possible' => 'Extension Possible?'] as $fk => $flbl)
                 @if($fc($fk)->keep_field)
                     <div><label class="{{ $lc }}">{{ $flbl }} {!! $ast($fk) !!}</label>
                         <select name="{{ $fk }}" {{ $req($fk) }} class="{{ $sc }}">
@@ -1022,12 +1049,34 @@ STEP 0 — A. Location & Identification
                 @endif
             @endforeach
 
+            @if($fc('mezzanine')->keep_field)
+                <div><label class="{{ $lc }}">Mezzanine {!! $ast('mezzanine') !!}</label>
+                    <select name="mezzanine" x-model="mezzanine" @change="if(mezzanine !== '1') mezzanine_size = ''" {{ $req('mezzanine') }} class="{{ $sc }}">
+                        <option value="">— Select —</option>
+                        <option value="1" {{ $bv('mezzanine') === 1 ? 'selected' : '' }}>Yes</option>
+                        <option value="0" {{ $bv('mezzanine') === 0 && $bv('mezzanine') !== '' ? 'selected' : '' }}>No</option>
+                    </select>
+                    @error('mezzanine')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    {!! $rmk('mezzanine') !!}
+                </div>
+            @endif
+
             @if($fc('mezzanine_size')->keep_field)
-                <div><label class="{{ $lc }}">Mezzanine Size {!! $ast('mezzanine_size') !!}</label>
-                    <input type="text" name="mezzanine_size" value="{{ $v('mezzanine_size') }}" {{ $req('mezzanine_size') }}
+                <div x-show="mezzanine == '1'" x-cloak>
+                    <label class="{{ $lc }}">Mezzanine Size
+                        @if($fc('mezzanine_size')->mandatory_field)
+                            <span x-show="mezzanine == '1'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="text" name="mezzanine_size" x-model="mezzanine_size"
+                        :required="{{ $fc('mezzanine_size')->mandatory_field ? 'mezzanine == \'1\'' : 'false' }}"
+                        :disabled="mezzanine != '1'"
                         class="{{ $ic }}">
                     @error('mezzanine_size')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('mezzanine_size') !!}
+                </div>
+                <div x-show="mezzanine == '0'" x-cloak class="flex items-center">
+                    <span class="text-xs text-gray-400 italic">No mezzanine — size not required.</span>
                 </div>
             @endif
 
@@ -1253,10 +1302,25 @@ STEP 0 — A. Location & Identification
                     error(s)</span>
             @endif
         </div>
-        <div class="{{ $sb }}">
+        <div class="{{ $sb }}" x-data="{
+            deal_type: '{{ old('deal_type', $entry?->deal_type ?? '') }}',
+            expected_rent: '{{ old('expected_rent', $entry?->expected_rent ?? '') }}',
+            expected_sale_price: '{{ old('expected_sale_price', $entry?->expected_sale_price ?? '') }}',
+            security_deposit_months: '{{ old('security_deposit_months', $entry?->security_deposit_months ?? '') }}',
+            lock_in_years: '{{ old('lock_in_years', $entry?->lock_in_years ?? '') }}',
+            handleDealTypeChange() {
+                if (this.deal_type === 'Sale') {
+                    this.expected_rent = '';
+                    this.security_deposit_months = '';
+                    this.lock_in_years = '';
+                } else if (this.deal_type === 'Lease') {
+                    this.expected_sale_price = '';
+                }
+            }
+        }">
             @if($fc('deal_type')->keep_field)
                 <div><label class="{{ $lc }}">Lease / Sale Status {!! $ast('deal_type') !!}</label>
-                    <select name="deal_type" {{ $req('deal_type') }} class="{{ $sc }}">
+                    <select name="deal_type" x-model="deal_type" @change="handleDealTypeChange()" {{ $req('deal_type') }} class="{{ $sc }}">
                         <option value="">— Select —</option>
                         @foreach(['Lease', 'Sale', 'Both'] as $o)
                             <option value="{{ $o }}" {{ $sel('deal_type', $o) }}>{{ $o }}</option>
@@ -1267,32 +1331,61 @@ STEP 0 — A. Location & Identification
                 </div>
             @endif
             @if($fc('expected_rent')->keep_field)
-                <div><label class="{{ $lc }}">Expected Rent (₹/sq ft/month) {!! $ast('expected_rent') !!}</label>
-                    <input type="number" step="0.01" min="0" name="expected_rent" value="{{ $v('expected_rent') }}" {{ $req('expected_rent') }} class="{{ $ic }}">
+                <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
+                    <label class="{{ $lc }}">Expected Rent (₹/sq ft/month)
+                        @if($fc('expected_rent')->mandatory_field)
+                            <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="number" step="0.01" min="0" name="expected_rent" x-model="expected_rent"
+                        :required="{{ $fc('expected_rent')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :disabled="deal_type === 'Sale'"
+                        class="{{ $ic }}">
                     @error('expected_rent')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('expected_rent') !!}
                 </div>
             @endif
             @if($fc('expected_sale_price')->keep_field)
-                <div><label class="{{ $lc }}">Expected Sale Price (₹) {!! $ast('expected_sale_price') !!}</label>
-                    <input type="number" step="0.01" min="0" name="expected_sale_price"
-                        value="{{ $v('expected_sale_price') }}" {{ $req('expected_sale_price') }} class="{{ $ic }}">
+                <div :class="deal_type === 'Lease' ? 'opacity-50' : ''">
+                    <label class="{{ $lc }}">Expected Sale Price (₹)
+                        @if($fc('expected_sale_price')->mandatory_field)
+                            <span x-show="deal_type === 'Sale' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="number" step="0.01" min="0" name="expected_sale_price" x-model="expected_sale_price"
+                        :required="{{ $fc('expected_sale_price')->mandatory_field ? '(deal_type === \'Sale\' || deal_type === \'Both\')' : 'false' }}"
+                        :disabled="deal_type === 'Lease'"
+                        class="{{ $ic }}">
                     @error('expected_sale_price')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('expected_sale_price') !!}
                 </div>
             @endif
             @if($fc('security_deposit_months')->keep_field)
-                <div><label class="{{ $lc }}">Security Deposit (months) {!! $ast('security_deposit_months') !!}</label>
-                    <input type="number" step="0.1" min="0" max="60" name="security_deposit_months"
-                        value="{{ $v('security_deposit_months') }}" {{ $req('security_deposit_months') }} class="{{ $ic }}">
+                <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
+                    <label class="{{ $lc }}">Security Deposit (months)
+                        @if($fc('security_deposit_months')->mandatory_field)
+                            <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="number" step="0.1" min="0" max="60" name="security_deposit_months" x-model="security_deposit_months"
+                        :required="{{ $fc('security_deposit_months')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :disabled="deal_type === 'Sale'"
+                        class="{{ $ic }}">
                     @error('security_deposit_months')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('security_deposit_months') !!}
                 </div>
             @endif
             @if($fc('lock_in_years')->keep_field)
-                <div><label class="{{ $lc }}">Lock-in Period (years) {!! $ast('lock_in_years') !!}</label>
-                    <input type="number" step="0.1" min="0" max="99" name="lock_in_years" value="{{ $v('lock_in_years') }}"
-                        {{ $req('lock_in_years') }} class="{{ $ic }}">
+                <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
+                    <label class="{{ $lc }}">Lock-in Period (years)
+                        @if($fc('lock_in_years')->mandatory_field)
+                            <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
+                        @endif
+                    </label>
+                    <input type="number" step="0.1" min="0" max="99" name="lock_in_years" x-model="lock_in_years"
+                        :required="{{ $fc('lock_in_years')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :disabled="deal_type === 'Sale'"
+                        class="{{ $ic }}">
                     @error('lock_in_years')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     {!! $rmk('lock_in_years') !!}
                 </div>

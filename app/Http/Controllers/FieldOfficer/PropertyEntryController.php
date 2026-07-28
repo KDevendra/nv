@@ -562,11 +562,28 @@ class PropertyEntryController extends Controller
             }
 
             // For drafts, all fields are nullable regardless of config
-            // For submissions, use config to determine required vs nullable
+            // For submissions, use config & conditional rules to determine required vs nullable
             if ($isDraft) {
                 $presence = 'nullable';
             } else {
-                $presence = ($cfg && $cfg->mandatory_field) ? 'required' : 'nullable';
+                $isMandatory = $cfg && $cfg->mandatory_field;
+                if (!$isMandatory) {
+                    $presence = 'nullable';
+                } else {
+                    if ($field === 'canteen_size') {
+                        $presence = ((string)$request->input('canteen') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'stp_capacity') {
+                        $presence = ((string)$request->input('stp_plant') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'mezzanine_size') {
+                        $presence = ((string)$request->input('mezzanine') === '1') ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['expected_rent', 'security_deposit_months', 'lock_in_years'])) {
+                        $presence = in_array($request->input('deal_type'), ['Lease', 'Both']) ? 'required' : 'nullable';
+                    } elseif ($field === 'expected_sale_price') {
+                        $presence = in_array($request->input('deal_type'), ['Sale', 'Both']) ? 'required' : 'nullable';
+                    } else {
+                        $presence = 'required';
+                    }
+                }
             }
 
             // Build rule — typeConstraint can be a string or an array
@@ -581,11 +598,33 @@ class PropertyEntryController extends Controller
         $rules['photos'] = 'nullable|array';
         $rules['photos.*'] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
 
-        return $request->validate($rules, [
+        $data = $request->validate($rules, [
             'photos.*.image' => 'Only camera photos are allowed for :attribute.',
             'postal_address_pin.regex' => 'PIN code must be exactly 6 digits.',
             'owner_contact_phone.regex' => 'Contact number must be a valid 10-digit Indian mobile number.',
         ], self::FIELD_LABELS); // <-- human-readable :attribute names instead of snake_case
+
+        // Auto-clear conditional fields if parent answer is No / deal_type doesn't match
+        if (isset($data['canteen']) && (string)$data['canteen'] === '0') {
+            $data['canteen_size'] = null;
+        }
+        if (isset($data['stp_plant']) && (string)$data['stp_plant'] === '0') {
+            $data['stp_capacity'] = null;
+        }
+        if (isset($data['mezzanine']) && (string)$data['mezzanine'] === '0') {
+            $data['mezzanine_size'] = null;
+        }
+        if (isset($data['deal_type'])) {
+            if ($data['deal_type'] === 'Sale') {
+                $data['expected_rent'] = null;
+                $data['security_deposit_months'] = null;
+                $data['lock_in_years'] = null;
+            } elseif ($data['deal_type'] === 'Lease') {
+                $data['expected_sale_price'] = null;
+            }
+        }
+
+        return $data;
     }
 
     // ── Photo Handler ─────────────────────────────────────────────────────────
