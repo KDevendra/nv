@@ -580,6 +580,12 @@ class PropertyEntryController extends Controller
                         $presence = in_array($request->input('deal_type'), ['Lease', 'Both']) ? 'required' : 'nullable';
                     } elseif ($field === 'expected_sale_price') {
                         $presence = in_array($request->input('deal_type'), ['Sale', 'Both']) ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'])) {
+                        // Individually optional — the real "must have a real
+                        // count when levellers are available" requirement is
+                        // enforced as a group (sum > 0) further down, since no
+                        // single direction is inherently the mandatory one.
+                        $presence = 'nullable';
                     } else {
                         $presence = 'required';
                     }
@@ -621,6 +627,23 @@ class PropertyEntryController extends Controller
                 $data['lock_in_years'] = null;
             } elseif ($data['deal_type'] === 'Lease') {
                 $data['expected_sale_price'] = null;
+            }
+        }
+
+        // Dock levellers: answering "Yes" is only meaningful with a real
+        // count somewhere — mirrors the client-side check that requires the
+        // four direction fields (as a group) once has_dock_leveller = 1.
+        if (!$isDraft && (string) $request->input('has_dock_leveller') === '1') {
+            $levellerFields = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'];
+            $anyMandatory = collect($levellerFields)->contains(fn ($f) => (bool) optional($configs->get($f))->mandatory_field);
+
+            if ($anyMandatory) {
+                $sum = collect($levellerFields)->sum(fn ($f) => (int) $request->input($f, 0));
+                if ($sum <= 0) {
+                    throw ValidationException::withMessages([
+                        'dock_leveller_front' => 'Enter at least one dock leveller count (front/left/right/back) since levellers are marked as available.',
+                    ]);
+                }
             }
         }
 
