@@ -1723,17 +1723,17 @@
          });
       });
 
+      
       // ---- Filter property types based on selected service type
       function filterPropertyTypes(serviceTypeSlug) {
          const typeSelect = document.getElementById("type");
          if (!typeSelect) return;
 
          const options = typeSelect.querySelectorAll("option");
-         let hasVisibleOptions = false;
 
          options.forEach(option => {
             // Skip the placeholder option
-            if (option.disabled && option.selected) {
+            if (option.disabled) {
                option.style.display = '';
                return;
             }
@@ -1749,14 +1749,23 @@
             // Show option if it's mapped to the selected service type
             if (serviceTypes && serviceTypes.split(',').includes(serviceTypeSlug)) {
                option.style.display = '';
-               hasVisibleOptions = true;
             } else {
                option.style.display = 'none';
             }
          });
 
-         // Reset selection to placeholder
-         typeSelect.selectedIndex = 0;
+         // Select 'warehouse' by default if visible; otherwise select first visible option or index 0
+         const warehouseOption = Array.from(options).find(opt => opt.value === 'warehouse' && opt.style.display !== 'none');
+         if (warehouseOption) {
+            typeSelect.value = 'warehouse';
+         } else {
+            const firstVisible = Array.from(options).find(opt => !opt.disabled && opt.style.display !== 'none');
+            if (firstVisible) {
+               typeSelect.value = firstVisible.value;
+            } else {
+               typeSelect.selectedIndex = 0;
+            }
+         }
       }
 
       // Initialize property types filter on page load
