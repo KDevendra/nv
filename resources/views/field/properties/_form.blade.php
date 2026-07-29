@@ -74,7 +74,16 @@
             // Mirrors the display-only "India" default shown for country —
             // that default isn't reflected by $v() itself.
             $val = $f === 'country' ? ($v($f) ?: 'India') : $v($f);
-            if (trim((string) $val) === '') {
+            // office_sizes (array-cast) can't go through trim()/(string) —
+            // check emptiness directly. Boolean-cast fields (canteen, etc.)
+            // stringify `false` to '', which would wrongly read an explicit
+            // "No" as unanswered — any real bool is always a filled answer.
+            $isBlank = match (true) {
+                is_array($val) => empty($val),
+                is_bool($val) => false,
+                default => trim((string) $val) === '',
+            };
+            if ($isBlank) {
                 $complete = false;
                 break;
             }
