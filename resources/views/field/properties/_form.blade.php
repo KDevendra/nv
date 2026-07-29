@@ -41,13 +41,52 @@
     $__eb = isset($errors) ? $errors->getBag('default') : null;
     $sec_errs = fn(string $t) => $__eb ? collect($__sfm[$t] ?? [])->filter(fn($f) => $__eb->has($f))->count() : 0;
 
-    // Section error counts indexed by step number for JS
+    // Section error counts indexed by step number for JS.
+    // A 13th entry (always 0) is appended for the trailing Review & Submit
+    // step, which has no fields of its own.
     $stepErrCounts = array_values(array_map(fn($t) => $sec_errs($t), array_keys($__sfm)));
+    $stepErrCounts[] = 0;
     // First step with errors (0-indexed), -1 if none
     $firstErrStep = -1;
     foreach ($stepErrCounts as $i => $c) {
         if ($c > 0) {
             $firstErrStep = $i;
+            break;
+        }
+    }
+
+    // Whether each lettered step (A-L) has all of its currently-mandatory,
+    // currently-kept fields filled in — drives how far the wizard progress
+    // dots unlock. Photos (K) are always server-side optional, so treat
+    // that step as complete regardless of upload state.
+    $stepComplete = [];
+    foreach ($__sfm as $secName => $fields) {
+        if ($secName === 'K. Photographs') {
+            $stepComplete[] = true;
+            continue;
+        }
+        $complete = true;
+        foreach ($fields as $f) {
+            $cfg = $fc($f);
+            if (!$cfg->keep_field || !$cfg->mandatory_field) {
+                continue;
+            }
+            // Mirrors the display-only "India" default shown for country —
+            // that default isn't reflected by $v() itself.
+            $val = $f === 'country' ? ($v($f) ?: 'India') : $v($f);
+            if (trim((string) $val) === '') {
+                $complete = false;
+                break;
+            }
+        }
+        $stepComplete[] = $complete;
+    }
+    // First incomplete lettered step unlocks navigation up to (and including)
+    // itself; if every lettered step is complete, the Review step (index 12) unlocks too.
+    $wizInitFrontier = 12;
+    foreach ($stepComplete as $i => $complete) {
+        if (!$complete) {
+            $wizInitFrontier = $i;
             break;
         }
     }
@@ -74,7 +113,7 @@ WIZARD — TOP STEP PROGRESS BAR
     {{-- Desktop: letter circles --}}
     <div class="hidden sm:flex items-center gap-1">
         @php
-            $stepLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+            $stepLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '✓'];
             $stepTitles = [
                 'Location',
                 'Legal',
@@ -87,13 +126,14 @@ WIZARD — TOP STEP PROGRESS BAR
                 'Surroundings',
                 'Emergency',
                 'Photos',
-                'Remarks'
+                'Remarks',
+                'Review'
             ];
         @endphp
         @foreach($stepLetters as $i => $ltr)
             <div class="flex-1 flex items-center">
                 <button type="button" onclick="wizardGoTo({{ $i }})" id="wiz-dot-{{ $i }}"
-                    title="{{ $stepLetters[$i] }}. {{ $stepTitles[$i] }}" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0
+                    title="{{ $ltr === '✓' ? $stepTitles[$i] : $stepLetters[$i] . '. ' . $stepTitles[$i] }}" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0
                            border-2 border-transparent wiz-dot" data-step="{{ $i }}">
                     {{-- Error count badge shown if step has errors --}}
                     @if($stepErrCounts[$i] > 0)
@@ -103,7 +143,7 @@ WIZARD — TOP STEP PROGRESS BAR
                         {{ $ltr }}
                     @endif
                 </button>
-                @if($i < 11)
+                @if($i < 12)
                     <div id="wiz-line-{{ $i }}" class="flex-1 h-0.5 bg-gray-200 mx-0.5 wiz-line"></div>
                 @endif
             </div>
@@ -1639,6 +1679,19 @@ STEP 0 — A. Location & Identification
 </div>{{-- /step 11 --}}
 
 
+{{-- ══ STEP 12 — Review & Submit ══ --}}
+<div class="wizard-step" data-step="12" style="display:none">
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+        <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+            <h3 class="text-sm font-semibold text-zendo-navy">Review &amp; Submit</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Check the details below before submitting. Use "Edit" on any
+                section to go back and make changes.</p>
+        </div>
+    </div>
+    <div id="review-content"></div>
+</div>{{-- /step 12 --}}
+
+
 {{-- Hidden: current wizard step — submitted with draft saves so we can restore position --}}
 <input type="hidden" name="wizard_step" id="wizard_step_input" value="{{ session('wizard_step', 0) }}">
 
@@ -1694,8 +1747,8 @@ WIZARD — BOTTOM NAV BAR
     // ─────────────────────────────────────────────
     // WIZARD CONTROLLER — vanilla JS, no Alpine dep
     // ─────────────────────────────────────────────
-    const WIZ_TOTAL = 12;
-    const WIZ_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    const WIZ_TOTAL = 13;
+    const WIZ_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '✓'];
     const WIZ_TITLES = [
         'A. Location & Identification',
         'B. Legal & Statutory Compliance',
@@ -1708,15 +1761,24 @@ WIZARD — BOTTOM NAV BAR
         'I. Surroundings & Environment',
         'J. Health & Emergency Nearby',
         'K. Photographs',
-        'L. General Remarks'
+        'L. General Remarks',
+        'Review & Submit'
     ];
     // Step error counts baked in from server (0 if no errors)
     const WIZ_ERR_COUNTS = @json($stepErrCounts);
 
     let wizCurrent = 0; // will be set correctly in DOMContentLoaded
 
+    // Highest step index the user is allowed to jump to. Steps beyond this
+    // haven't had their mandatory fields filled in yet, so their progress
+    // dots stay locked (not clickable) until earlier steps are completed.
+    // Seeded server-side from actual field values (works for drafts/edits
+    // reloaded fresh, not just same-session navigation).
+    let wizMaxUnlocked = {{ $wizInitFrontier }};
+
     function wizardGoTo(step) {
         if (step < 0 || step >= WIZ_TOTAL) return;
+        if (step > wizMaxUnlocked) return; // locked — section ahead isn't filled in yet
 
         // Hide all steps
         document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
@@ -1753,6 +1815,13 @@ WIZARD — BOTTOM NAV BAR
                     dot.classList.add('bg-gray-100', 'text-gray-400', 'border-gray-200');
                 }
             }
+
+            // Locked (not yet reachable) — disable the dot so it can't be
+            // clicked past sections that still have required fields missing.
+            const locked = i > wizMaxUnlocked;
+            dot.disabled = locked;
+            dot.classList.toggle('opacity-40', locked);
+            dot.classList.toggle('cursor-not-allowed', locked);
         });
 
         // Update connector lines
@@ -1798,6 +1867,10 @@ WIZARD — BOTTOM NAV BAR
         // Keep hidden input in sync so draft saves carry the step
         const stepInput = document.getElementById('wizard_step_input');
         if (stepInput) stepInput.value = step;
+
+        // Build the review summary fresh each time it's opened, so it
+        // reflects the latest edits rather than a stale snapshot.
+        if (step === WIZ_TOTAL - 1) renderReviewStep();
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -1868,10 +1941,137 @@ WIZARD — BOTTOM NAV BAR
 
     function wizardNext() {
         if (!wizardValidateStep(wizCurrent)) return; // blocked — errors shown inline
+        wizMaxUnlocked = Math.max(wizMaxUnlocked, wizCurrent + 1);
         wizardGoTo(wizCurrent + 1);
     }
 
     function wizardPrev() { wizardGoTo(wizCurrent - 1); }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // REVIEW & SUBMIT — builds a read-only recap of steps A-L straight from
+    // the live DOM (not a hand-maintained field list), so it can't drift out
+    // of sync with whatever fields PropertyFieldConfig currently keeps/hides.
+    // ─────────────────────────────────────────────────────────────────────
+    function wizHumanize(name) {
+        return name.replace(/\[.*?\]/g, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+    }
+
+    // Walk up from `el` toward `stopEl`, checking each ancestor's preceding
+    // siblings for a LABEL/SPAN/H4 with real text — covers both "label sits
+    // right before the control" and "control is nested inside a styled
+    // radio option, real label is a level up" (the Yes/No toggle widgets).
+    function wizFindPrecedingText(el, stopEl, tags) {
+        let node = el;
+        while (node && node !== stopEl) {
+            let sib = node.previousElementSibling;
+            while (sib) {
+                if (tags.includes(sib.tagName) && sib.textContent.replace('*', '').trim().length > 1) {
+                    return sib.textContent.replace('*', '').trim();
+                }
+                sib = sib.previousElementSibling;
+            }
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    function wizFieldLabel(control, stepEl) {
+        const prev = control.previousElementSibling;
+        if (prev && prev.tagName === 'LABEL') return prev.textContent.replace('*', '').trim();
+        const wrappingLabel = control.closest('label');
+        const searchFrom = wrappingLabel ? wrappingLabel.parentElement : control.parentElement;
+        return wizFindPrecedingText(searchFrom, stepEl, ['LABEL', 'SPAN']) || wizHumanize(control.name);
+    }
+
+    function wizGroupHeading(control, stepEl) {
+        return wizFindPrecedingText(control, stepEl, ['H4']);
+    }
+
+    function wizCollectStepFields(stepEl) {
+        const seen = new Set();
+        const rows = [];
+        stepEl.querySelectorAll('input, select, textarea').forEach(control => {
+            if (!control.name || control.disabled) return;
+            if (control.type === 'hidden' || control.type === 'file') return;
+
+            if (control.type === 'radio') {
+                if (seen.has(control.name)) return;
+                const checked = stepEl.querySelector(`input[name="${CSS.escape(control.name)}"]:checked`);
+                if (!checked) return;
+                seen.add(control.name);
+                let val = checked.value;
+                if (val === '1') val = 'Yes'; else if (val === '0') val = 'No';
+                const heading = wizGroupHeading(control, stepEl);
+                const label = wizFieldLabel(control, stepEl);
+                rows.push({ label: heading ? `${heading} — ${label}` : label, value: val });
+                return;
+            }
+
+            if (seen.has(control.name)) return;
+            seen.add(control.name);
+
+            let val = (control.value || '').trim();
+            if (control.tagName === 'SELECT') {
+                const opt = control.options[control.selectedIndex];
+                val = control.value ? (opt ? opt.textContent.trim() : val) : '';
+            }
+            if (val === '') return; // keep the recap concise — only show what's filled
+
+            const heading = wizGroupHeading(control, stepEl);
+            const label = wizFieldLabel(control, stepEl);
+            rows.push({ label: heading ? `${heading} — ${label}` : label, value: val });
+        });
+        return rows;
+    }
+
+    function wizPhotoSummary() {
+        let count = 0;
+        for (let i = 0; i < 8; i++) {
+            const img = document.getElementById('preview-img-' + i);
+            if (img && !img.classList.contains('hidden') && img.getAttribute('src')) count++;
+        }
+        return count;
+    }
+
+    function wizEscapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function renderReviewStep() {
+        const container = document.getElementById('review-content');
+        if (!container) return;
+
+        let html = '';
+        for (let i = 0; i < WIZ_TOTAL - 1; i++) {
+            const stepEl = document.querySelector(`.wizard-step[data-step="${i}"]`);
+            if (!stepEl) continue;
+
+            const rows = (i === 10) // K. Photographs
+                ? [{ label: 'Photos added', value: `${wizPhotoSummary()} of 8` }]
+                : wizCollectStepFields(stepEl);
+
+            html += `
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-sm font-semibold text-zendo-navy">${wizEscapeHtml(WIZ_TITLES[i])}</h3>
+                        <button type="button" onclick="wizardGoTo(${i})"
+                            class="text-xs font-semibold text-zendo-navy border border-gray-300 rounded-lg px-3 py-1 hover:bg-gray-50 transition-colors">
+                            Edit
+                        </button>
+                    </div>
+                    <div class="px-5 py-4">
+                        ${rows.length ? `<dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">${rows.map(r => `
+                            <div class="flex items-baseline justify-between gap-3 text-sm border-b border-gray-50 pb-1.5 sm:border-0 sm:pb-0">
+                                <dt class="text-gray-500 flex-shrink-0">${wizEscapeHtml(r.label)}</dt>
+                                <dd class="font-medium text-gray-800 text-right">${wizEscapeHtml(r.value)}</dd>
+                            </div>`).join('')}</dl>` : `<p class="text-sm text-gray-400 italic">No details entered.</p>`}
+                    </div>
+                </div>`;
+        }
+        container.innerHTML = html;
+    }
 
     // Remove error highlight when user fills in a field
     document.addEventListener('input', function (e) {
@@ -1897,6 +2097,8 @@ WIZARD — BOTTOM NAV BAR
         const errStep = {{ $firstErrStep }};
         // Priority: validation errors > session-restored step > 0
         wizCurrent = errStep >= 0 ? errStep : (sessionStep >= 0 ? sessionStep : 0);
+        // Whatever step we're actually landing on must never render locked
+        wizMaxUnlocked = Math.max(wizMaxUnlocked, wizCurrent);
         wizardGoTo(wizCurrent);
     });
 
