@@ -37,17 +37,27 @@ class PropertyEntryController extends Controller
 
         $userId = auth()->id();
 
-        // Verified entries verified less than 6 hours ago are still shown.
-        // Verified entries verified 6+ hours ago are excluded from the table.
-        $query = PropertyEntry::where('field_officer_id', $userId)
-            ->where(function ($q) {
+        $query = PropertyEntry::where('field_officer_id', $userId);
+
+        if ($request->filled('status')) {
+            // A stat card was clicked for a specific status — show every
+            // matching entry (so the list count matches the card's count),
+            // bypassing the default view's recent-verified-only narrowing.
+            $query->where('status', $request->string('status'));
+        } else {
+            // Default (no status filter): verified entries verified less
+            // than 6 hours ago are still shown; verified 6+ hours ago are
+            // excluded from the table.
+            $query->where(function ($q) {
                 $q->where('status', '!=', 'verified')
                     ->orWhere(function ($q2) {
                         $q2->where('status', 'verified')
                             ->where('verified_at', '>', now()->subHours(6));
                     });
-            })
-            ->latest();
+            });
+        }
+
+        $query->latest();
 
         $entries = $query->paginate(15)->appends($request->query());
 
