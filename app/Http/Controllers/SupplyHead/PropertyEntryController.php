@@ -299,6 +299,80 @@ class PropertyEntryController extends Controller
         ]);
     }
 
+    // ── Mark All Incorrect ────────────────────────────────────────────────────
+
+    public function markAllIncorrect(PropertyEntry $property)
+    {
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+
+        // A remark is normally required per-field when marking something
+        // incorrect (see reviewField()) so the officer knows what to fix —
+        // give every field a generic one here rather than leaving it blank.
+        $defaultRemark = 'Marked incorrect by reviewer — please review and correct.';
+
+        // Get all reviewable data fields
+        $fields = $this->getReviewableFields($property);
+
+        // Mark all data fields as incorrect
+        foreach ($fields as $field) {
+            \App\Models\PropertyEntryFieldReview::updateOrCreate(
+                [
+                    'property_entry_id' => $property->id,
+                    'field_name' => $field['name'],
+                ],
+                [
+                    'reviewed_by' => auth()->id(),
+                    'field_label' => $field['label'],
+                    'field_value' => $field['value'],
+                    'is_correct' => false,
+                    'remark' => $defaultRemark,
+                ]
+            );
+        }
+
+        // Mark all photo slots as incorrect
+        foreach (self::PHOTO_SLOTS as $index => $slotLabel) {
+            \App\Models\PropertyEntryFieldReview::updateOrCreate(
+                [
+                    'property_entry_id' => $property->id,
+                    'field_name' => 'photo_' . $index,
+                ],
+                [
+                    'reviewed_by' => auth()->id(),
+                    'field_label' => $slotLabel,
+                    'field_value' => 'photo',
+                    'is_correct' => false,
+                    'remark' => $defaultRemark,
+                ]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All fields and photos marked as incorrect',
+        ]);
+    }
+
+    // ── Undo All Correct ──────────────────────────────────────────────────────
+
+    public function undoAllCorrect(PropertyEntry $property)
+    {
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+
+        // Only clear fields currently marked "correct" — back to pending
+        // (no review row = pending, same as a never-reviewed field). Fields
+        // already marked "incorrect" keep their remark; this undoes a
+        // "Mark All Correct" click, it doesn't wipe real reviewer feedback.
+        \App\Models\PropertyEntryFieldReview::where('property_entry_id', $property->id)
+            ->where('is_correct', true)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All "correct" markings have been cleared',
+        ]);
+    }
+
     // ── Helper: Get Reviewable Fields ────────────────────────────────────────
 
     private function getReviewableFields(PropertyEntry $property): array

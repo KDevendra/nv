@@ -120,6 +120,8 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::post('properties/{property}/toggle-resubmit', [SupplyHeadPropertyEntryController::class, 'toggleResubmit'])->name('properties.toggle-resubmit');
         Route::post('properties/{property}/review-field', [SupplyHeadPropertyEntryController::class, 'reviewField'])->name('properties.review-field');
         Route::post('properties/{property}/mark-all-correct', [SupplyHeadPropertyEntryController::class, 'markAllCorrect'])->name('properties.mark-all-correct');
+        Route::post('properties/{property}/mark-all-incorrect', [SupplyHeadPropertyEntryController::class, 'markAllIncorrect'])->name('properties.mark-all-incorrect');
+        Route::post('properties/{property}/undo-all-correct', [SupplyHeadPropertyEntryController::class, 'undoAllCorrect'])->name('properties.undo-all-correct');
     });
     Route::prefix('admin')->name('admin.')->middleware('permission')->group(function () {
         Route::resource('users', UserController::class);

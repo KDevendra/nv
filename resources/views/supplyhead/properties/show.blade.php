@@ -71,13 +71,29 @@
                         <h3 class="text-base font-semibold text-zendo-navy">Field Validation</h3>
                         <p class="text-xs text-gray-500 mt-0.5">Review each field section-by-section and mark as correct or incorrect</p>
                     </div>
-                    <button @click="markAllCorrect" type="button"
-                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all shadow">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Mark All Correct
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button @click="undoAllCorrect" type="button"
+                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l-4-4 4-4m-4 4h11a4 4 0 010 8h-1"/>
+                            </svg>
+                            Undo All Correct
+                        </button>
+                        <button @click="markAllIncorrect" type="button"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-all shadow">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Mark All Incorrect
+                        </button>
+                        <button @click="markAllCorrect" type="button"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-all shadow">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Mark All Correct
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Progress Bar --}}
@@ -422,6 +438,20 @@
                 async markAllCorrect() {
                     if (!confirm('Mark all fields and photos as correct?')) return;
                     const r = await fetch('{{ route('supplyhead.properties.mark-all-correct', $property) }}', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                    if (r.ok) location.reload();
+                },
+                async markAllIncorrect() {
+                    if (!confirm('Mark all fields and photos as incorrect? The field officer will need to review and resubmit every field.')) return;
+                    const r = await fetch('{{ route('supplyhead.properties.mark-all-incorrect', $property) }}', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                    if (r.ok) location.reload();
+                },
+                async undoAllCorrect() {
+                    if (!confirm('Unset all fields currently marked correct? Fields marked incorrect (with a remark) will be left as-is.')) return;
+                    const r = await fetch('{{ route('supplyhead.properties.undo-all-correct', $property) }}', {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                     });
                     if (r.ok) location.reload();
