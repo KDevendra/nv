@@ -1723,6 +1723,7 @@
          });
       });
 
+      
       // ---- Filter property types based on selected service type
       function filterPropertyTypes(serviceTypeSlug) {
          const typeSelect = document.getElementById("type");
