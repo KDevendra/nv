@@ -690,19 +690,29 @@ STEP 0 — A. Location & Identification
             </div>
 
             {{-- Dock Levellers --}}
+            @php
+                // Respect old() first (validation-failure redisplay), then the
+                // saved entry, defaulting to "No" — same fallback order as the
+                // Office Space widget above, so a never-touched toggle still
+                // submits an explicit answer instead of leaving the radio
+                // group entirely unchecked (which used to omit has_dock_leveller
+                // from the request and fail server-side "required" silently).
+                $oldHasLev = old('has_dock_leveller', $entry?->has_dock_leveller);
+                $initHasLev = ($oldHasLev === true || $oldHasLev === '1' || $oldHasLev == 1) ? 'true' : 'false';
+            @endphp
             <div x-data="{
-            hasLev: {{ $entry?->has_dock_leveller === true ? 'true' : ($entry?->has_dock_leveller === false ? 'false' : 'null') }},
-            lev_front: {{ (int) ($entry?->dock_leveller_front ?? 0) }},
-            lev_left:  {{ (int) ($entry?->dock_leveller_left ?? 0) }},
-            lev_right: {{ (int) ($entry?->dock_leveller_right ?? 0) }},
-            lev_back:  {{ (int) ($entry?->dock_leveller_back ?? 0) }},
+            hasLev: {{ $initHasLev }},
+            lev_front: {{ (int) old('dock_leveller_front', $entry?->dock_leveller_front ?? 0) }},
+            lev_left:  {{ (int) old('dock_leveller_left', $entry?->dock_leveller_left ?? 0) }},
+            lev_right: {{ (int) old('dock_leveller_right', $entry?->dock_leveller_right ?? 0) }},
+            lev_back:  {{ (int) old('dock_leveller_back', $entry?->dock_leveller_back ?? 0) }},
             get total() { if(this.hasLev!==true)return 0; return (parseInt(this.lev_front)||0)+(parseInt(this.lev_left)||0)+(parseInt(this.lev_right)||0)+(parseInt(this.lev_back)||0); },
-            setNo() { 
-                this.hasLev=false; 
-                this.lev_front=0; 
-                this.lev_left=0; 
-                this.lev_right=0; 
-                this.lev_back=0; 
+            setNo() {
+                this.hasLev=false;
+                this.lev_front=0;
+                this.lev_left=0;
+                this.lev_right=0;
+                this.lev_back=0;
             }
         }">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Dock Levellers</h4>
@@ -711,12 +721,12 @@ STEP 0 — A. Location & Identification
                     <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
                         <label class="relative cursor-pointer">
                             <input type="radio" name="has_dock_leveller" value="1" x-model.number="hasLev"
-                                @change="hasLev=true" {{ old('has_dock_leveller', $entry?->has_dock_leveller) == '1' ? 'checked' : '' }} class="sr-only">
+                                @change="hasLev=true" {{ $oldHasLev === true || $oldHasLev == '1' ? 'checked' : '' }} class="sr-only">
                             <span class="block px-5 py-2 transition-colors border-r border-gray-300"
                                 :class="hasLev===true ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">Yes</span>
                         </label>
                         <label class="relative cursor-pointer">
-                            <input type="radio" name="has_dock_leveller" value="0" @change="setNo()" {{ old('has_dock_leveller', $entry?->has_dock_leveller) === false || old('has_dock_leveller', $entry?->has_dock_leveller) == '0' ? 'checked' : '' }} class="sr-only">
+                            <input type="radio" name="has_dock_leveller" value="0" @change="setNo()" {{ $oldHasLev === false || $oldHasLev === null || $oldHasLev == '0' ? 'checked' : '' }} class="sr-only">
                             <span class="block px-5 py-2 transition-colors"
                                 :class="hasLev===false ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'">No</span>
                         </label>
@@ -725,33 +735,53 @@ STEP 0 — A. Location & Identification
                 <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
                     @if($fc('dock_leveller_front')->keep_field)
                         <div>
-                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Front</label>
+                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Front
+                                @if($fc('dock_leveller_front')->mandatory_field)
+                                    <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
+                                @endif
+                            </label>
                             <input type="number" min="0" name="dock_leveller_front" x-model.number="lev_front"
                                 :readonly="hasLev===false"
+                                :required="{{ $fc('dock_leveller_front')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
                         </div>
                     @endif
                     @if($fc('dock_leveller_left')->keep_field)
                         <div>
-                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Left</label>
+                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Left
+                                @if($fc('dock_leveller_left')->mandatory_field)
+                                    <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
+                                @endif
+                            </label>
                             <input type="number" min="0" name="dock_leveller_left" x-model.number="lev_left"
                                 :readonly="hasLev===false"
+                                :required="{{ $fc('dock_leveller_left')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
                         </div>
                     @endif
                     @if($fc('dock_leveller_right')->keep_field)
                         <div>
-                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Right</label>
+                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Right
+                                @if($fc('dock_leveller_right')->mandatory_field)
+                                    <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
+                                @endif
+                            </label>
                             <input type="number" min="0" name="dock_leveller_right" x-model.number="lev_right"
                                 :readonly="hasLev===false"
+                                :required="{{ $fc('dock_leveller_right')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
                         </div>
                     @endif
                     @if($fc('dock_leveller_back')->keep_field)
                         <div>
-                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Back</label>
+                            <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Back
+                                @if($fc('dock_leveller_back')->mandatory_field)
+                                    <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
+                                @endif
+                            </label>
                             <input type="number" min="0" name="dock_leveller_back" x-model.number="lev_back"
                                 :readonly="hasLev===false"
+                                :required="{{ $fc('dock_leveller_back')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic }}'">
                         </div>
                     @endif
@@ -1925,6 +1955,33 @@ WIZARD — BOTTOM NAV BAR
             }
         });
 
+        // Dock levellers: "Available? = Yes" needs a real count somewhere
+        // (mirrors the server-side group check). The blank-string scan above
+        // can't catch this — these fields default to "0", which is never
+        // blank, so a plain [required] attribute is inert here regardless of
+        // its current value.
+        const levFields = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back']
+            .map(n => stepEl.querySelector(`[name="${n}"]`))
+            .filter(Boolean);
+        if (levFields.length) {
+            const hasLevYes = stepEl.querySelector('input[name="has_dock_leveller"]:checked')?.value === '1';
+            const anyMandatory = levFields.some(f => f.required);
+            const sum = levFields.reduce((s, f) => s + (parseInt(f.value, 10) || 0), 0);
+            if (hasLevYes && anyMandatory && sum <= 0) {
+                levFields.forEach(f => {
+                    f.classList.add('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+                    const wrapper = f.parentElement;
+                    if (!wrapper.querySelector('.wiz-inline-err')) {
+                        const msg = document.createElement('p');
+                        msg.className = 'wiz-inline-err mt-1 text-xs text-red-600 font-medium';
+                        msg.textContent = 'Enter at least one dock leveller count (front/left/right/back)';
+                        wrapper.appendChild(msg);
+                    }
+                });
+                if (!firstInvalid) firstInvalid = levFields[0];
+            }
+        }
+
         if (firstInvalid) {
             // Scroll to first invalid field
             firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2097,6 +2154,28 @@ WIZARD — BOTTOM NAV BAR
             el.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
             const msg = el.parentElement.querySelector('.wiz-inline-err');
             if (msg) msg.remove();
+        }
+    }, true);
+
+    // Dock levellers are a group requirement (sum > 0), not a per-field one —
+    // the listeners above only clear a field's OWN highlight once ITS OWN
+    // value is non-blank, but these fields are never blank ("0" counts), so
+    // fixing just one would leave the other three stuck red. Clear all four
+    // together once the group condition is actually satisfied.
+    const DOCK_LEVELLER_FIELDS = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'];
+    document.addEventListener('input', function (e) {
+        const el = e.target;
+        if (!DOCK_LEVELLER_FIELDS.includes(el.name)) return;
+        const stepEl = el.closest('.wizard-step');
+        if (!stepEl) return;
+        const levFields = DOCK_LEVELLER_FIELDS.map(n => stepEl.querySelector(`[name="${n}"]`)).filter(Boolean);
+        const sum = levFields.reduce((s, f) => s + (parseInt(f.value, 10) || 0), 0);
+        if (sum > 0) {
+            levFields.forEach(f => {
+                f.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+                const msg = f.parentElement.querySelector('.wiz-inline-err');
+                if (msg) msg.remove();
+            });
         }
     }, true);
 
