@@ -187,8 +187,14 @@ class PropertyEntryController extends Controller
             $request->note
         );
 
+        $successMessages = [
+            'verified' => 'Property has been verified and sent to administrator for next process.',
+            'rejected' => 'Property has been rejected.',
+            'recheck' => 'Property has been sent to Field Officer for recheck.',
+        ];
+
         return redirect()->back()
-            ->with('success', 'Action taken: ' . ucfirst($newStatus));
+            ->with('success', $successMessages[$newStatus] ?? ('Action taken: ' . ucfirst($newStatus)));
     }
 
     // ── Toggle Allow Resubmit ─────────────────────────────────────────────────

@@ -46,6 +46,13 @@
     // step, which has no fields of its own.
     $stepErrCounts = array_values(array_map(fn($t) => $sec_errs($t), array_keys($__sfm)));
     $stepErrCounts[] = 0;
+
+    // Section remark counts — how many fields per section the supply head
+    // flagged as incorrect with a remark, so the officer can see at a glance
+    // which sections still need attention (independent of form validation).
+    $sec_remarks = fn(string $t) => collect($__sfm[$t] ?? [])->filter(fn($f) => !empty($fieldRemarks[$f]))->count();
+    $stepRemarkCounts = array_values(array_map(fn($t) => $sec_remarks($t), array_keys($__sfm)));
+    $stepRemarkCounts[] = 0;
     // First step with errors (0-indexed), -1 if none
     $firstErrStep = -1;
     foreach ($stepErrCounts as $i => $c) {
@@ -92,11 +99,18 @@
     }
     // First incomplete lettered step unlocks navigation up to (and including)
     // itself; if every lettered step is complete, the Review step (index 12) unlocks too.
+    // This progressive lock only makes sense while an entry is being filled in
+    // for the first time. Once it has been submitted at least once (recheck,
+    // rejected-with-resubmit, etc.), every mandatory field was already filled
+    // at submit time, so the officer should be free to jump straight to
+    // whichever section needs fixing instead of re-earning access step by step.
     $wizInitFrontier = 12;
-    foreach ($stepComplete as $i => $complete) {
-        if (!$complete) {
-            $wizInitFrontier = $i;
-            break;
+    if (!$entry || !$entry->submitted_at) {
+        foreach ($stepComplete as $i => $complete) {
+            if (!$complete) {
+                $wizInitFrontier = $i;
+                break;
+            }
         }
     }
 
@@ -144,10 +158,14 @@ WIZARD — TOP STEP PROGRESS BAR
                 <button type="button" onclick="wizardGoTo({{ $i }})" id="wiz-dot-{{ $i }}"
                     title="{{ $ltr === '✓' ? $stepTitles[$i] : $stepLetters[$i] . '. ' . $stepTitles[$i] }}" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0
                                border-2 border-transparent wiz-dot" data-step="{{ $i }}">
-                    {{-- Error count badge shown if step has errors --}}
+                    {{-- Error count badge shown if step has errors; otherwise a remark
+                         count badge if the supply head flagged fields in this section --}}
                     @if($stepErrCounts[$i] > 0)
                         <span class="relative">{{ $ltr }}<span
                                 class="absolute -top-1 -right-2 w-3 h-3 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center">!</span></span>
+                    @elseif($stepRemarkCounts[$i] > 0)
+                        <span class="relative">{{ $ltr }}<span
+                                class="absolute -top-1 -right-2 min-w-[0.75rem] h-3 px-0.5 bg-amber-500 rounded-full text-[8px] text-white flex items-center justify-center">{{ $stepRemarkCounts[$i] }}</span></span>
                     @else
                         {{ $ltr }}
                     @endif
@@ -178,6 +196,11 @@ STEP 0 — A. Location & Identification
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
                     {{ $sec_errs('A. Location & Identification') }} error(s)
                 </span>
+            @endif
+            @if($sec_errs('A. Location & Identification') == 0 && $sec_remarks('A. Location & Identification') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('A. Location & Identification') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}">
@@ -388,6 +411,11 @@ STEP 0 — A. Location & Identification
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('B. Legal & Statutory Compliance') }}
                     error(s)</span>
             @endif
+            @if($sec_errs('B. Legal & Statutory Compliance') == 0 && $sec_remarks('B. Legal & Statutory Compliance') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('B. Legal & Statutory Compliance') }}
+                    remark(s) to fix</span>
+            @endif
         </div>
         <div class="{{ $sb }}">
 
@@ -502,6 +530,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('C. Property Dimensions') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('C. Property Dimensions') == 0 && $sec_remarks('C. Property Dimensions') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('C. Property Dimensions') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}">
@@ -644,6 +677,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('D. Dock, Exit & Width Details') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('D. Dock, Exit & Width Details') == 0 && $sec_remarks('D. Dock, Exit & Width Details') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('D. Dock, Exit & Width Details') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="px-5 py-5 space-y-6">
@@ -932,6 +970,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('E. Facility Details') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('E. Facility Details') == 0 && $sec_remarks('E. Facility Details') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('E. Facility Details') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}" x-data="{
@@ -1291,6 +1334,11 @@ STEP 0 — A. Location & Identification
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('F. Loading & Docking') }}
                     error(s)</span>
             @endif
+            @if($sec_errs('F. Loading & Docking') == 0 && $sec_remarks('F. Loading & Docking') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('F. Loading & Docking') }}
+                    remark(s) to fix</span>
+            @endif
         </div>
         <div class="{{ $sb }}">
             @if($fc('dock_type')->keep_field)
@@ -1350,6 +1398,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('G. Utilities & Infrastructure') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('G. Utilities & Infrastructure') == 0 && $sec_remarks('G. Utilities & Infrastructure') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('G. Utilities & Infrastructure') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}">
@@ -1430,6 +1483,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('H. Financial & Lease Terms') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('H. Financial & Lease Terms') == 0 && $sec_remarks('H. Financial & Lease Terms') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('H. Financial & Lease Terms') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}" x-data="{
@@ -1549,6 +1607,11 @@ STEP 0 — A. Location & Identification
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('I. Surroundings & Environment') }}
                     error(s)</span>
             @endif
+            @if($sec_errs('I. Surroundings & Environment') == 0 && $sec_remarks('I. Surroundings & Environment') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('I. Surroundings & Environment') }}
+                    remark(s) to fix</span>
+            @endif
         </div>
         <div class="{{ $sb }}">
             @if($fc('approach_road_width')->keep_field)
@@ -1597,6 +1660,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('J. Health & Emergency Nearby') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('J. Health & Emergency Nearby') == 0 && $sec_remarks('J. Health & Emergency Nearby') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('J. Health & Emergency Nearby') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="{{ $sb }}">
@@ -1675,6 +1743,11 @@ STEP 0 — A. Location & Identification
                 <span
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('K. Photographs') }}
                     error(s)</span>
+            @endif
+            @if($sec_errs('K. Photographs') == 0 && $sec_remarks('K. Photographs') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('K. Photographs') }}
+                    remark(s) to fix</span>
             @endif
         </div>
         <div class="px-5 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1764,6 +1837,11 @@ STEP 0 — A. Location & Identification
                     class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">{{ $sec_errs('L. General Remarks') }}
                     error(s)</span>
             @endif
+            @if($sec_errs('L. General Remarks') == 0 && $sec_remarks('L. General Remarks') > 0)
+                <span
+                    class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{{ $sec_remarks('L. General Remarks') }}
+                    remark(s) to fix</span>
+            @endif
         </div>
         <div class="{{ $sb }}">
             @if($fc('remarks')->keep_field)
@@ -1787,6 +1865,15 @@ STEP 0 — A. Location & Identification
             <h3 class="text-sm font-semibold text-zendo-navy">Review &amp; Submit</h3>
             <p class="text-xs text-gray-500 mt-0.5">Check the details below before submitting. Use "Edit" on any
                 section to go back and make changes.</p>
+        </div>
+    </div>
+    <div id="wiz-unvisited-banner" class="mb-4 border border-amber-200 bg-amber-50 rounded-lg p-4 flex items-start gap-3" style="display:none">
+        <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+            <h4 class="text-sm font-semibold text-amber-800">Some sections haven't been opened yet</h4>
+            <p class="text-sm text-amber-700 mt-0.5" id="wiz-unvisited-text"></p>
         </div>
     </div>
     <div id="review-content"></div>
@@ -1833,7 +1920,7 @@ WIZARD — BOTTOM NAV BAR
             {{-- Submit to Office (shown only on last step) --}}
             {{-- Submit to Office (shown only on last step) --}}
             <button type="submit" id="wiz-submit-btn" name="action" value="submit" formnovalidate
-                onclick="return wizardValidateAll() && confirm('Submit this property entry to the office?');"
+                onclick="return wizardCanSubmit() && confirm('Submit this property entry to the office?');"
                 style="display:none"
                 class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
                 Submit to Office
@@ -1877,9 +1964,33 @@ WIZARD — BOTTOM NAV BAR
     // reloaded fresh, not just same-session navigation).
     let wizMaxUnlocked = {{ $wizInitFrontier }};
 
+    // Which lettered sections (steps 0-11) have actually been opened this
+    // visit. Once a resubmission's sections are all unlocked up front (see
+    // $wizInitFrontier), free navigation alone no longer guarantees the
+    // officer looked at every section before resubmitting — so "Submit to
+    // Office" additionally requires every section to have been visited at
+    // least once, not just that its fields already hold values.
+    const wizVisited = new Set();
+
+    function wizardAllVisited() {
+        for (let i = 0; i < WIZ_TOTAL - 1; i++) { // exclude the trailing Review step
+            if (!wizVisited.has(i)) return false;
+        }
+        return true;
+    }
+
+    function wizardFirstUnvisited() {
+        for (let i = 0; i < WIZ_TOTAL - 1; i++) {
+            if (!wizVisited.has(i)) return i;
+        }
+        return -1;
+    }
+
     function wizardGoTo(step) {
         if (step < 0 || step >= WIZ_TOTAL) return;
         if (step > wizMaxUnlocked) return; // locked — section ahead isn't filled in yet
+
+        if (step < WIZ_TOTAL - 1) wizVisited.add(step);
 
         // Hide all steps
         document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
@@ -2067,6 +2178,23 @@ WIZARD — BOTTOM NAV BAR
         return true;
     }
 
+    // Gate for "Submit to Office": all fields must validate AND every
+    // lettered section must have been opened at least once this visit.
+    // Needed because a resubmission unlocks every section up front (see
+    // $wizInitFrontier) — without this, an officer could jump straight to
+    // Review & Submit and resubmit without ever opening the sections the
+    // supply head flagged, since their previously-filled values already
+    // pass plain field validation.
+    function wizardCanSubmit() {
+        if (!wizardAllVisited()) {
+            const first = wizardFirstUnvisited();
+            wizardGoTo(first >= 0 ? first : 0);
+            alert('Please open and check every section before submitting — some sections haven\'t been visited yet.');
+            return false;
+        }
+        return wizardValidateAll();
+    }
+
     function wizardNext() {
         if (!wizardValidateStep(wizCurrent)) return; // blocked — errors shown inline
         wizMaxUnlocked = Math.max(wizMaxUnlocked, wizCurrent + 1);
@@ -2170,6 +2298,21 @@ WIZARD — BOTTOM NAV BAR
     function renderReviewStep() {
         const container = document.getElementById('review-content');
         if (!container) return;
+
+        const unvisitedBanner = document.getElementById('wiz-unvisited-banner');
+        const unvisitedText = document.getElementById('wiz-unvisited-text');
+        if (unvisitedBanner && unvisitedText) {
+            const unvisited = [];
+            for (let i = 0; i < WIZ_TOTAL - 1; i++) {
+                if (!wizVisited.has(i)) unvisited.push(WIZ_TITLES[i]);
+            }
+            if (unvisited.length) {
+                unvisitedText.textContent = 'Open and check: ' + unvisited.join(', ') + ' before submitting.';
+                unvisitedBanner.style.display = 'flex';
+            } else {
+                unvisitedBanner.style.display = 'none';
+            }
+        }
 
         let html = '';
         for (let i = 0; i < WIZ_TOTAL - 1; i++) {

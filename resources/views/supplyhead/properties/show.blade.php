@@ -28,6 +28,17 @@
         </a>
     </div>
 
+    {{-- Decision outcome — shown at the top so it's visible without scrolling
+         past the (often long) field validation list below. --}}
+    @if(session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">{{ session('success') }}</div>
+    @endif
+    @if($errors->has('action'))
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <strong>Error:</strong> {{ $errors->first('action') }}
+        </div>
+    @endif
+
     {{-- Submitted Location — captured from the field officer's device at submit time --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -494,16 +505,31 @@
                     await this.saveReview(false, this.pendingRemark);
                 },
                 async saveReview(isCorrect, remark) {
-                    const r = await fetch('{{ route('supplyhead.properties.review-field', $property) }}', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: JSON.stringify({ field_name: this.field.name, field_label: this.field.label, field_value: this.field.value, is_correct: isCorrect, remark })
-                    });
-                    if (r.ok) {
-                        // Update the central store — all counters update automatically
-                        this.$store.review.set(this.field.name, isCorrect, remark);
-                        this.remarking = false;
-                        this.pendingRemark = '';
+                    try {
+                        const r = await fetch('{{ route('supplyhead.properties.review-field', $property) }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                            body: JSON.stringify({ field_name: this.field.name, field_label: this.field.label, field_value: this.field.value, is_correct: isCorrect, remark })
+                        });
+                        if (r.ok) {
+                            // Update the central store — all counters update automatically
+                            this.$store.review.set(this.field.name, isCorrect, remark);
+                            this.remarking = false;
+                            this.pendingRemark = '';
+                            return;
+                        }
+                        // Surface the failure instead of leaving the checkbox/remark box
+                        // looking untouched with no explanation — this previously failed
+                        // silently, which looked like the click "wasn't taking".
+                        let detail = r.status + ' ' + r.statusText;
+                        try {
+                            const body = await r.json();
+                            if (body?.message) detail = body.message;
+                            else if (body?.errors) detail = Object.values(body.errors).flat().join(' ');
+                        } catch (_) { /* response wasn't JSON — keep the status text */ }
+                        alert('Could not save this review: ' + detail);
+                    } catch (e) {
+                        alert('Could not save this review — check your connection and try again.');
                     }
                 }
             };
@@ -535,15 +561,6 @@
                 @endif
             </div>
             <div x-show="showForm" class="p-5" x-data="{ selectedAction: '{{ $property->status }}' }">
-                @if(session('success'))
-                    <div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">{{ session('success') }}</div>
-                @endif
-                @if($errors->has('action'))
-                    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                        <strong>Error:</strong> {{ $errors->first('action') }}
-                    </div>
-                @endif
-
                 @if(in_array($property->status, ['submitted', 'recheck']))
                     <div x-show="typeof $store.review === 'undefined' || !$store.review.allCorrect"
                         style="{{ $allFieldsCorrect ? 'display:none' : '' }}"
