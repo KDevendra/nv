@@ -430,6 +430,7 @@
                 get reviewed() { return this.correct + this.incorrect; },
                 get pending()  { return this.total - this.reviewed; },
                 get percentage(){ return this.total ? Math.round(this.reviewed / this.total * 100) : 0; },
+                get allCorrect(){ return this.total > 0 && this.correct === this.total; },
             });
         });
 
@@ -543,15 +544,19 @@
                     </div>
                 @endif
 
-                @if(!$allFieldsCorrect && in_array($property->status, ['submitted', 'recheck']))
-                    <div class="mb-4 border border-amber-200 bg-amber-50 rounded-lg p-4 flex items-start gap-3">
+                @if(in_array($property->status, ['submitted', 'recheck']))
+                    <div x-show="typeof $store.review === 'undefined' || !$store.review.allCorrect"
+                        style="{{ $allFieldsCorrect ? 'display:none' : '' }}"
+                        class="mb-4 border border-amber-200 bg-amber-50 rounded-lg p-4 flex items-start gap-3">
                         <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                         <div>
                             <h4 class="text-sm font-semibold text-amber-800">Field Review Incomplete</h4>
                             <p class="text-sm text-amber-700 mt-0.5">
-                                Review all fields below before verifying. Progress: <strong>{{ $reviewedCount }} / {{ $totalCount }}</strong> fields reviewed.
+                                Review all fields below before verifying. Progress:
+                                <strong x-text="(typeof $store.review === 'undefined' ? '{{ $reviewedCount }}' : $store.review.reviewed) + ' / ' + (typeof $store.review === 'undefined' ? '{{ $totalCount }}' : $store.review.total)">{{ $reviewedCount }} / {{ $totalCount }}</strong>
+                                fields reviewed.
                             </p>
                         </div>
                     </div>
@@ -564,7 +569,10 @@
                         <select name="action" required x-model="selectedAction"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
                             <option value="">— Select Action —</option>
-                            <option value="verified" {{ !$allFieldsCorrect ? 'disabled' : '' }}>
+                            <option value="verified"
+                                {{ !$allFieldsCorrect ? 'disabled' : '' }}
+                                :disabled="typeof $store.review !== 'undefined' ? !$store.review.allCorrect : {{ $allFieldsCorrect ? 'false' : 'true' }}"
+                                x-text="(typeof $store.review !== 'undefined' ? !$store.review.allCorrect : {{ $allFieldsCorrect ? 'false' : 'true' }}) ? '✓ Verified — Approve this entry (complete field review first)' : '✓ Verified — Approve this entry'">
                                 &#10003; Verified — Approve this entry{{ !$allFieldsCorrect ? ' (complete field review first)' : '' }}
                             </option>
                             <option value="rejected">&#10007; Rejected — Permanently reject</option>
