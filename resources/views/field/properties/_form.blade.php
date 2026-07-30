@@ -2510,13 +2510,18 @@ WIZARD — BOTTOM NAV BAR
                 e.preventDefault();
                 resubmitting = true;
 
-                // NEW: block a second click (e.g. "Submit to Office" right after
-                // "Save Draft") while we're still waiting on geolocation.
-                form.querySelectorAll('button[type="submit"]').forEach(btn => {
-                    btn.disabled = true;
-                });
-
                 const submitter = e.submitter;
+
+                // Block a second click (e.g. "Submit to Office" right after
+                // "Save Draft") while we're still waiting on geolocation.
+                // Leave the submitter itself enabled — a disabled button's
+                // name/value (e.g. action=draft) is dropped from the
+                // form data, which would make the server fall back to the
+                // "submit" action and run full validation instead of the
+                // draft's fields-optional validation.
+                form.querySelectorAll('button[type="submit"]').forEach(btn => {
+                    if (btn !== submitter) btn.disabled = true;
+                });
                 capture({ enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }, 4000).then((coords) => {
                     if (!coords) {
                         if (form.requestSubmit) { form.requestSubmit(submitter); } else { form.submit(); }
