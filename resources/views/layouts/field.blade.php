@@ -69,7 +69,8 @@
             <div class="flex items-center justify-between h-16">
 
                 <!-- Logo -->
-                <div class="flex items-center space-x-3">
+                <a href="{{ auth()->user()->role === 'supply_head' ? route('field.dashboard') : route('field.properties.index') }}"
+                    class="flex items-center space-x-3">
                     <div class="w-9 h-9 bg-zendo-gold rounded-lg flex items-center justify-center flex-shrink-0">
                         <span class="text-white font-bold text-base">Z</span>
                     </div>
@@ -83,7 +84,7 @@
                             @endif
                         </p>
                     </div>
-                </div>
+                </a>
 
                 <!-- Right: user info + logout -->
                 <div class="flex items-center space-x-4">
