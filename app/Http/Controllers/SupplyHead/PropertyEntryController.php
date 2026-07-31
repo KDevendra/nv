@@ -35,7 +35,10 @@ class PropertyEntryController extends Controller
 
         // ── Not-opened entries (always shown at top, separate table) ──────────
         $notOpenedQuery = PropertyEntry::with(['fieldOfficer'])
-            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->where(function ($q) use ($fieldOfficerIds) {
+                $q->whereIn('field_officer_id', $fieldOfficerIds)
+                  ->orWhere('supply_head_id', auth()->id());
+            })
             ->where('status', '!=', 'draft')
             ->whereNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
@@ -58,7 +61,10 @@ class PropertyEntryController extends Controller
 
         // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ──
         $query = PropertyEntry::with(['fieldOfficer'])
-            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->where(function ($q) use ($fieldOfficerIds) {
+                $q->whereIn('field_officer_id', $fieldOfficerIds)
+                  ->orWhere('supply_head_id', auth()->id());
+            })
             ->where('status', '!=', 'draft')
             ->whereNotNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');

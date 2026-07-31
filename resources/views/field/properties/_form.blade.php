@@ -2573,7 +2573,7 @@ WIZARD — BOTTOM NAV BAR
         // Also updates the visible readout as a side effect.
         function reverseGeocode(coords) {
             const [lat, lng] = coords.split(',');
-            return fetch(`{{ route('field.location.reverse-geocode') }}?lat=${lat}&lng=${lng}`, {
+            return fetch(`{{ route(auth()->check() && auth()->user()->role === 'owner' ? 'owner.location.reverse-geocode' : 'field.location.reverse-geocode') }}?lat=${lat}&lng=${lng}`, {
                 headers: { 'Accept': 'application/json' },
             })
                 .then((res) => res.json())

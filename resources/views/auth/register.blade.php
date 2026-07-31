@@ -11,6 +11,36 @@
         <form method="POST" action="{{ route('register') }}" class="space-y-6">
             @csrf
 
+            <!-- Register As / Account Role -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 font-highlight mb-2">
+                    Register As
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative flex items-center p-3.5 border rounded-xl cursor-pointer hover:border-zendo-gold transition-all {{ old('role', 'channel_partner') === 'channel_partner' ? 'border-zendo-gold bg-zendo-light-bg/60 ring-2 ring-zendo-gold/20' : 'border-gray-300 bg-white' }}">
+                        <input type="radio" name="role" value="channel_partner" class="w-4 h-4 text-zendo-gold focus:ring-zendo-gold" {{ old('role', 'channel_partner') === 'channel_partner' ? 'checked' : '' }}>
+                        <div class="ml-3">
+                            <span class="block text-sm font-semibold text-gray-900">Channel Partner</span>
+                            <span class="block text-xs text-gray-500">Broker or partner agent</span>
+                        </div>
+                    </label>
+                    <label class="relative flex items-center p-3.5 border rounded-xl cursor-pointer hover:border-zendo-gold transition-all {{ old('role') === 'owner' ? 'border-zendo-gold bg-zendo-light-bg/60 ring-2 ring-zendo-gold/20' : 'border-gray-300 bg-white' }}">
+                        <input type="radio" name="role" value="owner" class="w-4 h-4 text-zendo-gold focus:ring-zendo-gold" {{ old('role') === 'owner' ? 'checked' : '' }}>
+                        <div class="ml-3">
+                            <span class="block text-sm font-semibold text-gray-900">Property Owner</span>
+                            <span class="block text-xs text-gray-500">Landlord or space seller</span>
+                        </div>
+                    </label>
+                </div>
+                @if($errors->get('role'))
+                    <div class="mt-2 text-sm text-red-600 font-body">
+                        @foreach($errors->get('role') as $error)
+                            <p>{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
             <!-- Name -->
             <div>
                 <label for="name" class="block text-sm font-semibold text-gray-700 font-highlight mb-2">

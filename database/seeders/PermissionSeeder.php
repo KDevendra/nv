@@ -162,88 +162,29 @@ class PermissionSeeder extends Seeder
         //  channel_partner                | –           | ✓        | external registered partner; RC only
         // ---------------------------------------------------------------
         $roleMap = [
-
-            // ── Platform ───────────────────────────────────────────────
-            'super_admin' => '*',   // every permission
-
-            'admin' => $adminFull,  // full content + settings, no user mgmt
-
-            // ── Warehousing Division ────────────────────────────────────
-
-            // Chief Coordinator (Warehousing) — full content access for W division,
-            // can manage users, view reports and inquiries
-            'chief_coordinator_warehousing' => array_merge($adminFull, [
-                'users'                  => ['view', 'create', 'edit'],
-            ]),
-
-            // Sales Executive (Warehousing) — view all content, manage properties
-            // and leads (inquiries/consultations); cannot edit site content
-            'sales_executive_warehousing' => [
-                'properties'             => ['view', 'create', 'edit', 'restore'],
-                'property-inquiries'     => ['view'],
-                'consultations'          => ['view'],
-                'inquiries'              => ['view'],
-                'builders'               => ['view'],
-                'locations'              => ['view'],
-                'cities'                 => ['view'],
-                'property-types'         => ['view'],
-                'amenities'              => ['view'],
-                'bhks'                   => ['view'],
-                'project-statuses'       => ['view'],
-                'dashboard'              => ['view'],
+            'super_admin' => '*',
+            'admin'       => $adminFull,
+            'user'        => [
+                'dashboard' => ['view'],
             ],
-
-            // Supply Head (Warehousing) — reviews field officer property entries;
-            // no admin panel access beyond dashboard
             'supply_head' => [
-                'dashboard'              => ['view'],
+                'dashboard' => ['view'],
             ],
-
-            // Field Officer (Warehousing) — submits property entries via field portal;
-            // no admin panel access
             'field_officer' => [
-                'dashboard'              => ['view'],
+                'dashboard' => ['view'],
             ],
-
-            // ── Residential & Commercial Division ───────────────────────
-
-            // Chief Coordinator (Res/Comm) — mirrors warehousing CC but for RC division
-            'chief_coordinator_rescomm' => array_merge($adminFull, [
-                'users'                  => ['view', 'create', 'edit'],
-            ]),
-
-            // Sales Executive (Res/Comm) — mirrors warehousing SE but for RC division
-            'sales_executive_rescomm' => [
-                'properties'             => ['view', 'create', 'edit', 'restore'],
-                'property-inquiries'     => ['view'],
-                'consultations'          => ['view'],
-                'inquiries'              => ['view'],
-                'builders'               => ['view'],
-                'locations'              => ['view'],
-                'cities'                 => ['view'],
-                'property-types'         => ['view'],
-                'amenities'              => ['view'],
-                'bhks'                   => ['view'],
-                'project-statuses'       => ['view'],
-                'dashboard'              => ['view'],
+            'owner'       => [
+                'dashboard' => ['view'],
             ],
-
-            // Supply Head (Res/Comm) — RC equivalent of warehousing supply head
-            'supply_head_rescomm' => [
-                'dashboard'              => ['view'],
-            ],
-
-            // Zendo Channel Partner — external partner; RC only; can view
-            // properties and submit/view inquiries; no content editing
             'channel_partner' => [
-                'properties'             => ['view'],
-                'property-inquiries'     => ['view'],
-                'consultations'          => ['view'],
-                'locations'              => ['view'],
-                'cities'                 => ['view'],
-                'property-types'         => ['view'],
-                'builders'               => ['view'],
-                'dashboard'              => ['view'],
+                'properties'         => ['view'],
+                'property-inquiries' => ['view'],
+                'consultations'      => ['view'],
+                'locations'          => ['view'],
+                'cities'             => ['view'],
+                'property-types'     => ['view'],
+                'builders'           => ['view'],
+                'dashboard'          => ['view'],
             ],
         ];
 
