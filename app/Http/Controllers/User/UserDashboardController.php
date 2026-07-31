@@ -158,8 +158,9 @@ class UserDashboardController extends Controller
         
         $user = auth()->user();
         
-        // Check if already in wishlist
-        $wishlist = PropertyWishlist::where('user_id', $user->id)
+        // Check if item exists in wishlist (including soft-deleted)
+        $wishlist = PropertyWishlist::withTrashed()
+            ->where('user_id', $user->id)
             ->where(function($query) use ($validated) {
                 if (!empty($validated['property_id'])) {
                     $query->where('property_id', $validated['property_id']);
@@ -171,15 +172,27 @@ class UserDashboardController extends Controller
             ->first();
         
         if ($wishlist) {
-            // Remove from wishlist
-            $wishlist->delete();
-            
-            return response()->json([
-                'success' => true,
-                'added' => false,
-                'action' => 'removed',
-                'message' => 'Removed from wishlist'
-            ]);
+            if ($wishlist->trashed()) {
+                // Restore soft deleted wishlist item
+                $wishlist->restore();
+                
+                return response()->json([
+                    'success' => true,
+                    'added' => true,
+                    'action' => 'added',
+                    'message' => 'Added to wishlist'
+                ]);
+            } else {
+                // Soft delete wishlist item
+                $wishlist->delete();
+                
+                return response()->json([
+                    'success' => true,
+                    'added' => false,
+                    'action' => 'removed',
+                    'message' => 'Removed from wishlist'
+                ]);
+            }
         } else {
             // Add to wishlist
             PropertyWishlist::create([

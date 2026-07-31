@@ -1308,7 +1308,7 @@
                                    align-items: center;
                                    gap: 8px;
                                    transition: all 0.3s;">
-                        <span id="wishlist-text">{{ $isInWishlist ? 'Saved' : 'Save' }}</span>
+                        <span id="wishlist-text">{{ $isInWishlist ? 'Saved' : 'Save to Wishlist' }}</span>
                     </button>
                     @else
                     <button type="button" 
@@ -2193,8 +2193,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('callback-modal-success-message').style.display = 'block';
                     callbackForm.reset();
                     
-                    // If user was created/logged in, reload page to show more fields
-                    if (data.reload_required || data.user_created) {
+                    // If user was created/logged in, reload page to reflect logged-in state
+                    if (data.reload_required || data.user_created || data.logged_in) {
                         setTimeout(() => {
                             window.location.reload();
                         }, 1500);

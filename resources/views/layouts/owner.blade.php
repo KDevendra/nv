@@ -53,6 +53,17 @@
         [x-cloak] {
             display: none !important;
         }
+
+        select:disabled,
+        select[disabled],
+        input:disabled,
+        input[disabled],
+        textarea:disabled,
+        textarea[disabled] {
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            cursor: not-allowed !important;
+        }
     </style>
     @yield('styles')
 </head>

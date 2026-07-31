@@ -38,6 +38,7 @@ class User extends Authenticatable
         'region_id',
         'area_id',
         'is_active',
+        'can_approve_owner_listings',
     ];
 
     /**
@@ -61,6 +62,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'can_approve_owner_listings' => 'boolean',
         ];
     }
 

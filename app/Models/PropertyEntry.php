@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PropertyEntry extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'field_officer_id',
         'supply_head_id',

@@ -210,6 +210,7 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::post('property-entry-report/{entry}/toggle-website', [PropertyEntryReportController::class, 'toggleWebsite'])->name('property-entry-report.toggle-website');
         Route::post('property-entry-report/{entry}/admin-approve', [PropertyEntryReportController::class, 'adminApprove'])->name('property-entry-report.admin-approve');
         Route::post('property-entry-report/{entry}/admin-reject', [PropertyEntryReportController::class, 'adminReject'])->name('property-entry-report.admin-reject');
+        Route::get('wishlist-report', [\App\Http\Controllers\Admin\WishlistReportController::class, 'index'])->name('wishlist-report.index');
         Route::resource('regions', RegionController::class);
         Route::patch('regions/{region}/toggle-status', [RegionController::class, 'toggleStatus'])->name('regions.toggle-status');
         Route::resource('areas', AreaController::class);

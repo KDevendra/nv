@@ -57,6 +57,17 @@
         [x-cloak] {
             display: none !important;
         }
+
+        select:disabled,
+        select[disabled],
+        input:disabled,
+        input[disabled],
+        textarea:disabled,
+        textarea[disabled] {
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            cursor: not-allowed !important;
+        }
     </style>
     @yield('styles')
 </head>
@@ -152,15 +163,20 @@
     {{-- Notification Bar (Supply Head only) --}}
     @if(auth()->check() && auth()->user()->role === 'supply_head')
         @php
+            $navFieldOfficerIds = \App\Models\User::where('supply_head_id', auth()->id())->pluck('id');
+            $navOwnerIds = auth()->user()->can_approve_owner_listings
+                ? \App\Models\User::where('role', 'owner')->pluck('id')
+                : collect();
+            $navAssigneeIds = $navFieldOfficerIds->concat($navOwnerIds);
+
             $navUnviewedCount = \App\Models\PropertyEntry::whereIn(
                 'field_officer_id',
-                \App\Models\User::where('supply_head_id', auth()->id())->pluck('id')
+                $navAssigneeIds
             )->whereNull('supply_head_viewed_at')->where('status', 'submitted')->count();
 
             $navRecentEntries = \App\Models\PropertyEntry::with('fieldOfficer')
-                ->whereIn('field_officer_id',
-                    \App\Models\User::where('supply_head_id', auth()->id())->pluck('id')
-                )->whereNull('supply_head_viewed_at')->where('status', 'submitted')
+                ->whereIn('field_officer_id', $navAssigneeIds)
+                ->whereNull('supply_head_viewed_at')->where('status', 'submitted')
                 ->latest('submitted_at')->limit(5)->get();
         @endphp
         @if($navUnviewedCount > 0)

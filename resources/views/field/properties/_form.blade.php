@@ -114,11 +114,24 @@
         }
     }
 
-    $ic = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm';
-    $sc = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm bg-white';
+    $ic = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed';
+    $sc = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent text-sm bg-white disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed';
     $lc = 'block text-sm font-medium text-gray-700 mb-1';
     $sb = 'px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
 @endphp
+
+<style>
+select:disabled,
+select[disabled],
+input:disabled,
+input[disabled],
+textarea:disabled,
+textarea[disabled] {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+    cursor: not-allowed !important;
+}
+</style>
 
 {{-- Captured client-side via the browser's Geolocation API — see script at the bottom of this file --}}
 <input type="hidden" name="form_submited_location" id="form_submited_location"
