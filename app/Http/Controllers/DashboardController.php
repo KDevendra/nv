@@ -19,6 +19,14 @@ class DashboardController extends Controller
                 return redirect()->route('field.dashboard');
             }
 
+            if ($user->role === 'channel_partner') {
+                return redirect()->route('channel_partner.dashboard');
+            }
+
+            if ($user->role === 'owner') {
+                return redirect()->route('owner.dashboard');
+            }
+
             if ($user->role === 'user') {
                 return redirect()->route('user.dashboard');
             }

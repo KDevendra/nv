@@ -111,51 +111,54 @@ class InquiryController extends Controller
                 'user_logged_in' => Auth::check()
             ]);
             
-            // Get the current page visit ID from session
-            $pageVisitId = $request->session()->get('current_page_visit_id');
+            // Get the current page visit ID from session safely
+            $pageVisitId = $request->hasSession() ? $request->session()->get('current_page_visit_id') : null;
             
             // Note: Removed strict validation - users can now submit multiple inquiries for the same property
             
             // ── Auto-create user if not logged in ──
+            $wasLoggedInInitially = Auth::check();
             $user = Auth::user();
             $userWasCreated = false;
             
             if (!$user) {
-                // Try to find existing user by email or phone
+                // Try to find existing user by phone or email
                 $existingUser = null;
                 
-                if ($request->filled('email')) {
-                    $existingUser = User::where('email', $request->email)->first();
+                if ($request->filled('phone')) {
+                    $existingUser = User::where('phone', $request->phone)->first();
                 }
                 
-                if (!$existingUser && $request->filled('phone')) {
-                    $existingUser = User::where('phone', $request->phone)->first();
+                if (!$existingUser && $request->filled('email')) {
+                    $existingUser = User::where('email', $request->email)->first();
                 }
                 
                 if ($existingUser) {
                     $user = $existingUser;
                 } else {
-                    // Create new user - email is optional now
+                    // Create new user - email is optional
                     $user = User::create([
                         'name' => $request->name,
                         'email' => $request->email ?: null,
                         'phone' => $request->phone,
-                        'password' => Hash::make($request->phone), // Random password
+                        'password' => Hash::make($request->phone ?: 'password123'),
                         'role' => 'user',
-                        'email_verified_at' => $request->filled('email') ? now() : null, // Only auto-verify if email provided
+                        'email_verified_at' => $request->filled('email') ? now() : null,
                     ]);
                     $userWasCreated = true;
                 }
                 
                 // Auto-login the user
-                Auth::login($user);
+                if ($user) {
+                    Auth::login($user);
+                }
             }
             
             \App\Models\PropertyInquiry::create([
-                'property_id' => $request->filled('property_id') ? $request->property_id : null, // Only set if provided
-                'property_entry_code' => $request->property_entry_code, // Will be NULL for regular properties
+                'property_id' => $request->filled('property_id') ? $request->property_id : null,
+                'property_entry_code' => $request->property_entry_code,
                 'page_visit_id' => $pageVisitId,
-                'user_id' => $user ? $user->id : null, // Link to user if logged in
+                'user_id' => $user ? $user->id : null,
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -172,7 +175,7 @@ class InquiryController extends Controller
                     'message' => 'Thank you for your inquiry! We will contact you shortly.',
                     'user_created' => $userWasCreated,
                     'logged_in' => Auth::check(),
-                    'reload_required' => $userWasCreated || !$user // Signal frontend to reload page if user was created or logged in
+                    'reload_required' => !$wasLoggedInInitially && Auth::check()
                 ], 200);
             }
 

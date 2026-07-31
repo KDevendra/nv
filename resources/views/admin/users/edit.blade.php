@@ -101,6 +101,25 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <div class="md:col-span-3" id="owner-approval-field" style="display: none;">
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start space-x-3">
+                            <input type="checkbox"
+                                   name="can_approve_owner_listings"
+                                   id="can_approve_owner_listings"
+                                   value="1"
+                                   {{ old('can_approve_owner_listings', $user->can_approve_owner_listings) ? 'checked' : '' }}
+                                   class="mt-1 w-4 h-4 text-zendo-gold focus:ring-zendo-gold rounded border-gray-300">
+                            <div>
+                                <label for="can_approve_owner_listings" class="text-sm font-semibold text-gray-900 cursor-pointer">
+                                    Can approve &amp; check warehouse listings submitted by Property Owners
+                                </label>
+                                <p class="text-xs text-gray-600 mt-0.5">
+                                    Allow this Supply Head to review, verify, request recheck, or reject warehouse property entries directly submitted by Property Owners (same process as Field Officer listings).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -247,6 +266,7 @@ function toggleSupplyHeadField() {
     const roleSelect = document.getElementById('role');
     const supplyHeadField = document.getElementById('supply-head-field');
     const supplyHeadSelect = document.getElementById('supply_head_id');
+    const ownerApprovalField = document.getElementById('owner-approval-field');
     
     if (roleSelect.value === 'field_officer') {
         supplyHeadField.style.display = 'block';
@@ -255,6 +275,12 @@ function toggleSupplyHeadField() {
         supplyHeadField.style.display = 'none';
         supplyHeadSelect.required = false;
         $('#supply_head_id').val('').trigger('change');
+    }
+
+    if (roleSelect.value === 'supply_head') {
+        if (ownerApprovalField) ownerApprovalField.style.display = 'block';
+    } else {
+        if (ownerApprovalField) ownerApprovalField.style.display = 'none';
     }
 }
 

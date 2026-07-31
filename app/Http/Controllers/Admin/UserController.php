@@ -106,6 +106,7 @@ class UserController extends Controller
             'region_id' => $request->region_id,
             'area_id' => $request->area_id,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
+            'can_approve_owner_listings' => $request->role === 'supply_head' ? $request->boolean('can_approve_owner_listings') : false,
             'email_verified_at' => now(),
         ]);
 
@@ -179,6 +180,7 @@ class UserController extends Controller
             'region_id' => $request->region_id,
             'area_id' => $request->area_id,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : $user->is_active,
+            'can_approve_owner_listings' => $request->role === 'supply_head' ? $request->boolean('can_approve_owner_listings') : false,
         ];
 
         if ($request->filled('password')) {

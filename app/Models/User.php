@@ -19,38 +19,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     const ROLES = [
-        // ── Platform ──────────────────────────────────────────────────────
-        'super_admin'                    => 'Super Admin',
-        'admin'                          => 'Admin',
-        'user'                           => 'User', // Regular website users
-
-        // ── Warehousing Division ──────────────────────────────────────────
-        'chief_coordinator_warehousing'  => 'Chief Coordinator (Warehousing)',
-        'sales_executive_warehousing'    => 'Sales Executive (Warehousing)',
-        'supply_head'                    => 'Supply Head (Warehousing)',
-        'field_officer'                  => 'Field Officer (Warehousing)',
-
-        // ── Residential & Commercial Division ─────────────────────────────
-        'chief_coordinator_rescomm'      => 'Chief Coordinator (Res/Comm)',
-        'sales_executive_rescomm'        => 'Sales Executive (Res/Comm)',
-        'supply_head_rescomm'            => 'Supply Head (Res/Comm)',
-        'channel_partner'                => 'Zendo Channel Partner',
-    ];
-
-    /** Roles that belong to the Warehousing division. */
-    const WAREHOUSING_ROLES = [
-        'chief_coordinator_warehousing',
-        'sales_executive_warehousing',
-        'supply_head',
-        'field_officer',
-    ];
-
-    /** Roles that belong to the Residential & Commercial division. */
-    const RESCOMM_ROLES = [
-        'chief_coordinator_rescomm',
-        'sales_executive_rescomm',
-        'supply_head_rescomm',
-        'channel_partner',
+        'super_admin'     => 'Super Admin',
+        'admin'           => 'Admin',
+        'user'            => 'User',
+        'supply_head'     => 'Supply Head',
+        'field_officer'   => 'Field Officer',
+        'owner'           => 'Owner',
+        'channel_partner' => 'Channel Partner',
     ];
 
     protected $fillable = [
@@ -63,6 +38,7 @@ class User extends Authenticatable
         'region_id',
         'area_id',
         'is_active',
+        'can_approve_owner_listings',
     ];
 
     /**
@@ -86,6 +62,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'can_approve_owner_listings' => 'boolean',
         ];
     }
 

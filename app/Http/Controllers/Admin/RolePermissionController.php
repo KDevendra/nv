@@ -8,29 +8,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\User;
+
 class RolePermissionController extends Controller
 {
-    private const ROLES = [
-        // ── Platform ──────────────────────────────────────────────────────
-        'super_admin'                    => 'Super Admin',
-        'admin'                          => 'Admin',
-
-        // ── Warehousing Division ──────────────────────────────────────────
-        'chief_coordinator_warehousing'  => 'Chief Coordinator (Warehousing)',
-        'sales_executive_warehousing'    => 'Sales Executive (Warehousing)',
-        'supply_head'                    => 'Supply Head (Warehousing)',
-        'field_officer'                  => 'Field Officer (Warehousing)',
-
-        // ── Residential & Commercial Division ─────────────────────────────
-        'chief_coordinator_rescomm'      => 'Chief Coordinator (Res/Comm)',
-        'sales_executive_rescomm'        => 'Sales Executive (Res/Comm)',
-        'supply_head_rescomm'            => 'Supply Head (Res/Comm)',
-        'channel_partner'                => 'Zendo Channel Partner',
-    ];
+    private function getRoles(): array
+    {
+        return User::ROLES;
+    }
 
     public function index()
     {
-        $roles       = self::ROLES;
+        $roles       = $this->getRoles();
         $permissions = Permission::orderBy('module')->orderBy('action')->get()->groupBy('module');
 
         // Current assignments: role => [permission_name, ...]
@@ -46,7 +35,8 @@ class RolePermissionController extends Controller
 
     public function update(Request $request, string $role)
     {
-        abort_unless(array_key_exists($role, self::ROLES), 404);
+        $roles = $this->getRoles();
+        abort_unless(array_key_exists($role, $roles), 404);
 
         $permissionNames = $request->input('permissions', []);
 
@@ -70,6 +60,6 @@ class RolePermissionController extends Controller
         // Bust the permission cache for this role
         Cache::forget("permissions.role.{$role}");
 
-        return back()->with('success', self::ROLES[$role] . ' permissions updated successfully.');
+        return back()->with('success', $roles[$role] . ' permissions updated successfully.');
     }
 }

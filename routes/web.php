@@ -106,12 +106,18 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/field/dashboard', [FieldDashboardController::class, 'index'])->name('field.dashboard');
+    Route::get('/channel-partner/dashboard', [\App\Http\Controllers\ChannelPartner\DashboardController::class, 'index'])->name('channel_partner.dashboard');
+    Route::get('/owner/dashboard', [\App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('owner.dashboard');
     Route::get('/field/profile', [FieldProfileController::class, 'edit'])->name('field.profile.edit');
     Route::patch('/field/profile', [FieldProfileController::class, 'update'])->name('field.profile.update');
     Route::put('/field/profile/password', [FieldProfileController::class, 'updatePassword'])->name('field.profile.password');
     Route::prefix('field')->name('field.')->group(function () {
         Route::resource('properties', FieldOfficerPropertyEntryController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show']);
         Route::get('location/reverse-geocode', [FieldOfficerPropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
+    });
+    Route::prefix('owner')->name('owner.')->group(function () {
+        Route::resource('properties', \App\Http\Controllers\Owner\PropertyEntryController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show']);
+        Route::get('location/reverse-geocode', [\App\Http\Controllers\Owner\PropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
     });
     Route::prefix('supply-head')->name('supplyhead.')->group(function () {
         Route::get('properties', [SupplyHeadPropertyEntryController::class, 'index'])->name('properties.index');
@@ -204,6 +210,7 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::post('property-entry-report/{entry}/toggle-website', [PropertyEntryReportController::class, 'toggleWebsite'])->name('property-entry-report.toggle-website');
         Route::post('property-entry-report/{entry}/admin-approve', [PropertyEntryReportController::class, 'adminApprove'])->name('property-entry-report.admin-approve');
         Route::post('property-entry-report/{entry}/admin-reject', [PropertyEntryReportController::class, 'adminReject'])->name('property-entry-report.admin-reject');
+        Route::get('wishlist-report', [\App\Http\Controllers\Admin\WishlistReportController::class, 'index'])->name('wishlist-report.index');
         Route::resource('regions', RegionController::class);
         Route::patch('regions/{region}/toggle-status', [RegionController::class, 'toggleStatus'])->name('regions.toggle-status');
         Route::resource('areas', AreaController::class);

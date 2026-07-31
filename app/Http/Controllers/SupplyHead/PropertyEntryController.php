@@ -27,15 +27,29 @@ class PropertyEntryController extends Controller
 
     public function index(Request $request): View
     {
-        abort_if(auth()->user()->role !== 'supply_head', 403);
+        $user = auth()->user();
+        abort_if($user->role !== 'supply_head', 403);
 
-        // Get field officers under this supply head
-        $fieldOfficerIds = User::where('supply_head_id', auth()->id())->pluck('id');
-        $fieldOfficers = User::where('supply_head_id', auth()->id())->get();
+        // Get field officers under this supply head, and owners if can_approve_owner_listings is enabled
+        $fieldOfficerIds = User::where('supply_head_id', $user->id)->pluck('id');
+        $ownerIds = $user->can_approve_owner_listings
+            ? User::where('role', 'owner')->pluck('id')
+            : collect();
+        $assigneeIds = $fieldOfficerIds->concat($ownerIds);
+
+        $fieldOfficers = User::where(function($q) use ($user) {
+            $q->where('supply_head_id', $user->id);
+            if ($user->can_approve_owner_listings) {
+                $q->orWhere('role', 'owner');
+            }
+        })->get();
 
         // ── Not-opened entries (always shown at top, separate table) ──────────
         $notOpenedQuery = PropertyEntry::with(['fieldOfficer'])
-            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->where(function ($q) use ($assigneeIds, $user) {
+                $q->whereIn('field_officer_id', $assigneeIds)
+                  ->orWhere('supply_head_id', $user->id);
+            })
             ->where('status', '!=', 'draft')
             ->whereNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
@@ -58,7 +72,10 @@ class PropertyEntryController extends Controller
 
         // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ──
         $query = PropertyEntry::with(['fieldOfficer'])
-            ->whereIn('field_officer_id', $fieldOfficerIds)
+            ->where(function ($q) use ($assigneeIds, $user) {
+                $q->whereIn('field_officer_id', $assigneeIds)
+                  ->orWhere('supply_head_id', $user->id);
+            })
             ->where('status', '!=', 'draft')
             ->whereNotNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
@@ -83,12 +100,12 @@ class PropertyEntryController extends Controller
         $entries = $query->paginate(15)->appends($request->query());
 
         $counters = [
-            'total' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', '!=', 'draft')->count(),
-            'pending' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', 'submitted')->count(),
-            'verified' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', 'verified')->count(),
-            'rejected' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', 'rejected')->count(),
-            'recheck' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', 'recheck')->count(),
-            'not_opened' => PropertyEntry::whereIn('field_officer_id', $fieldOfficerIds)->where('status', '!=', 'draft')->whereNull('supply_head_viewed_at')->count(),
+            'total' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', '!=', 'draft')->count(),
+            'pending' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'submitted')->count(),
+            'verified' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'verified')->count(),
+            'rejected' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'rejected')->count(),
+            'recheck' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'recheck')->count(),
+            'not_opened' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', '!=', 'draft')->whereNull('supply_head_viewed_at')->count(),
         ];
 
         return view('supplyhead.properties.index', compact('entries', 'notOpenedEntries', 'counters', 'fieldOfficers'));

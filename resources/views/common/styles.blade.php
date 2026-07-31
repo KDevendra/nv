@@ -47,6 +47,17 @@
          visibility: hidden;
     }
 
+    select:disabled,
+    select[disabled],
+    input:disabled,
+    input[disabled],
+    textarea:disabled,
+    textarea[disabled] {
+        background-color: #f3f4f6 !important;
+        color: #374151 !important;
+        cursor: not-allowed !important;
+    }
+
     /* Style for the active search tab */
     .search-tab-button {
         font-family: 'Raleway', sans-serif;

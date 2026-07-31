@@ -56,6 +56,17 @@
             font-family: 'Forum', cursive;
         }
 
+        select:disabled,
+        select[disabled],
+        input:disabled,
+        input[disabled],
+        textarea:disabled,
+        textarea[disabled] {
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            cursor: not-allowed !important;
+        }
+
         /* Sidebar Styles */
         .admin-sidebar {
             background: linear-gradient(180deg, #1F2937 0%, #111827 100%);
@@ -553,6 +564,24 @@
                             <div x-show="tooltip" x-cloak
                                 class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
                                 Property Entry Report
+                            </div>
+                        </a>
+                    @endif
+
+                    <!-- Wishlist Report -->
+                    @if (in_array('dashboard.view', $navPerms) || in_array('properties.view', $navPerms))
+                        <a href="{{ route('admin.wishlist-report.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.wishlist-report.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Wishlist Report</span>
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                Wishlist Report
                             </div>
                         </a>
                     @endif
