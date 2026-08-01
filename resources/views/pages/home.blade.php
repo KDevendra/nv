@@ -128,6 +128,65 @@
          </section>
       @endforeach
    @endif
+
+<!-- ============ ZENDO ADVISORY SERVICES : START (paste below hero video) ============ -->
+<section class="zas-section" aria-label="Zendo Advisory Services">
+  <div class="zas-container">
+ 
+    <!-- Heading — same pattern as your other homepage sections -->
+    <div class="zas-head">
+      <span class="zas-eyebrow">Premium Advisory</span>
+      <h2>Zendo Advisory Services</h2>
+      <p>Expert guidance for smarter warehouse decisions.</p>
+    </div>
+ 
+    <!-- Whole banner is clickable -> Advisory Services page -->
+    <a class="zas-banner" href="/advisory-services">
+      <div class="zas-cards">
+ 
+        <div class="zas-card">
+          <span class="zas-icon zas-icon--select" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#D9A62E" stroke-width="1.8" stroke-linejoin="round">
+              <path d="M4 12 16 4l12 8v16H4V12Z"/>
+              <path d="M10 28V16h12v12M13 20h6"/>
+            </svg>
+          </span>
+          <div>
+            <h3>Zendo Select</h3>
+            <div class="zas-tag">Plan Right. Lease Right.</div>
+            <p>For businesses planning or expanding warehouse operations.</p>
+          </div>
+        </div>
+ 
+        <div class="zas-card">
+          <span class="zas-icon zas-icon--upgrade" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 26V18M13 26v-11M19 26V11"/>
+              <path d="M7 12 14 6l4 3 7-6M21 3h4v4"/>
+            </svg>
+          </span>
+          <div>
+            <h3>Zendo Upgrade</h3>
+            <div class="zas-tag">Optimize Space. Enhance Performance.</div>
+            <p>For businesses looking to improve their existing warehouse operations.</p>
+          </div>
+        </div>
+ 
+      </div>
+    </a>
+ 
+    <!-- CTA button -->
+    <div class="zas-btn-row">
+      <a class="zas-btn" href="/advisory-services">
+        Explore Advisory Services
+        <svg width="18" height="13" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1 7h17M13 1l6 6-6 6"/>
+        </svg>
+      </a>
+    </div>
+ 
+  </div>
+</section>
    <!-- OUR MISSION SECTION -->
    <section class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-24 bg-pattern-white animate-on-scroll fade-in-up">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
@@ -350,6 +409,141 @@
    </section>
    <!--- commericial properties -->
    <style>
+
+.zas-section{
+  --zas-dark:   #12233F;   /* headings / dark panel  */
+  --zas-accent: #D9A62E;   /* brand gold accent      */
+  --zas-text:   #5A6474;   /* body text grey         */
+  --zas-bg:     #F7F9FC;   /* light section bg       */
+ 
+  font-family: inherit;              /* uses your site's font */
+  background: var(--zas-bg);
+  padding: 60px 16px;
+  box-sizing: border-box;
+}
+.zas-section *,
+.zas-section *::before,
+.zas-section *::after{ box-sizing: border-box; margin:0; padding:0; }
+ 
+.zas-container{ max-width:1200px; margin:0 auto; }
+ 
+/* ---------- Section heading (same pattern as your other sections) ---------- */
+.zas-head{ text-align:center; max-width:640px; margin:0 auto 36px; }
+.zas-eyebrow{
+  display:inline-block;
+  color: rgb(179 147 89 / var(--tw-text-opacity, 1));
+  font-size:14px; font-weight:600;
+  letter-spacing:.22em; text-transform:uppercase;
+  margin-bottom:12px;
+}
+.zas-head h2{
+  color: var(--zas-dark);
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight:700; line-height:1.2;
+}
+.zas-head p{
+  color: var(--zas-text);
+  font-size:17px; line-height:1.6;
+  margin-top:12px;
+}
+ 
+/* ---------- Clickable premium banner ---------- */
+.zas-banner{
+  display:block;
+  text-decoration:none;
+  background: linear-gradient(120deg, var(--zas-dark) 0%, #1B3358 100%);
+  border-radius:18px;
+  padding: 38px 40px;
+  box-shadow: 0 18px 45px rgba(18,35,63,.18);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.zas-banner:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 26px 55px rgba(18,35,63,.26);
+}
+ 
+/* ---------- Two service cards ---------- */
+.zas-cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.zas-card{
+  display:flex; gap:18px; align-items:flex-start;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:24px;
+  transition: background .25s ease, border-color .25s ease;
+}
+.zas-banner:hover .zas-card{ border-color: rgba(217,166,46,.35); }
+.zas-icon{
+  flex:none;
+  width:56px; height:56px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+}
+.zas-icon--select{ background: rgba(217,166,46,.16); border:1px solid rgb(179 147 89 / var(--tw-text-opacity, 1));}
+.zas-icon--upgrade{ background:#3E8E41; }
+.zas-card h3{
+  color:#fff;
+  font-size:21px; font-weight:700; line-height:1.25;
+}
+.zas-tag{
+  color: rgb(179 147 89 / var(--tw-text-opacity, 1));
+  font-size:14.5px; font-weight:600;
+  margin-top:3px;
+}
+.zas-card p{
+  color:#C4CEDD;
+  font-size:15px; line-height:1.6;
+  margin-top:8px;
+}
+ 
+/* ---------- Button (matches your site's rounded CTA style) ---------- */
+.zas-btn-row{ text-align:center; margin-top:22px; }
+.zas-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background: rgb(179 147 89 / var(--tw-text-opacity, 1));
+  color:#fff;
+  font-family:inherit;
+  font-size:16px; font-weight:600;
+  padding:14px 32px;
+  border:none; border-radius:50px;
+  text-decoration:none; cursor:pointer;
+  transition: filter .25s ease, gap .25s ease;
+}
+.zas-btn:hover{ filter:brightness(1.08); gap:16px; }
+ 
+/* ---------- Focus / motion accessibility ---------- */
+.zas-banner:focus-visible, .zas-btn:focus-visible{
+  outline:3px solid rgb(179 147 89 / var(--tw-text-opacity, 1)); outline-offset:3px;
+}
+@media (prefers-reduced-motion: reduce){
+  .zas-banner, .zas-btn, .zas-card{ transition:none; }
+  .zas-banner:hover{ transform:none; }
+}
+ 
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 991px){          /* Tablet */
+  .zas-section{ padding:48px 16px; }
+  .zas-banner{ padding:30px 26px; }
+  .zas-cards{ gap:18px; }
+}
+@media (max-width: 767px){          /* Mobile */
+  .zas-section{ padding:40px 14px; }
+  .zas-banner{ padding:22px 18px; border-radius:14px; }
+  .zas-cards{ grid-template-columns:1fr; gap:14px; }
+  .zas-card{ padding:20px 18px; gap:14px; }
+  .zas-icon{ width:48px; height:48px; }
+  .zas-icon svg{ width:22px; height:22px; }
+  .zas-card h3{ font-size:19px; }
+  .zas-btn{ width:100%; justify-content:center; }
+}
+
+
+
       .commercial-showcase {
          background: #fbf8f2;
          padding: 70px 0;
