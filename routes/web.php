@@ -63,6 +63,7 @@ Route::get('/optimize', function () {
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::view('/advisory-services', 'pages.advisory-services')->name('advisory.services');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/blogs', [HomeController::class, 'blogs'])->name('blogs.index');
