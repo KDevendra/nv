@@ -122,6 +122,9 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
     });
     Route::prefix('supply-head')->name('supplyhead.')->group(function () {
         Route::get('properties', [SupplyHeadPropertyEntryController::class, 'index'])->name('properties.index');
+        Route::get('properties/create', [SupplyHeadPropertyEntryController::class, 'create'])->name('properties.create');
+        Route::post('properties', [SupplyHeadPropertyEntryController::class, 'store'])->name('properties.store');
+        Route::get('location/reverse-geocode', [SupplyHeadPropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
         Route::get('properties/{property}', [SupplyHeadPropertyEntryController::class, 'show'])->name('properties.show');
         Route::post('properties/{property}/action', [SupplyHeadPropertyEntryController::class, 'action'])->name('properties.action');
         Route::post('properties/{property}/toggle-resubmit', [SupplyHeadPropertyEntryController::class, 'toggleResubmit'])->name('properties.toggle-resubmit');

@@ -24,6 +24,12 @@
     $dis = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields) ? 'disabled' : '';
     $isLocked = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields);
 
+    // Supply head adds properties remotely (never visits the site), so the
+    // location section swaps the field officer's live-GPS readout for a
+    // search-and-select map picker — see the location section below and its
+    // script block near the end of this file.
+    $isSupplyHead = auth()->check() && auth()->user()->role === 'supply_head';
+
     $__sfm = [
         'A. Location & Identification' => ['facility_type', 'property_name', 'name_full_address', 'village', 'tehsil', 'district', 'state', 'country', 'postal_address_pin', 'nearest_city', 'nearest_highway', 'nearest_railway_station', 'nearest_airport', 'owner_contact_name', 'owner_contact_phone', 'owner_email'],
         'B. Legal & Statutory Compliance' => ['tenure', 'approved_land_use', 'fire_noc', 'clu_conversion_status', 'pollution_noc', 'pollution_category', 'occupancy_certificate'],
@@ -394,15 +400,30 @@ STEP 0 — A. Location & Identification
         </div>
     </div>
 
-    {{-- Field officer's current location — live GPS readout, reverse-geocoded --}}
+    {{-- Property location — search-and-select (supply head) or live GPS readout (field officer / owner), reverse-geocoded --}}
     <div class="mb-4">
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Field Officer Current Location</p>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            {{ $isSupplyHead ? 'Property Current Location' : 'Field Officer Current Location' }}
+        </p>
+
+        @if($isSupplyHead)
+            <div class="relative mb-2">
+                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                </svg>
+                <input type="text" id="supply-head-location-search" autocomplete="off"
+                    placeholder="Search for the property's location — locality, city, landmark…"
+                    class="{{ $ic }} pl-9">
+            </div>
+            <p class="text-xs text-gray-400 mb-2">Since you aren't at the property yourself, search for its location above and pick the exact match from the results.</p>
+        @endif
+
         <div id="current-location-line"
             class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
             <span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
             <span id="current-location-country" class="text-gray-500"></span>
             <span id="current-location-sep" class="text-gray-300"></span>
-            <span id="current-location-rest" class="text-gray-400 flex-1">Detecting current location…</span>
+            <span id="current-location-rest" class="text-gray-400 flex-1">{{ $isSupplyHead ? 'No location selected yet — search and pick above.' : 'Detecting current location…' }}</span>
             <a id="current-location-maps-link" href="#" target="_blank" rel="noopener"
                 class="hidden items-center gap-1 text-xs font-semibold text-zendo-navy hover:underline flex-shrink-0 whitespace-nowrap">
                 View on Google Maps
@@ -1914,12 +1935,14 @@ WIZARD — BOTTOM NAV BAR
 
         <div class="flex items-center gap-2 flex-1 justify-end">
 
-            {{-- Save Draft --}}
-            <button type="submit" name="action" value="draft" formnovalidate
-                onclick="document.querySelector('form').noValidate=true"
-                class="px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
-                Save Draft
-            </button>
+            {{-- Save Draft (supply head submits in one shot — no draft/resume flow for that role) --}}
+            @unless($isSupplyHead)
+                <button type="submit" name="action" value="draft" formnovalidate
+                    onclick="document.querySelector('form').noValidate=true"
+                    class="px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
+                    Save Draft
+                </button>
+            @endunless
 
             {{-- Save & Next (hidden on last step) --}}
             <button type="button" id="wiz-next-btn" onclick="wizardNext()"
@@ -1930,13 +1953,12 @@ WIZARD — BOTTOM NAV BAR
                 </svg>
             </button>
 
-            {{-- Submit to Office (shown only on last step) --}}
-            {{-- Submit to Office (shown only on last step) --}}
+            {{-- Submit to Office / Submit for Admin Approval (shown only on last step) --}}
             <button type="submit" id="wiz-submit-btn" name="action" value="submit" formnovalidate
-                onclick="return wizardCanSubmit() && confirm('Submit this property entry to the office?');"
+                onclick="return wizardCanSubmit() && confirm('{{ $isSupplyHead ? 'Submit this property for admin approval?' : 'Submit this property entry to the office?' }}');"
                 style="display:none"
                 class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
-                Submit to Office
+                {{ $isSupplyHead ? 'Submit for Admin Approval' : 'Submit to Office' }}
             </button>
 
         </div>
@@ -2487,7 +2509,7 @@ WIZARD — BOTTOM NAV BAR
     <script
         src="https://sdk.mappls.com/map/sdk/web?v=3.0&access_token={{ config('services.mappls.access_token') }}&callback=initMapplsSDK"></script>
     <script
-        src="https://sdk.mappls.com/map/sdk/plugins?access_token={{ config('services.mappls.access_token') }}&v=3.0&libraries=direction"></script>
+        src="https://sdk.mappls.com/map/sdk/plugins?access_token={{ config('services.mappls.access_token') }}&v=3.0&libraries=direction,search"></script>
 @endif
 
 <script>
@@ -2496,6 +2518,11 @@ WIZARD — BOTTOM NAV BAR
     (function () {
         const locInput = document.getElementById('form_submited_location');
         if (!locInput) return;
+
+        // Supply head adds properties remotely — no GPS to read, so the
+        // whole capture-on-load / re-capture-on-submit dance below is
+        // skipped in favor of the search-and-select flow further down.
+        const IS_SUPPLY_HEAD = @json($isSupplyHead ?? false);
 
         function capture(options, hardCapMs) {
             const geo = new Promise((resolve) => {
@@ -2586,7 +2613,11 @@ WIZARD — BOTTOM NAV BAR
         // Also updates the visible readout as a side effect.
         function reverseGeocode(coords) {
             const [lat, lng] = coords.split(',');
-            return fetch(`{{ route(auth()->check() && auth()->user()->role === 'owner' ? 'owner.location.reverse-geocode' : 'field.location.reverse-geocode') }}?lat=${lat}&lng=${lng}`, {
+            return fetch(`{{ route(match(true) {
+                auth()->check() && auth()->user()->role === 'owner' => 'owner.location.reverse-geocode',
+                auth()->check() && auth()->user()->role === 'supply_head' => 'supplyhead.location.reverse-geocode',
+                default => 'field.location.reverse-geocode',
+            }) }}?lat=${lat}&lng=${lng}`, {
                 headers: { 'Accept': 'application/json' },
             })
                 .then((res) => res.json())
@@ -2635,66 +2666,119 @@ WIZARD — BOTTOM NAV BAR
             });
         }
 
-        // Best-effort capture as soon as the page loads, so we have *something*
-        // even if the officer submits before a fresh GPS fix comes through.
-        // On mobile, a cold GPS fix after granting permission can easily take
-        // longer than desktop's near-instant Wi-Fi/IP-based fix, so we give it
-        // a generous window before falling back to a lower-accuracy attempt.
-        capture({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }, 20000).then((coords) => {
-            if (coords) {
-                onInitialCoords(coords);
-                return;
-            }
-            capture({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }, 12000).then((fallbackCoords) => {
-                if (fallbackCoords) {
-                    onInitialCoords(fallbackCoords);
-                } else {
-                    setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+        if (!IS_SUPPLY_HEAD) {
+            // Best-effort capture as soon as the page loads, so we have *something*
+            // even if the officer submits before a fresh GPS fix comes through.
+            // On mobile, a cold GPS fix after granting permission can easily take
+            // longer than desktop's near-instant Wi-Fi/IP-based fix, so we give it
+            // a generous window before falling back to a lower-accuracy attempt.
+            capture({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }, 20000).then((coords) => {
+                if (coords) {
+                    onInitialCoords(coords);
+                    return;
                 }
-            });
-        });
-
-        // Re-capture right before the form actually submits, so the stored
-        // location reflects where the officer was at submit time rather than
-        // just page-load time. Falls back to the page-load value if a fresh
-        // fix isn't available within ~4s — never blocks submission longer than that.
-        const form = locInput.closest('form');
-        if (form) {
-            let resubmitting = false;
-            form.addEventListener('submit', function (e) {
-                if (resubmitting) return;
-                e.preventDefault();
-                resubmitting = true;
-
-                const submitter = e.submitter;
-
-                // Block a second click (e.g. "Submit to Office" right after
-                // "Save Draft") while we're still waiting on geolocation.
-                // Leave the submitter itself enabled — a disabled button's
-                // name/value (e.g. action=draft) is dropped from the
-                // form data, which would make the server fall back to the
-                // "submit" action and run full validation instead of the
-                // draft's fields-optional validation.
-                form.querySelectorAll('button[type="submit"]').forEach(btn => {
-                    if (btn !== submitter) btn.disabled = true;
-                });
-                capture({ enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }, 4000).then((coords) => {
-                    if (!coords) {
-                        if (form.requestSubmit) { form.requestSubmit(submitter); } else { form.submit(); }
-                        return;
+                capture({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }, 12000).then((fallbackCoords) => {
+                    if (fallbackCoords) {
+                        onInitialCoords(fallbackCoords);
+                    } else {
+                        setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
                     }
-                    updateMapsLink(coords);
-                    updateMap(coords);
-                    resolvePayload(coords).then((payload) => {
-                        locInput.value = payload;
-                        if (form.requestSubmit) {
-                            form.requestSubmit(submitter);
-                        } else {
-                            form.submit();
+                });
+            });
+
+            // Re-capture right before the form actually submits, so the stored
+            // location reflects where the officer was at submit time rather than
+            // just page-load time. Falls back to the page-load value if a fresh
+            // fix isn't available within ~4s — never blocks submission longer than that.
+            const form = locInput.closest('form');
+            if (form) {
+                let resubmitting = false;
+                form.addEventListener('submit', function (e) {
+                    if (resubmitting) return;
+                    e.preventDefault();
+                    resubmitting = true;
+
+                    const submitter = e.submitter;
+
+                    // Block a second click (e.g. "Submit to Office" right after
+                    // "Save Draft") while we're still waiting on geolocation.
+                    // Leave the submitter itself enabled — a disabled button's
+                    // name/value (e.g. action=draft) is dropped from the
+                    // form data, which would make the server fall back to the
+                    // "submit" action and run full validation instead of the
+                    // draft's fields-optional validation.
+                    form.querySelectorAll('button[type="submit"]').forEach(btn => {
+                        if (btn !== submitter) btn.disabled = true;
+                    });
+                    capture({ enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }, 4000).then((coords) => {
+                        if (!coords) {
+                            if (form.requestSubmit) { form.requestSubmit(submitter); } else { form.submit(); }
+                            return;
                         }
+                        updateMapsLink(coords);
+                        updateMap(coords);
+                        resolvePayload(coords).then((payload) => {
+                            locInput.value = payload;
+                            if (form.requestSubmit) {
+                                form.requestSubmit(submitter);
+                            } else {
+                                form.submit();
+                            }
+                        });
                     });
                 });
-            });
+            }
+        } else {
+            // ── Supply head: search-and-select instead of GPS ──────────────
+            // Binds Mappls' Place Search plugin (mappls.search) to the search
+            // input added above. Selecting a suggestion feeds its coordinates
+            // through the same onInitialCoords() pipeline used for GPS fixes
+            // above, so the map preview, "Google Maps" link, reverse-geocoded
+            // readout and hidden form_submited_location field all populate
+            // exactly the same way.
+            const searchInput = document.getElementById('supply-head-location-search');
+
+            function initSupplyHeadSearch() {
+                if (!searchInput || typeof mappls === 'undefined' || !mappls.search) return;
+
+                new mappls.search(searchInput, { region: 'IND', height: 300 }, function (data) {
+                    // Autosuggest results only carry a place code (eLoc), not
+                    // lat/lng directly — confirmed against the live plugin
+                    // response (fields are type/placeName/placeAddress/eLoc/
+                    // etc., no coordinates). pinMarker() is the documented way
+                    // to resolve an eLoc into a real position, via the
+                    // underlying marker's getLngLat(). We remove that marker
+                    // immediately — updateMap() below (called through
+                    // onInitialCoords) draws the actual marker the user sees.
+                    if (!data || !data.length || !data[0].eLoc || !window.__mapplsMapReady) return;
+                    const eloc = data[0].eLoc;
+
+                    window.__mapplsMapReady.then((map) => {
+                        mappls.pinMarker({ map: map, pin: eloc }, function (marker) {
+                            try {
+                                const lngLat = marker && marker.obj && marker.obj.getLngLat ? marker.obj.getLngLat() : null;
+                                if (marker && marker.remove) marker.remove();
+                                if (!lngLat) return;
+                                const coords = Number(lngLat.lat).toFixed(6) + ',' + Number(lngLat.lng).toFixed(6);
+                                onInitialCoords(coords);
+                            } catch (e) {
+                                console.error('Mappls eLoc resolution failed:', e);
+                            }
+                        });
+                    });
+                });
+            }
+
+            if (typeof mappls !== 'undefined' && mappls.search) {
+                initSupplyHeadSearch();
+            } else {
+                // The plugins script (loaded async, callback=initMapplsSDK) may
+                // not have finished evaluating yet — the map's own ready promise
+                // is a convenient, already-existing signal that the SDK is live.
+                if (window.__mapplsMapReady) {
+                    window.__mapplsMapReady.then(initSupplyHeadSearch);
+                }
+            }
         }
     })();
 </script>
