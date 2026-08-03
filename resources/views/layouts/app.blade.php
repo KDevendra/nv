@@ -1,34 +1,47 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    <title>{{ isset($seoMeta) && $seoMeta && $seoMeta->title ? $seoMeta->title : View::yieldContent('title', 'ZendoIndia - Find Your Perfect Property') }}</title>
-    
+    <title>
+        {{ isset($seoMeta) && $seoMeta && $seoMeta->title ? $seoMeta->title : View::yieldContent('title', 'ZendoIndia - Find Your Perfect Property') }}
+    </title>
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <!-- CSP for Tailwind CDN compatibility -->
-    <meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.cdnfonts.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://kit.fontawesome.com https://ka-f.fontawesome.com;">
-    
+    <meta http-equiv="Content-Security-Policy"
+        content="style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.cdnfonts.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://kit.fontawesome.com https://ka-f.fontawesome.com;">
+
     <!-- SEO Meta Tags -->
     @include('common.seo-meta')
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.cdnfonts.com/css/scriptina" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Forum&family=Nunito+Sans:wght@400;500;700&family=Raleway:wght@500;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Forum&family=Nunito+Sans:wght@400;500;700&family=Raleway:wght@500;700&display=swap"
+        rel="stylesheet">
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Custom Tailwind Configuration -->
+    <style>
+        input,
+        a,
+        button {
+            font-size: initial !important;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
@@ -71,10 +84,11 @@
             }
         }
     </script>
-    
+
     @yield('styles')
     @include('common.styles')
 </head>
+
 <body class="bg-pattern-white font-body">
 
     <!-- Preloader -->
@@ -95,4 +109,5 @@
     @include('common.scripts')
 
 </body>
+
 </html>
