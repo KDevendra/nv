@@ -48,7 +48,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 <div>
-                    <h3 class="text-sm font-semibold text-zendo-navy">Field Officer Current Location</h3>
+                    <h3 class="text-sm font-semibold text-zendo-navy">Property Location</h3>
                     @if($property->form_submited_address)
                         <p class="text-sm text-gray-600 mt-0.5">{{ $property->form_submited_address }}</p>
                     @elseif($property->form_submited_location)

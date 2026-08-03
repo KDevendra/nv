@@ -5,10 +5,16 @@ namespace App\Http\Controllers\SupplyHead;
 use App\Http\Controllers\Controller;
 use App\Models\PropertyEntry;
 use App\Models\PropertyEntryLog;
+use App\Models\PropertyFieldConfig;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class PropertyEntryController extends Controller
 {
@@ -109,6 +115,142 @@ class PropertyEntryController extends Controller
         ];
 
         return view('supplyhead.properties.index', compact('entries', 'notOpenedEntries', 'counters', 'fieldOfficers'));
+    }
+
+    // ── Create ────────────────────────────────────────────────────────────────
+
+    public function create(): View
+    {
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+
+        $slots = self::PHOTO_SLOTS;
+        $fieldConfigs = PropertyFieldConfig::allKeyed();
+        $fieldRemarks = [];
+        return view('supplyhead.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks'));
+    }
+
+    // ── Store ─────────────────────────────────────────────────────────────────
+
+    public function store(Request $request): RedirectResponse
+    {
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300);
+
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+
+        $action = $request->input('action', 'submit');
+        $isDraft = ($action === 'draft');
+
+        $data = $this->validateEntry($request, $isDraft);
+
+        if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
+            $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
+        }
+
+        if ($isDraft) {
+            // Defensive fallback only — the form doesn't expose a "Save Draft"
+            // action for supply head, since there is no edit/resume route for
+            // this role yet.
+            $entry = PropertyEntry::create(array_merge($data, [
+                'field_officer_id' => auth()->id(),
+                'supply_head_id'   => auth()->id(),
+                'status'           => 'draft',
+                'submitted_at'     => null,
+                'area_unit'        => $request->input('area_unit', 'sq_ft'),
+            ]));
+
+            $this->handlePhotos($entry, $request);
+
+            return redirect()->route('supplyhead.properties.index')
+                ->with('success', 'Draft saved. Code: ' . $entry->code);
+        }
+
+        // Supply head is both the submitter and the reviewer for entries they
+        // add themselves — skip the "submitted, pending supply-head review"
+        // stage entirely and go straight to "verified", which is what the
+        // admin approval queue actually looks for.
+        $entry = PropertyEntry::create(array_merge($data, [
+            'field_officer_id'      => auth()->id(),
+            'supply_head_id'        => auth()->id(),
+            'status'                => 'verified',
+            'submitted_at'          => now(),
+            'reviewed_at'           => now(),
+            'reviewed_by'           => auth()->id(),
+            'verified_at'           => now(),
+            'supply_head_viewed_at' => now(),
+            'area_unit'             => $request->input('area_unit', 'sq_ft'),
+        ]));
+
+        $this->handlePhotos($entry, $request);
+
+        PropertyEntryLog::logAction($entry, 'verified', null, 'verified', 'Added directly by supply head — sent straight to admin for approval.');
+
+        return redirect()->route('supplyhead.properties.index')
+            ->with('success', 'Property added successfully and sent for admin approval. Code: ' . $entry->code);
+    }
+
+    // ── Reverse Geocode (Mappls proxy) ───────────────────────────────────────
+    // Same proxy as FieldOfficer\PropertyEntryController::reverseGeocode — kept
+    // as its own endpoint (rather than reusing that one) so the access check
+    // matches this role and the route stays under the supply-head prefix.
+    public function reverseGeocode(Request $request): JsonResponse
+    {
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+
+        $data = $request->validate([
+            'lat' => 'required|numeric|between:-90,90',
+            'lng' => 'required|numeric|between:-180,180',
+        ]);
+
+        $token = config('services.mappls.access_token');
+
+        if (!$token) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'not_configured']);
+        }
+
+        try {
+            $response = Http::timeout(5)->get('https://search.mappls.com/search/address/rev-geocode', [
+                'lat' => $data['lat'],
+                'lng' => $data['lng'],
+                'access_token' => $token,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'request_failed']);
+        }
+
+        if (!$response->successful()) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'upstream_error'], 200);
+        }
+
+        $result = $response->json('results.0');
+
+        if (!$result) {
+            return response()->json(['address' => null, 'country' => null, 'error' => 'no_result']);
+        }
+
+        $address = $result['formattedAddress'] ?? $result['formatted_address'] ?? null;
+
+        if (!$address) {
+            $address = collect([
+                $result['subLocality'] ?? null,
+                $result['locality'] ?? null,
+                $result['village'] ?? null,
+                $result['district'] ?? null,
+                $result['city'] ?? null,
+                $result['state'] ?? null,
+            ])->filter()->unique()->implode(', ') ?: null;
+        }
+
+        $country = $result['country'] ?? 'India';
+
+        if ($address && $country) {
+            $address = trim(preg_replace('/\s*\(' . preg_quote($country, '/') . '\)\s*$/i', '', $address));
+        }
+
+        return response()->json([
+            'address' => $address,
+            'country' => $country,
+        ]);
     }
 
     // ── Show ──────────────────────────────────────────────────────────────────
@@ -543,5 +685,368 @@ class PropertyEntryController extends Controller
         }
 
         return true;
+    }
+
+    // ── Validation & Photos (create/store) ───────────────────────────────────
+    // Mirrors FieldOfficer\PropertyEntryController's rules/labels/photo
+    // handling — same PropertyFieldConfig-driven mandatory/nullable logic and
+    // the same 8 photo slots — so a property added by a supply head goes
+    // through the exact same data-quality bar as one added in the field.
+
+    private const FIELD_LABELS = [
+        'facility_type' => 'Facility Type',
+        'property_name' => 'Name of Property',
+        'name_full_address' => 'Address',
+        'postal_address_pin' => 'PIN Code',
+        'village' => 'Village',
+        'tehsil' => 'Tehsil',
+        'district' => 'District',
+        'state' => 'State',
+        'country' => 'Country',
+        'nearest_highway' => 'Nearest Highway',
+        'nearest_city' => 'Nearest City',
+        'nearest_railway_station' => 'Nearest Railway Station',
+        'nearest_airport' => 'Nearest Airport',
+        'owner_contact_name' => 'Owner Name',
+        'owner_contact_phone' => 'Owner Contact Number',
+        'owner_email' => 'Owner E-mail',
+        'tenure' => 'Tenure',
+        'approved_land_use' => 'Approved Land Use',
+        'fire_noc' => 'Fire NOC Availability',
+        'clu_conversion_status' => 'CLU / Conversion Status',
+        'occupancy_certificate' => 'Occupancy Certificate',
+        'pollution_noc' => 'Pollution NOC',
+        'pollution_category' => 'Pollution Category',
+        'area_unit' => 'Area Unit',
+        'plot_area' => 'Plot Area',
+        'built_up_area' => 'Built-up Area',
+        'carpet_area' => 'Carpet Area',
+        'available_area' => 'Available Area',
+        'clear_height_highest' => 'Clear Height — Highest',
+        'clear_height_side' => 'Clear Height — Side Wall',
+        'shed_width' => 'Shed Width',
+        'shed_length' => 'Shed Length',
+        'number_of_floors' => 'Number of Floors',
+        'fsi_far' => 'FSI / FAR',
+        'dock_door_count' => 'Total Dock Doors',
+        'dock_front' => 'Dock Doors — Front',
+        'dock_left' => 'Dock Doors — Left',
+        'dock_right' => 'Dock Doors — Right',
+        'dock_back' => 'Dock Doors — Back',
+        'dock_leveller_front' => 'Dock Leveller — Front',
+        'dock_leveller_left' => 'Dock Leveller — Left',
+        'dock_leveller_right' => 'Dock Leveller — Right',
+        'dock_leveller_back' => 'Dock Leveller — Back',
+        'fire_exit_front' => 'Fire Exit — Front',
+        'fire_exit_left' => 'Fire Exit — Left',
+        'fire_exit_right' => 'Fire Exit — Right',
+        'fire_exit_back' => 'Fire Exit — Back',
+        'canopy_width_front' => 'Canopy Width — Front',
+        'canopy_length_front' => 'Canopy Length — Front',
+        'canopy_width_left' => 'Canopy Width — Left',
+        'canopy_length_left' => 'Canopy Length — Left',
+        'canopy_width_right' => 'Canopy Width — Right',
+        'canopy_length_right' => 'Canopy Length — Right',
+        'canopy_width_back' => 'Canopy Width — Back',
+        'canopy_length_back' => 'Canopy Length — Back',
+        'has_dock_leveller' => 'Dock Levellers Available?',
+        'road_width_front' => 'Road Width — Front',
+        'road_width_left' => 'Road Width — Left',
+        'road_width_right' => 'Road Width — Right',
+        'road_width_back' => 'Road Width — Back',
+        'no_of_offices' => 'No. of Offices',
+        'has_offices' => 'Offices Available?',
+        'office_sizes' => 'Office Sizes',
+        'canteen' => 'Canteen',
+        'canteen_size' => 'Canteen Size',
+        'stp_plant' => 'STP Plant',
+        'stp_capacity' => 'STP Capacity',
+        'no_of_urinals' => 'No. of Urinals',
+        'no_of_closets' => 'No. of Closets',
+        'female_washroom' => 'Female Washroom',
+        'driver_rest_room' => 'Driver Rest Room',
+        'mezzanine' => 'Mezzanine',
+        'mezzanine_size' => 'Mezzanine Size',
+        'structure_type' => 'Structure Type',
+        'insulation_roof' => 'Roof Insulation',
+        'insulation_side' => 'Side Insulation',
+        'fire_sprinkler' => 'Fire Sprinkler',
+        'scrap_yard' => 'Scrap Yard',
+        'no_of_companies_same_premise' => 'No. of Companies in Same Premise',
+        'extension_possible' => 'Extension Possible?',
+        'dock_type' => 'Dock Type',
+        'dock_height' => 'Dock Height',
+        'truck_movement' => 'Truck Movement',
+        'flooring_type' => 'Flooring Type',
+        'office_cabin_area' => 'Office / Cabin Area',
+        'washrooms' => 'No. of Washrooms',
+        'ventilation_lighting' => 'Ventilation & Lighting',
+        'power_sanctioned_kva' => 'Power Sanctioned (KVA)',
+        'discom_name' => 'DISCOM Name',
+        'water_source' => 'Water Source',
+        'water_tank_capacity' => 'Water Tank Capacity',
+        'fire_fighting_system' => 'Fire Fighting System',
+        'solar' => 'Solar',
+        'deal_type' => 'Lease / Sale Status',
+        'expected_rent' => 'Expected Rent',
+        'expected_sale_price' => 'Expected Sale Price',
+        'security_deposit_months' => 'Security Deposit (months)',
+        'lock_in_years' => 'Lock-in Period (years)',
+        'available_from' => 'Available From Date',
+        'approach_road_width' => 'Approach Road Width',
+        'top_neighbouring_companies' => 'Top Neighbouring Companies',
+        'flood_risk' => 'Flood / Water-Logging Risk',
+        'nearest_hospital_km' => 'Nearest Hospital (km)',
+        'nearest_fire_station_km' => 'Nearest Fire Station (km)',
+        'nearest_police_station_km' => 'Nearest Police Station (km)',
+        'remarks' => 'Remarks / Observations',
+        'photos' => 'Photographs',
+        'photos.*' => 'Photograph',
+        'form_submited_location' => 'Submitted Location',
+    ];
+
+    private function validateEntry(Request $request, bool $isDraft = false): array
+    {
+        $configs = PropertyFieldConfig::allKeyed();
+
+        $typeRules = [
+            'facility_type' => 'string',
+            'property_name' => 'string|max:255',
+            'name_full_address' => 'string',
+            'village' => 'string|max:255',
+            'tehsil' => 'string|max:255',
+            'district' => 'string|max:255',
+            'state' => 'string|max:255',
+            'country' => 'string|max:255',
+            'postal_address_pin' => ['string', 'max:6', 'regex:/^[0-9]{6}$/'],
+            'nearest_highway' => 'string|max:255',
+            'nearest_city' => 'string|max:255',
+            'nearest_railway_station' => 'string|max:255',
+            'nearest_airport' => 'string|max:255',
+            'owner_contact_name' => 'string|max:255',
+            'owner_contact_phone' => ['string', 'max:10', 'regex:/^[6-9][0-9]{9}$/'],
+            'owner_email' => 'email|max:255',
+            'tenure' => 'string|max:50',
+            'approved_land_use' => 'string|max:100',
+            'fire_noc' => 'string|max:50',
+            'clu_conversion_status' => 'string|max:255',
+            'occupancy_certificate' => 'string|max:50',
+            'pollution_noc' => 'string|max:50',
+            'pollution_category' => 'string|max:100',
+            'area_unit' => 'string|in:sq_ft,sq_mt,sq_yd',
+            'plot_area' => 'numeric|min:0',
+            'built_up_area' => 'numeric|min:0',
+            'carpet_area' => 'numeric|min:0',
+            'available_area' => 'numeric|min:0',
+            'clear_height_highest' => 'numeric|min:0',
+            'clear_height_side' => 'numeric|min:0',
+            'shed_width' => 'numeric|min:0',
+            'shed_length' => 'numeric|min:0',
+            'number_of_floors' => 'integer|min:0',
+            'fsi_far' => 'string|max:50',
+            'dock_door_count' => 'integer|min:0',
+            'dock_front' => 'integer|min:0',
+            'dock_left' => 'integer|min:0',
+            'dock_right' => 'integer|min:0',
+            'dock_back' => 'integer|min:0',
+            'dock_leveller_front' => 'integer|min:0',
+            'dock_leveller_left' => 'integer|min:0',
+            'dock_leveller_right' => 'integer|min:0',
+            'dock_leveller_back' => 'integer|min:0',
+            'fire_exit_front' => 'integer|min:0',
+            'fire_exit_left' => 'integer|min:0',
+            'fire_exit_right' => 'integer|min:0',
+            'fire_exit_back' => 'integer|min:0',
+            'canopy_width_front' => 'numeric|min:0',
+            'canopy_length_front' => 'numeric|min:0',
+            'canopy_width_left' => 'numeric|min:0',
+            'canopy_length_left' => 'numeric|min:0',
+            'canopy_width_right' => 'numeric|min:0',
+            'canopy_length_right' => 'numeric|min:0',
+            'canopy_width_back' => 'numeric|min:0',
+            'canopy_length_back' => 'numeric|min:0',
+            'has_dock_leveller' => 'boolean',
+            'road_width_front' => 'numeric|min:0',
+            'road_width_left' => 'numeric|min:0',
+            'road_width_right' => 'numeric|min:0',
+            'road_width_back' => 'numeric|min:0',
+            'no_of_offices' => 'integer|min:0',
+            'has_offices' => 'boolean',
+            'office_sizes' => 'nullable|string',
+            'canteen' => 'boolean',
+            'canteen_size' => 'string|max:255',
+            'stp_plant' => 'boolean',
+            'stp_capacity' => 'string|max:255',
+            'no_of_urinals' => 'integer|min:0',
+            'no_of_closets' => 'integer|min:0',
+            'female_washroom' => 'boolean',
+            'driver_rest_room' => 'boolean',
+            'mezzanine' => 'boolean',
+            'mezzanine_size' => 'string|max:255',
+            'structure_type' => 'string|max:100',
+            'insulation_roof' => 'string|max:100',
+            'insulation_side' => 'string|max:100',
+            'fire_sprinkler' => 'string|max:50',
+            'scrap_yard' => 'boolean',
+            'no_of_companies_same_premise' => 'integer|min:0',
+            'extension_possible' => 'boolean',
+            'dock_type' => 'string|max:100',
+            'dock_height' => 'numeric|min:0',
+            'truck_movement' => 'string|max:100',
+            'flooring_type' => 'string|max:100',
+            'office_cabin_area' => 'numeric|min:0',
+            'washrooms' => 'integer|min:0',
+            'ventilation_lighting' => 'string|max:50',
+            'power_sanctioned_kva' => 'numeric|min:0',
+            'discom_name' => 'string|max:255',
+            'water_source' => 'string|max:100',
+            'water_tank_capacity' => 'string|max:100',
+            'fire_fighting_system' => 'string|max:100',
+            'solar' => 'boolean',
+            'deal_type' => 'string|max:50',
+            'expected_rent' => 'numeric|min:0',
+            'expected_sale_price' => 'numeric|min:0',
+            'security_deposit_months' => 'numeric|min:0|max:60',
+            'lock_in_years' => 'numeric|min:0|max:99',
+            'available_from' => 'date',
+            'approach_road_width' => 'numeric|min:0',
+            'top_neighbouring_companies' => 'string',
+            'flood_risk' => 'string|max:50',
+            'nearest_hospital_km' => 'numeric|min:0',
+            'nearest_fire_station_km' => 'numeric|min:0',
+            'nearest_police_station_km' => 'numeric|min:0',
+            'remarks' => 'string',
+            'form_submited_location' => 'nullable|string|max:1000',
+        ];
+
+        $rules = [];
+
+        foreach ($typeRules as $field => $typeConstraint) {
+            $cfg = $configs->get($field);
+
+            if ($cfg && $cfg->keep_field === false) {
+                continue;
+            }
+
+            if ($isDraft) {
+                $presence = 'nullable';
+            } else {
+                $isMandatory = $cfg && $cfg->mandatory_field;
+                if (!$isMandatory) {
+                    $presence = 'nullable';
+                } else {
+                    if ($field === 'canteen_size') {
+                        $presence = ((string) $request->input('canteen') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'stp_capacity') {
+                        $presence = ((string) $request->input('stp_plant') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'mezzanine_size') {
+                        $presence = ((string) $request->input('mezzanine') === '1') ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['expected_rent', 'security_deposit_months', 'lock_in_years'])) {
+                        $presence = in_array($request->input('deal_type'), ['Lease', 'Both']) ? 'required' : 'nullable';
+                    } elseif ($field === 'expected_sale_price') {
+                        $presence = in_array($request->input('deal_type'), ['Sale', 'Both']) ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'])) {
+                        $presence = 'nullable';
+                    } else {
+                        $presence = 'required';
+                    }
+                }
+            }
+
+            if (is_array($typeConstraint)) {
+                $rules[$field] = array_merge([$presence], $typeConstraint);
+            } else {
+                $rules[$field] = $presence . '|' . $typeConstraint;
+            }
+        }
+
+        $rules['photos'] = 'nullable|array';
+        $rules['photos.*'] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
+
+        $data = $request->validate($rules, [
+            'photos.*.image' => 'Only camera photos are allowed for :attribute.',
+            'postal_address_pin.regex' => 'PIN code must be exactly 6 digits.',
+            'owner_contact_phone.regex' => 'Contact number must be a valid 10-digit Indian mobile number.',
+        ], self::FIELD_LABELS);
+
+        if (isset($data['canteen']) && (string) $data['canteen'] === '0') {
+            $data['canteen_size'] = null;
+        }
+        if (isset($data['stp_plant']) && (string) $data['stp_plant'] === '0') {
+            $data['stp_capacity'] = null;
+        }
+        if (isset($data['mezzanine']) && (string) $data['mezzanine'] === '0') {
+            $data['mezzanine_size'] = null;
+        }
+        if (isset($data['deal_type'])) {
+            if ($data['deal_type'] === 'Sale') {
+                $data['expected_rent'] = null;
+                $data['security_deposit_months'] = null;
+                $data['lock_in_years'] = null;
+            } elseif ($data['deal_type'] === 'Lease') {
+                $data['expected_sale_price'] = null;
+            }
+        }
+
+        if (!$isDraft && (string) $request->input('has_dock_leveller') === '1') {
+            $levellerFields = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'];
+            $anyMandatory = collect($levellerFields)->contains(fn ($f) => (bool) optional($configs->get($f))->mandatory_field);
+
+            if ($anyMandatory) {
+                $sum = collect($levellerFields)->sum(fn ($f) => (int) $request->input($f, 0));
+                if ($sum <= 0) {
+                    throw ValidationException::withMessages([
+                        'dock_leveller_front' => 'Enter at least one dock leveller count (front/left/right/back) since levellers are marked as available.',
+                    ]);
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    private function handlePhotos(PropertyEntry $entry, Request $request): void
+    {
+        if (!$request->hasFile('photos')) {
+            return;
+        }
+
+        $manager = new ImageManager(new Driver());
+
+        foreach (self::PHOTO_SLOTS as $index => $slotLabel) {
+            $inputKey = 'photos.' . $index;
+
+            if (!$request->hasFile($inputKey)) {
+                continue;
+            }
+
+            $file = $request->file($inputKey);
+
+            $image = $manager->read($file->getRealPath());
+            $webpData = $image->toWebp(75)->toString();
+
+            $publicPath = public_path('images/property_photos');
+            if (!file_exists($publicPath)) {
+                mkdir($publicPath, 0755, true);
+            }
+
+            $filename = $entry->id . '_' . $index . '_' . time() . '.webp';
+            $fullPath = $publicPath . '/' . $filename;
+            file_put_contents($fullPath, $webpData);
+
+            $old = $entry->photos()->where('slot_label', $slotLabel)->first();
+            if ($old) {
+                $oldPath = public_path('images/property_photos/' . basename($old->file_path));
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+                $old->delete();
+            }
+
+            $entry->photos()->create([
+                'slot_label' => $slotLabel,
+                'file_path' => 'images/property_photos/' . $filename,
+            ]);
+        }
     }
 }
