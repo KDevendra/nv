@@ -2667,35 +2667,58 @@ WIZARD — BOTTOM NAV BAR
             });
         }
 
+        let hasExistingLocation = false;
+        if (locInput.value) {
+            try {
+                const existing = JSON.parse(locInput.value);
+                if (existing.lat && existing.long) {
+                    hasExistingLocation = true;
+                    const coords = existing.lat + ',' + existing.long;
+                    updateMapsLink(coords);
+                    updateMap(coords);
+                    setLocationLine(existing.country || '', existing.address || '', false);
+                    lastAddress = existing.address || '';
+                    lastCountry = existing.country || '';
+                }
+            } catch (e) {}
+        }
+
         if (!IS_REMOTE_ENTRY) {
             // Best-effort capture as soon as the page loads, so we have *something*
             // even if the officer submits before a fresh GPS fix comes through.
             // On mobile, a cold GPS fix after granting permission can easily take
             // longer than desktop's near-instant Wi-Fi/IP-based fix, so we give it
             // a generous window before falling back to a lower-accuracy attempt.
-            capture({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }, 20000).then((coords) => {
-                if (coords) {
-                    onInitialCoords(coords);
-                    return;
-                }
-                capture({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }, 12000).then((fallbackCoords) => {
-                    if (fallbackCoords) {
-                        onInitialCoords(fallbackCoords);
-                    } else {
-                        setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+            if (!hasExistingLocation) {
+                capture({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }, 20000).then((coords) => {
+                    if (coords) {
+                        onInitialCoords(coords);
+                        return;
                     }
+                    capture({ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }, 12000).then((fallbackCoords) => {
+                        if (fallbackCoords) {
+                            onInitialCoords(fallbackCoords);
+                        } else {
+                            setLocationLine('', 'Current location unavailable — check your browser’s location permission.', true);
+                        }
+                    });
                 });
-            });
+            }
 
             // Re-capture right before the form actually submits, so the stored
             // location reflects where the officer was at submit time rather than
             // just page-load time. Falls back to the page-load value if a fresh
-            // fix isn't available within ~4s — never blocks submission longer than that.
             const form = locInput.closest('form');
             if (form) {
                 let resubmitting = false;
                 form.addEventListener('submit', function (e) {
                     if (resubmitting) return;
+                    
+                    if (hasExistingLocation) {
+                        // Let it submit normally without recapturing GPS
+                        return;
+                    }
+
                     e.preventDefault();
                     resubmitting = true;
 
