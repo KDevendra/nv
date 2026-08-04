@@ -33,6 +33,8 @@ class AuthenticatedSessionController extends Controller
         // Redirect based on user role
         if (in_array($user->role, ['supply_head', 'field_officer'])) {
             return redirect()->intended(route('field.dashboard', absolute: false));
+        } elseif ($user->role === 'owner') {
+            return redirect()->intended(route('owner.dashboard', absolute: false));
         } elseif ($user->role === 'user') {
             return redirect()->intended(route('user.dashboard', absolute: false));
         }
