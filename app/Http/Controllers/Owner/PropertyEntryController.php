@@ -236,6 +236,7 @@ class PropertyEntryController extends Controller
             if ($res->successful()) {
                 $address = $res->json('address') ?? [];
                 return response()->json([
+                    'address'      => $res->json('display_name'),
                     'display_name' => $res->json('display_name'),
                     'village'      => $address['village'] ?? $address['suburb'] ?? $address['neighbourhood'] ?? null,
                     'tehsil'       => $address['county'] ?? $address['subdistrict'] ?? null,
