@@ -139,7 +139,7 @@ class PropertyEntryController extends Controller
 
     // ── Edit ──────────────────────────────────────────────────────────────────
 
-    public function edit(PropertyEntry $property): View
+    public function edit(PropertyEntry $property): View|RedirectResponse
     {
         abort_if(auth()->user()->role !== 'owner', 403);
         abort_if($property->field_officer_id !== auth()->id(), 403);
