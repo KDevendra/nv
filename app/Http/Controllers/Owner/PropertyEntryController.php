@@ -359,7 +359,7 @@ class PropertyEntryController extends Controller
             'nearest_fire_station_km' => 'nullable|numeric|min:0',
             'nearest_police_station_km' => 'nullable|numeric|min:0',
             'remarks' => 'nullable|string',
-            'form_submited_location' => 'nullable|string|max:255',
+            'form_submited_location' => 'nullable|string|max:1000',
             'form_submited_address'  => 'nullable|string',
             'form_submited_maps_url' => 'nullable|string|max:500',
         ];
