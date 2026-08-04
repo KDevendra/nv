@@ -28,6 +28,7 @@
     // location section swaps the field officer's live-GPS readout for a
     // search-and-select map picker — see the location section below and its
     // script block near the end of this file.
+    $isRemoteEntry = auth()->check() && in_array(auth()->user()->role, ['supply_head', 'owner']);
     $isSupplyHead = auth()->check() && auth()->user()->role === 'supply_head';
 
     $__sfm = [
@@ -403,10 +404,10 @@ STEP 0 — A. Location & Identification
     {{-- Property location — search-and-select (supply head) or live GPS readout (field officer / owner), reverse-geocoded --}}
     <div class="mb-4">
         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-            {{ $isSupplyHead ? 'Property Current Location' : 'Field Officer Current Location' }}
+            {{ $isRemoteEntry ? 'Property Current Location' : 'Field Officer Current Location' }}
         </p>
 
-        @if($isSupplyHead)
+        @if($isRemoteEntry)
             <div class="relative mb-2">
                 <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
@@ -423,7 +424,7 @@ STEP 0 — A. Location & Identification
             <span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
             <span id="current-location-country" class="text-gray-500"></span>
             <span id="current-location-sep" class="text-gray-300"></span>
-            <span id="current-location-rest" class="text-gray-400 flex-1">{{ $isSupplyHead ? 'No location selected yet — search and pick above.' : 'Detecting current location…' }}</span>
+            <span id="current-location-rest" class="text-gray-400 flex-1">{{ $isRemoteEntry ? 'No location selected yet — search and pick above.' : 'Detecting current location…' }}</span>
             <a id="current-location-maps-link" href="#" target="_blank" rel="noopener"
                 class="hidden items-center gap-1 text-xs font-semibold text-zendo-navy hover:underline flex-shrink-0 whitespace-nowrap">
                 View on Google Maps
@@ -2522,7 +2523,7 @@ WIZARD — BOTTOM NAV BAR
         // Supply head adds properties remotely — no GPS to read, so the
         // whole capture-on-load / re-capture-on-submit dance below is
         // skipped in favor of the search-and-select flow further down.
-        const IS_SUPPLY_HEAD = @json($isSupplyHead ?? false);
+        const IS_REMOTE_ENTRY = @json($isRemoteEntry ?? false);
 
         function capture(options, hardCapMs) {
             const geo = new Promise((resolve) => {
@@ -2666,7 +2667,7 @@ WIZARD — BOTTOM NAV BAR
             });
         }
 
-        if (!IS_SUPPLY_HEAD) {
+        if (!IS_REMOTE_ENTRY) {
             // Best-effort capture as soon as the page loads, so we have *something*
             // even if the officer submits before a fresh GPS fix comes through.
             // On mobile, a cold GPS fix after granting permission can easily take
