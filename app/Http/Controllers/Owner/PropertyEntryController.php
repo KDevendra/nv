@@ -86,6 +86,13 @@ class PropertyEntryController extends Controller
 
         $data = $this->validateEntry($request, $isDraft);
 
+        \Illuminate\Support\Facades\Log::info('Location data stored for property entry', [
+            'location' => $data['form_submited_location'] ?? null,
+            'address' => $data['form_submited_address'] ?? null,
+            'maps_url' => $data['form_submited_maps_url'] ?? null,
+            'user_id' => auth()->id(),
+        ]);
+
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
         }
@@ -179,6 +186,14 @@ class PropertyEntryController extends Controller
         $isDraft = ($action === 'draft');
 
         $data = $this->validateEntry($request, $isDraft);
+
+        \Illuminate\Support\Facades\Log::info('Location data updated for property entry', [
+            'property_id' => $property->id,
+            'location' => $data['form_submited_location'] ?? null,
+            'address' => $data['form_submited_address'] ?? null,
+            'maps_url' => $data['form_submited_maps_url'] ?? null,
+            'user_id' => auth()->id(),
+        ]);
 
         if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
