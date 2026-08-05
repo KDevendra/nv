@@ -2763,6 +2763,18 @@ WIZARD — BOTTOM NAV BAR
             // exactly the same way.
             const searchInput = document.getElementById('supply-head-location-search');
 
+            // The picked location is the property's address for this flow
+            // (per the helper text above: "search for its location... and
+            // pick the exact match") — so whatever ends up in the search box
+            // also gets written into the actual Address/Country fields that
+            // get submitted with the form, not just the hidden geo payload.
+            const addressInput = document.querySelector('textarea[name="name_full_address"]');
+            const countryInput = document.querySelector('input[name="country"]');
+            function syncAddressRecord(address, country) {
+                if (addressInput && address) addressInput.value = address;
+                if (countryInput && country) countryInput.value = country;
+            }
+
             // Clicking directly on the map is an alternate way to pick a spot
             // (search may not have an exact match, or the user just wants to
             // nudge the pin). Routes through the same onInitialCoords()
@@ -2809,9 +2821,11 @@ WIZARD — BOTTOM NAV BAR
                                 }
                             } catch (queryErr) {}
 
-                            onInitialCoords(coords).then(({ address }) => {
+                            onInitialCoords(coords).then(({ address, country }) => {
                                 if (!searchInput || token !== mapClickToken) return;
-                                searchInput.value = poiName ? (address ? poiName + ', ' + address : poiName) : (address || coords);
+                                const finalText = poiName ? (address ? poiName + ', ' + address : poiName) : (address || coords);
+                                searchInput.value = finalText;
+                                syncAddressRecord(finalText, country);
                             });
                         } catch (err) {
                             console.error('Mappls map click handling failed:', err);
@@ -2842,7 +2856,16 @@ WIZARD — BOTTOM NAV BAR
                                 if (marker && marker.remove) marker.remove();
                                 if (!lngLat) return;
                                 const coords = Number(lngLat.lat).toFixed(6) + ',' + Number(lngLat.lng).toFixed(6);
-                                onInitialCoords(coords);
+                                onInitialCoords(coords).then(({ country }) => {
+                                    // Mappls' own search plugin already wrote the
+                                    // precise place name + address into searchInput
+                                    // on selection — reuse that for the Address
+                                    // field rather than our own reverse-geocode of
+                                    // the same point, which (like the map-click
+                                    // handler above) only resolves to the nearest
+                                    // road/area, not the specific place picked.
+                                    syncAddressRecord(searchInput.value, country);
+                                });
                             } catch (e) {
                                 console.error('Mappls eLoc resolution failed:', e);
                             }
