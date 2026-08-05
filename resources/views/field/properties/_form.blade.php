@@ -2662,8 +2662,9 @@ WIZARD — BOTTOM NAV BAR
             updateMapsLink(coords);
             updateMap(coords);
             locInput.value = buildPayload(coords, '', ''); // provisional, refined below once resolved
-            reverseGeocode(coords).then(({ address, country }) => {
+            return reverseGeocode(coords).then(({ address, country }) => {
                 locInput.value = buildPayload(coords, address, country);
+                return { address, country };
             });
         }
 
@@ -2761,6 +2762,63 @@ WIZARD — BOTTOM NAV BAR
             // readout and hidden form_submited_location field all populate
             // exactly the same way.
             const searchInput = document.getElementById('supply-head-location-search');
+
+            // Clicking directly on the map is an alternate way to pick a spot
+            // (search may not have an exact match, or the user just wants to
+            // nudge the pin). Routes through the same onInitialCoords()
+            // pipeline as search selection, then also writes the resolved
+            // address into the search box so it reflects the clicked point
+            // instead of being left stale from the last text search.
+            //
+            // Guarded to only fire for clicks that land directly on the map's
+            // own <canvas> — placing/selecting a marker (e.g. via the search
+            // flow's pinMarker() below) fires this same 'click' event with
+            // e.originalEvent.target pointing at the marker's DOM element
+            // instead, which would otherwise re-resolve the click's raw
+            // coordinates and clobber the precise place name the search
+            // selection had already written into the box with a generic
+            // road/area-level reverse-geocoded address.
+            let mapClickToken = 0;
+            if (mapEl && window.__mapplsMapReady) {
+                window.__mapplsMapReady.then((map) => {
+                    map.on('click', function (e) {
+                        try {
+                            const target = e.originalEvent && e.originalEvent.target;
+                            if (!target || target.tagName !== 'CANVAS') return;
+                            const lngLat = e.lngLat;
+                            if (!lngLat) return;
+                            const coords = Number(lngLat.lat).toFixed(6) + ',' + Number(lngLat.lng).toFixed(6);
+                            const token = ++mapClickToken;
+
+                            // If the click landed on a labelled point of interest,
+                            // prefer its name over a raw reverse-geocode — reverse
+                            // geocoding only snaps to the nearest road/area and
+                            // loses the specific place clicked (e.g. "Hitkarni
+                            // College of Law" vs. just the road it sits on).
+                            // Mirrors the exact property fallback chain Mappls'
+                            // own SDK uses internally for its "Open with Mappls"
+                            // click popup (see the mapsdk bundle's map.on('click')
+                            // handler), so this matches what the popup itself shows.
+                            let poiName = null;
+                            try {
+                                const features = map.queryRenderedFeatures(e.point);
+                                const f = features && features[0];
+                                if (f && f.layer && f.layer.type === 'symbol' && f.properties && f.properties.ELOC) {
+                                    const p = f.properties;
+                                    poiName = p.description || p.c || p.BLDG_NO || p.name_en || p.LBL_NME || null;
+                                }
+                            } catch (queryErr) {}
+
+                            onInitialCoords(coords).then(({ address }) => {
+                                if (!searchInput || token !== mapClickToken) return;
+                                searchInput.value = poiName ? (address ? poiName + ', ' + address : poiName) : (address || coords);
+                            });
+                        } catch (err) {
+                            console.error('Mappls map click handling failed:', err);
+                        }
+                    });
+                });
+            }
 
             function initSupplyHeadSearch() {
                 if (!searchInput || typeof mappls === 'undefined' || !mappls.search) return;
