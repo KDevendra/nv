@@ -1794,7 +1794,7 @@ STEP 0 — A. Location & Identification
                 <div class="flex flex-col items-center gap-2">
                     <div class="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-dashed border-gray-200 bg-gray-50 group cursor-pointer"
                         id="preview-box-{{ $index }}" @if(!$photoLocked)
-                        onclick="openCamera({{ $index }}, '{{ addslashes($slotLabel) }}')" @endif>
+                        onclick="{!! $isRemoteEntry ? "document.getElementById('photo-{$index}').click()" : "openCamera({$index}, '" . addslashes($slotLabel) . "')" !!}" @endif>
                         <img id="preview-img-{{ $index }}"
                             src="{{ $existing ? asset('images/property_photos/' . basename($existing->file_path)) : '' }}"
                             alt="{{ $slotLabel }}" class="w-full h-full object-cover {{ $existing ? '' : 'hidden' }}">
@@ -1818,14 +1818,14 @@ STEP 0 — A. Location & Identification
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span class="text-[11px] font-semibold">Tap to capture</span>
+                                    <span class="text-[11px] font-semibold">{{ $isRemoteEntry ? 'Tap to select file' : 'Tap to capture' }}</span>
                                 </span>
                             </div>
                         @endif
                     </div>
                     <span class="text-[11px] text-gray-600 text-center font-semibold leading-tight">{{ $slotLabel }}</span>
                     <input type="file" name="photos[{{ $index }}]" id="photo-{{ $index }}" accept="image/*" class="sr-only"
-                        @if($photoLocked) disabled @endif>
+                        @if($photoLocked) disabled @endif onchange="handleFileSelect(this, {{ $index }})">
                     @if($photoLocked)
                         <div
                             class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200">
@@ -1836,7 +1836,7 @@ STEP 0 — A. Location & Identification
                             Locked
                         </div>
                     @else
-                        <button type="button" onclick="openCamera({{ $index }}, '{{ addslashes($slotLabel) }}')"
+                        <button type="button" onclick="{!! $isRemoteEntry ? "document.getElementById('photo-{$index}').click()" : "openCamera({$index}, '" . addslashes($slotLabel) . "')" !!}"
                             id="cam-btn-{{ $index }}"
                             class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors
                                                {{ $existing ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200' : 'bg-zendo-navy text-white hover:bg-opacity-90' }}">
@@ -1846,7 +1846,7 @@ STEP 0 — A. Location & Identification
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span id="cam-btn-label-{{ $index }}">{{ $existing ? 'Retake Photo' : 'Take Photo' }}</span>
+                            <span id="cam-btn-label-{{ $index }}">{{ $existing ? 'Change Photo' : ($isRemoteEntry ? 'Select Photo' : 'Take Photo') }}</span>
                         </button>
                     @endif
                     @if(isset($fieldRemarks['photo_' . $index]) && $fieldRemarks['photo_' . $index])
@@ -3089,6 +3089,24 @@ WIZARD — BOTTOM NAV BAR
         if (video) video.srcObject = null;
         document.body.style.overflow = '';
         _cameraSlotIdx = null;
+    }
+
+    function handleFileSelect(input, idx) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('preview-img-' + idx);
+                const ph = document.getElementById('placeholder-' + idx);
+                if (img) { img.src = e.target.result; img.classList.remove('hidden'); }
+                if (ph) { ph.classList.add('hidden'); }
+
+                const btnLabel = document.getElementById('cam-btn-label-' + idx);
+                const btn = document.getElementById('cam-btn-' + idx);
+                if (btnLabel) btnLabel.textContent = 'Change Photo';
+                if (btn) { btn.classList.remove('bg-zendo-navy', 'text-white'); btn.classList.add('bg-gray-100', 'text-gray-600', 'border', 'border-gray-200'); }
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCamera(); });
