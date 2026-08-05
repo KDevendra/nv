@@ -88,7 +88,7 @@
                         <!-- Email or Phone -->
                         <div>
                             <label for="login_field" class="block text-sm font-semibold text-gray-700 font-highlight mb-2">
-                                Email Address or Phone Number
+                                Email Address
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -101,7 +101,7 @@
                                 <input id="login_field" type="text" name="login_field" value="{{ old('login_field') }}"
                                     required autofocus autocomplete="username"
                                     class="form-input block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-zendo-gold focus:border-zendo-gold font-body transition-all duration-200"
-                                    placeholder="Enter your email or phone number">
+                                    placeholder="Enter your email">
                             </div>
                             @if($errors->get('login_field'))
                                 <div class="mt-2 text-sm text-red-600 font-body">
