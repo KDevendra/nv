@@ -7,6 +7,11 @@ use App\Http\Controllers\FieldProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\SalesExecutiveLeadController;
+use App\Http\Controllers\ChiefCoordinatorLeadController;
+use App\Http\Controllers\SupplyHeadLeadController;
+use App\Http\Controllers\AdminLeadController;
+use App\Http\Controllers\PublicSiteVisitController;
 use App\Http\Controllers\FieldOfficer\PropertyEntryController as FieldOfficerPropertyEntryController;
 use App\Http\Controllers\SupplyHead\PropertyEntryController as SupplyHeadPropertyEntryController;
 use App\Http\Controllers\Admin\RolePermissionController;
@@ -78,6 +83,9 @@ Route::get('/terms-and-conditions', [HomeController::class, 'termsAndConditions'
 Route::post('/inquiries', [InquiryController::class, 'storePropertyInquiry'])->name('inquiries.store');
 Route::post('/inquiries/check-submission', [InquiryController::class, 'checkSubmission'])->name('inquiries.checkSubmission');
 Route::post('/consultations', [ConsultationController::class, 'store'])->name('consultations.store');
+
+// ── Public single-use site-visit link (no auth required — token is the key) ──
+Route::get('/site-visit/{token}', [PublicSiteVisitController::class, 'show'])->name('site-visit.show');
 Route::get('/calculators/acre-to-bigha', [HomeController::class, 'acreToBigha'])->name('calculators.acre-to-bigha');
 Route::get('/calculators/acre-to-hectare', [HomeController::class, 'acreToHectare'])->name('calculators.acre-to-hectare');
 Route::get('/calculators/emi-calculator', [HomeController::class, 'emiCalculator'])->name('calculators.emi-calculator');
@@ -225,6 +233,56 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
     // CSRF Token refresh route for long forms
     Route::get('/csrf-token', function () {
         return response()->json(['csrf_token' => csrf_token()]);
+    });
+
+    // ── Sales Executive Lead Pipeline (Panel 1) ───────────────────────────
+    Route::prefix('se')->name('se.')->group(function () {
+        Route::get('leads',                            [SalesExecutiveLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}',                     [SalesExecutiveLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/log-contact',        [SalesExecutiveLeadController::class, 'logContact'])->name('leads.log-contact');
+        Route::post('leads/{lead}/qualify',            [SalesExecutiveLeadController::class, 'qualify'])->name('leads.qualify');
+        Route::post('leads/{lead}/share-options',      [SalesExecutiveLeadController::class, 'shareOptions'])->name('leads.share-options');
+        Route::post('leads/{lead}/handover',           [SalesExecutiveLeadController::class, 'handover'])->name('leads.handover');
+        Route::post('leads/{lead}/hold',               [SalesExecutiveLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume',             [SalesExecutiveLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/defer',              [SalesExecutiveLeadController::class, 'defer'])->name('leads.defer');
+        Route::post('leads/{lead}/lost',               [SalesExecutiveLeadController::class, 'markLost'])->name('leads.lost');
+    });
+
+    // ── Chief Coordinator Lead Pipeline (Panel 2) ─────────────────────────
+    Route::prefix('cc')->name('cc.')->group(function () {
+        Route::get('leads',                                    [ChiefCoordinatorLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}',                             [ChiefCoordinatorLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/request-feasibility',        [ChiefCoordinatorLeadController::class, 'requestFeasibility'])->name('leads.request-feasibility');
+        Route::post('leads/{lead}/generate-site-visit-link',   [ChiefCoordinatorLeadController::class, 'generateSiteVisitLink'])->name('leads.generate-site-visit-link');
+        Route::post('leads/{lead}/site-visit-feedback',        [ChiefCoordinatorLeadController::class, 'siteVisitFeedback'])->name('leads.site-visit-feedback');
+        Route::post('leads/{lead}/negotiate',                  [ChiefCoordinatorLeadController::class, 'negotiate'])->name('leads.negotiate');
+        Route::post('leads/{lead}/close-deal',                 [ChiefCoordinatorLeadController::class, 'closeDeal'])->name('leads.close-deal');
+        Route::post('leads/{lead}/hold',                       [ChiefCoordinatorLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume',                     [ChiefCoordinatorLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/defer',                      [ChiefCoordinatorLeadController::class, 'defer'])->name('leads.defer');
+        Route::post('leads/{lead}/lost',                       [ChiefCoordinatorLeadController::class, 'markLost'])->name('leads.lost');
+    });
+
+    // ── Supply Head Feasibility Relay (Panel 3) ───────────────────────────
+    Route::prefix('sh')->name('sh.')->group(function () {
+        Route::get('leads',                  [SupplyHeadLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}',           [SupplyHeadLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/respond',  [SupplyHeadLeadController::class, 'respond'])->name('leads.respond');
+    });
+
+    // ── Admin Lead Management (cross-division) ────────────────────────────
+    Route::prefix('admin')->name('admin.')->middleware('permission')->group(function () {
+        Route::get('leads',                              [AdminLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}',                       [AdminLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/assign-cc',            [AdminLeadController::class, 'assignCC'])->name('leads.assign-cc');
+        Route::post('leads/{lead}/assign-se',            [AdminLeadController::class, 'assignSE'])->name('leads.assign-se');
+        Route::post('leads/{lead}/override-stage',       [AdminLeadController::class, 'overrideStage'])->name('leads.override-stage');
+        Route::post('leads/{lead}/resolve-division',     [AdminLeadController::class, 'resolveDivision'])->name('leads.resolve-division');
+        Route::post('leads/{lead}/hold',                 [AdminLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume',               [AdminLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/lost',                 [AdminLeadController::class, 'markLost'])->name('leads.lost');
+        Route::delete('leads/{lead}',                    [AdminLeadController::class, 'destroy'])->name('leads.destroy');
     });
 });
 

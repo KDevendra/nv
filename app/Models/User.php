@@ -19,13 +19,29 @@ class User extends Authenticatable
      * @var list<string>
      */
     const ROLES = [
-        'super_admin'     => 'Super Admin',
-        'admin'           => 'Admin',
-        'user'            => 'User',
-        'supply_head'     => 'Supply Head',
-        'field_officer'   => 'Field Officer',
-        'owner'           => 'Owner',
-        'channel_partner' => 'Channel Partner',
+        'super_admin'       => 'Super Admin',
+        'admin'             => 'Admin',
+        'user'              => 'User',
+        'supply_head'       => 'Supply Head',
+        'field_officer'     => 'Field Officer',
+        'owner'             => 'Owner',
+        'channel_partner'   => 'Channel Partner',
+        'sales_executive'   => 'Sales Executive',
+        'chief_coordinator' => 'Chief Coordinator',
+    ];
+
+    /** Roles that require a division to be set. */
+    const DIVISION_REQUIRED_ROLES = [
+        'sales_executive',
+        'chief_coordinator',
+        'supply_head',
+        'field_officer',
+    ];
+
+    const DIVISIONS = [
+        'warehousing'  => 'Warehousing',
+        'residential'  => 'Residential',
+        'commercial'   => 'Commercial',
     ];
 
     protected $fillable = [
@@ -34,6 +50,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'division',
         'supply_head_id',
         'region_id',
         'area_id',
@@ -174,5 +191,111 @@ class User extends Authenticatable
     public function deactivate()
     {
         return $this->update(['is_active' => false]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Lead-pipeline role helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Enforce division rules on every save.
+     *  - Roles that require a division must have one set.
+     *  - field_officer is always forced to 'warehousing'.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $user) {
+            // Force field_officer division regardless of input
+            if ($user->role === 'field_officer') {
+                $user->division = 'warehousing';
+            }
+
+            // Require division for designated roles
+            if (
+                in_array($user->role, self::DIVISION_REQUIRED_ROLES, true)
+                && empty($user->division)
+            ) {
+                throw new \InvalidArgumentException(
+                    "Users with role '{$user->role}' must have a division assigned."
+                );
+            }
+        });
+    }
+
+    public function isSalesExecutive(): bool
+    {
+        return $this->role === 'sales_executive';
+    }
+
+    public function isChiefCoordinator(): bool
+    {
+        return $this->role === 'chief_coordinator';
+    }
+
+    /**
+     * Leads assigned to this user as Sales Executive.
+     */
+    public function assignedLeadsSE()
+    {
+        return $this->hasMany(\App\Models\Lead::class, 'assigned_se_id');
+    }
+
+    /**
+     * Leads assigned to this user as Chief Coordinator.
+     */
+    public function assignedLeadsCC()
+    {
+        return $this->hasMany(\App\Models\Lead::class, 'assigned_cc_id');
+    }
+
+    /**
+     * Count of active (non-held, non-lost) CC leads for this user.
+     * Used for the 20-lead cap check.
+     */
+    public function activeCCLeadCount(): int
+    {
+        return $this->assignedLeadsCC()
+            ->whereNotIn('stage', ['deal_closed'])
+            ->whereNull('side_state')
+            ->count();
+    }
+
+    /**
+     * Get all Supply Heads for a given division.
+     */
+    public static function getSupplyHeadsByDivision(string $division)
+    {
+        return self::where('role', 'supply_head')
+            ->where('division', $division)
+            ->where('is_active', true)
+            ->get();
+    }
+
+    /**
+     * Get all Sales Executives for a given division.
+     */
+    public static function getSalesExecutivesByDivision(string $division)
+    {
+        return self::where('role', 'sales_executive')
+            ->where('division', $division)
+            ->where('is_active', true)
+            ->get();
+    }
+
+    /**
+     * Get all Chief Coordinators for a given division, ordered by current load.
+     */
+    public static function getChiefCoordinatorsByDivision(string $division)
+    {
+        return self::where('role', 'chief_coordinator')
+            ->where('division', $division)
+            ->where('is_active', true)
+            ->withCount([
+                'assignedLeadsCC as active_cc_lead_count' => function ($q) {
+                    $q->whereNotIn('stage', ['deal_closed'])->whereNull('side_state');
+                },
+            ])
+            ->orderBy('active_cc_lead_count')
+            ->get();
     }
 }
