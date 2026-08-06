@@ -100,15 +100,16 @@ Route::get('/calculators/ft-to-inches', [HomeController::class, 'ftToInches'])->
 Route::get('/calculators/ft-to-mm', [HomeController::class, 'ftToMm'])->name('calculators.ft-to-mm');
 
 
-Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
     Route::prefix('user')->name('user.')->middleware('verified')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\User\UserDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/inquiries', [\App\Http\Controllers\User\UserDashboardController::class, 'inquiries'])->name('inquiries');
-        Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\User\UserDashboardController::class, 'showInquiry'])->name('inquiries.show');
-        Route::get('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'profile'])->name('profile');
-        Route::put('/profile', [\App\Http\Controllers\User\UserDashboardController::class, 'updateProfile'])->name('profile.update');
-        Route::get('/wishlist', [\App\Http\Controllers\User\UserDashboardController::class, 'wishlist'])->name('wishlist');
-        Route::post('/wishlist/toggle', [\App\Http\Controllers\User\UserDashboardController::class, 'toggleWishlist'])->name('wishlist.toggle');
+        Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/inquiries', [UserDashboardController::class, 'inquiries'])->name('inquiries');
+        Route::get('/inquiries/{inquiry}', [UserDashboardController::class, 'showInquiry'])->name('inquiries.show');
+        Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
+        Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/wishlist', [UserDashboardController::class, 'wishlist'])->name('wishlist');
+        Route::post('/wishlist/toggle', [UserDashboardController::class, 'toggleWishlist'])->name('wishlist.toggle');
     });
     Route::get('/api/dashboard/visitor-analytics', [DashboardController::class, 'getVisitorAnalytics'])->middleware('permission')->name('dashboard.analytics');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -181,9 +182,11 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::patch('properties/{property}/toggle-status', [PropertyController::class, 'toggleStatus'])->name('properties.toggle-status');
         Route::patch('properties/{property}/toggle-featured', [PropertyController::class, 'toggleFeatured'])->name('properties.toggle-featured');
         Route::patch('properties/{property}/toggle-verified', [PropertyController::class, 'toggleVerified'])->name('properties.toggle-verified');
-        Route::delete('properties/images/{image}', [PropertyController::class, 'deleteImage'])->name('properties.delete-image');        Route::get('properties-trash', [PropertyController::class, 'trash'])->name('properties.trash');
+        Route::delete('properties/images/{image}', [PropertyController::class, 'deleteImage'])->name('properties.delete-image');
+        Route::get('properties-trash', [PropertyController::class, 'trash'])->name('properties.trash');
         Route::patch('properties-trash/{id}/restore', [PropertyController::class, 'restore'])->name('properties.restore');
-        Route::delete('properties-trash/{id}/force-delete', [PropertyController::class, 'forceDelete'])->name('properties.force-delete');        Route::resource('property-page-sections', PropertyPageSectionController::class);
+        Route::delete('properties-trash/{id}/force-delete', [PropertyController::class, 'forceDelete'])->name('properties.force-delete');
+        Route::resource('property-page-sections', PropertyPageSectionController::class);
         Route::patch('property-page-sections/{propertyPageSection}/toggle-status', [PropertyPageSectionController::class, 'toggleStatus'])->name('property-page-sections.toggle-status');
         Route::delete('property-page-sections/{propertyPageSection}/delete-image', [PropertyPageSectionController::class, 'deleteImage'])->name('property-page-sections.delete-image');
         Route::get('property-inquiries', [PropertyInquiryController::class, 'index'])->name('property-inquiries.index');
@@ -229,7 +232,7 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
         Route::patch('areas/{area}/toggle-status', [AreaController::class, 'toggleStatus'])->name('areas.toggle-status');
         Route::get('areas-by-region', [AreaController::class, 'getByRegion'])->name('areas.by-region');
     });
-    
+
     // CSRF Token refresh route for long forms
     Route::get('/csrf-token', function () {
         return response()->json(['csrf_token' => csrf_token()]);
@@ -237,52 +240,52 @@ Route::middleware('auth')->group(function () {    Route::get('/admin/dashboard',
 
     // ── Sales Executive Lead Pipeline (Panel 1) ───────────────────────────
     Route::prefix('se')->name('se.')->group(function () {
-        Route::get('leads',                            [SalesExecutiveLeadController::class, 'index'])->name('leads.index');
-        Route::get('leads/{lead}',                     [SalesExecutiveLeadController::class, 'show'])->name('leads.show');
-        Route::post('leads/{lead}/log-contact',        [SalesExecutiveLeadController::class, 'logContact'])->name('leads.log-contact');
-        Route::post('leads/{lead}/qualify',            [SalesExecutiveLeadController::class, 'qualify'])->name('leads.qualify');
-        Route::post('leads/{lead}/share-options',      [SalesExecutiveLeadController::class, 'shareOptions'])->name('leads.share-options');
-        Route::post('leads/{lead}/handover',           [SalesExecutiveLeadController::class, 'handover'])->name('leads.handover');
-        Route::post('leads/{lead}/hold',               [SalesExecutiveLeadController::class, 'hold'])->name('leads.hold');
-        Route::post('leads/{lead}/resume',             [SalesExecutiveLeadController::class, 'resume'])->name('leads.resume');
-        Route::post('leads/{lead}/defer',              [SalesExecutiveLeadController::class, 'defer'])->name('leads.defer');
-        Route::post('leads/{lead}/lost',               [SalesExecutiveLeadController::class, 'markLost'])->name('leads.lost');
+        Route::get('leads', [SalesExecutiveLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}', [SalesExecutiveLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/log-contact', [SalesExecutiveLeadController::class, 'logContact'])->name('leads.log-contact');
+        Route::post('leads/{lead}/qualify', [SalesExecutiveLeadController::class, 'qualify'])->name('leads.qualify');
+        Route::post('leads/{lead}/share-options', [SalesExecutiveLeadController::class, 'shareOptions'])->name('leads.share-options');
+        Route::post('leads/{lead}/handover', [SalesExecutiveLeadController::class, 'handover'])->name('leads.handover');
+        Route::post('leads/{lead}/hold', [SalesExecutiveLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume', [SalesExecutiveLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/defer', [SalesExecutiveLeadController::class, 'defer'])->name('leads.defer');
+        Route::post('leads/{lead}/lost', [SalesExecutiveLeadController::class, 'markLost'])->name('leads.lost');
     });
 
     // ── Chief Coordinator Lead Pipeline (Panel 2) ─────────────────────────
     Route::prefix('cc')->name('cc.')->group(function () {
-        Route::get('leads',                                    [ChiefCoordinatorLeadController::class, 'index'])->name('leads.index');
-        Route::get('leads/{lead}',                             [ChiefCoordinatorLeadController::class, 'show'])->name('leads.show');
-        Route::post('leads/{lead}/request-feasibility',        [ChiefCoordinatorLeadController::class, 'requestFeasibility'])->name('leads.request-feasibility');
-        Route::post('leads/{lead}/generate-site-visit-link',   [ChiefCoordinatorLeadController::class, 'generateSiteVisitLink'])->name('leads.generate-site-visit-link');
-        Route::post('leads/{lead}/site-visit-feedback',        [ChiefCoordinatorLeadController::class, 'siteVisitFeedback'])->name('leads.site-visit-feedback');
-        Route::post('leads/{lead}/negotiate',                  [ChiefCoordinatorLeadController::class, 'negotiate'])->name('leads.negotiate');
-        Route::post('leads/{lead}/close-deal',                 [ChiefCoordinatorLeadController::class, 'closeDeal'])->name('leads.close-deal');
-        Route::post('leads/{lead}/hold',                       [ChiefCoordinatorLeadController::class, 'hold'])->name('leads.hold');
-        Route::post('leads/{lead}/resume',                     [ChiefCoordinatorLeadController::class, 'resume'])->name('leads.resume');
-        Route::post('leads/{lead}/defer',                      [ChiefCoordinatorLeadController::class, 'defer'])->name('leads.defer');
-        Route::post('leads/{lead}/lost',                       [ChiefCoordinatorLeadController::class, 'markLost'])->name('leads.lost');
+        Route::get('leads', [ChiefCoordinatorLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}', [ChiefCoordinatorLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/request-feasibility', [ChiefCoordinatorLeadController::class, 'requestFeasibility'])->name('leads.request-feasibility');
+        Route::post('leads/{lead}/generate-site-visit-link', [ChiefCoordinatorLeadController::class, 'generateSiteVisitLink'])->name('leads.generate-site-visit-link');
+        Route::post('leads/{lead}/site-visit-feedback', [ChiefCoordinatorLeadController::class, 'siteVisitFeedback'])->name('leads.site-visit-feedback');
+        Route::post('leads/{lead}/negotiate', [ChiefCoordinatorLeadController::class, 'negotiate'])->name('leads.negotiate');
+        Route::post('leads/{lead}/close-deal', [ChiefCoordinatorLeadController::class, 'closeDeal'])->name('leads.close-deal');
+        Route::post('leads/{lead}/hold', [ChiefCoordinatorLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume', [ChiefCoordinatorLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/defer', [ChiefCoordinatorLeadController::class, 'defer'])->name('leads.defer');
+        Route::post('leads/{lead}/lost', [ChiefCoordinatorLeadController::class, 'markLost'])->name('leads.lost');
     });
 
     // ── Supply Head Feasibility Relay (Panel 3) ───────────────────────────
     Route::prefix('sh')->name('sh.')->group(function () {
-        Route::get('leads',                  [SupplyHeadLeadController::class, 'index'])->name('leads.index');
-        Route::get('leads/{lead}',           [SupplyHeadLeadController::class, 'show'])->name('leads.show');
-        Route::post('leads/{lead}/respond',  [SupplyHeadLeadController::class, 'respond'])->name('leads.respond');
+        Route::get('leads', [SupplyHeadLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}', [SupplyHeadLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/respond', [SupplyHeadLeadController::class, 'respond'])->name('leads.respond');
     });
 
     // ── Admin Lead Management (cross-division) ────────────────────────────
     Route::prefix('admin')->name('admin.')->middleware('permission')->group(function () {
-        Route::get('leads',                              [AdminLeadController::class, 'index'])->name('leads.index');
-        Route::get('leads/{lead}',                       [AdminLeadController::class, 'show'])->name('leads.show');
-        Route::post('leads/{lead}/assign-cc',            [AdminLeadController::class, 'assignCC'])->name('leads.assign-cc');
-        Route::post('leads/{lead}/assign-se',            [AdminLeadController::class, 'assignSE'])->name('leads.assign-se');
-        Route::post('leads/{lead}/override-stage',       [AdminLeadController::class, 'overrideStage'])->name('leads.override-stage');
-        Route::post('leads/{lead}/resolve-division',     [AdminLeadController::class, 'resolveDivision'])->name('leads.resolve-division');
-        Route::post('leads/{lead}/hold',                 [AdminLeadController::class, 'hold'])->name('leads.hold');
-        Route::post('leads/{lead}/resume',               [AdminLeadController::class, 'resume'])->name('leads.resume');
-        Route::post('leads/{lead}/lost',                 [AdminLeadController::class, 'markLost'])->name('leads.lost');
-        Route::delete('leads/{lead}',                    [AdminLeadController::class, 'destroy'])->name('leads.destroy');
+        Route::get('leads', [AdminLeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/{lead}', [AdminLeadController::class, 'show'])->name('leads.show');
+        Route::post('leads/{lead}/assign-cc', [AdminLeadController::class, 'assignCC'])->name('leads.assign-cc');
+        Route::post('leads/{lead}/assign-se', [AdminLeadController::class, 'assignSE'])->name('leads.assign-se');
+        Route::post('leads/{lead}/override-stage', [AdminLeadController::class, 'overrideStage'])->name('leads.override-stage');
+        Route::post('leads/{lead}/resolve-division', [AdminLeadController::class, 'resolveDivision'])->name('leads.resolve-division');
+        Route::post('leads/{lead}/hold', [AdminLeadController::class, 'hold'])->name('leads.hold');
+        Route::post('leads/{lead}/resume', [AdminLeadController::class, 'resume'])->name('leads.resume');
+        Route::post('leads/{lead}/lost', [AdminLeadController::class, 'markLost'])->name('leads.lost');
+        Route::delete('leads/{lead}', [AdminLeadController::class, 'destroy'])->name('leads.destroy');
     });
 });
 
@@ -291,4 +294,4 @@ Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 })->middleware('auth');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
