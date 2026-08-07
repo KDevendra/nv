@@ -539,6 +539,39 @@
                         </div>
                     @endif
 
+                    <!-- CRM Lead Pipeline -->
+                    @if (in_array('dashboard.view', $navPerms))
+                        <a href="{{ route('admin.leads.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.leads.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>CRM Lead Pipeline</span>
+                            @php 
+                                $activeLeads = App\Models\Lead::whereNull('side_state')->count();
+                                $holdingQueue = App\Models\Lead::holdingQueue()->count();
+                                $needsReview = App\Models\Lead::needsReview()->count();
+                            @endphp
+                            @if($holdingQueue > 0 || $needsReview > 0)
+                                <span x-show="!sidebarCollapsed"
+                                    class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 min-w-[18px] h-4 justify-center">
+                                    {{ $holdingQueue + $needsReview }}
+                                </span>
+                                <span x-show="sidebarCollapsed"
+                                    class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-indigo-500"></span>
+                            @endif
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                CRM Lead Pipeline
+                            </div>
+                        </a>
+                    @endif
+
                     <!-- Property Entry Report -->
                     @if (in_array('dashboard.view', $navPerms))
                         <a href="{{ route('admin.property-entry-report.index') }}"
