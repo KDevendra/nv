@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
+use App\Models\User;
+use App\Services\LeadPipelineService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
