@@ -2,14 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\WorkingHours;
 use App\Models\Inquiry;
-use App\Models\Lead;
-use App\Models\Property;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -55,6 +50,15 @@ class InquiryController extends Controller
                 'message' => $request->message,
                 'status' => 'pending'
             ]);
+
+            // ── Feed the CRM pipeline ─────────────────────────────────────
+            app(LeadPipelineService::class)->createFromGeneralInquiry(
+                name:               $request->name,
+                phone:              $request->phone,
+                email:              $request->email,
+                propertyTypeString: $request->property_type,
+                message:            $request->message,
+            );
 
             // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
@@ -171,15 +175,8 @@ class InquiryController extends Controller
                 'status' => 'pending',
                 'ip_address' => $request->ip()
             ]);
-
-            // ── Upsert lead in the CRM pipeline ──────────────────────────
-            // Determine division from the referenced property (or mark for review)
-            $this->createLeadFromInquiry(
-                name:       $request->name,
-                phone:      $request->phone,
-                email:      $request->email,
-                propertyId: $request->filled('property_id') ? (int) $request->property_id : null,
-            );
+            // Observer (PropertyInquiryObserver::created) automatically
+            // upserts a Lead entry in the CRM pipeline.
             // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -205,101 +202,6 @@ class InquiryController extends Controller
             }
             
             return back()->with('error', 'Something went wrong. Please try again later.');
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Lead pipeline integration
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * Attempt to create a Lead record from a public inquiry submission.
-     *
-     * Wrapped in its own transaction with deduplication by (phone, division).
-     * Failures are swallowed with a warning log so that the inquiry itself
-     * is never blocked by CRM pipeline issues.
-     */
-    private function createLeadFromInquiry(
-        string $name,
-        string $phone,
-        ?string $email,
-        ?int $propertyId
-    ): void {
-        try {
-            DB::transaction(function () use ($name, $phone, $email, $propertyId) {
-                // Resolve division from property
-                $division    = null;
-                $needsReview = false;
-
-                if ($propertyId) {
-                    $property = Property::with('propertyType')->find($propertyId);
-                    if ($property) {
-                        $typeName = strtolower($property->propertyType?->name ?? '');
-                        $category = strtolower($property->propertyType?->category ?? '');
-                        if (str_contains($typeName, 'warehouse') || str_contains($typeName, 'industrial') || str_contains($category, 'warehouse')) {
-                            $division = 'warehousing';
-                        } elseif (str_contains($typeName, 'commercial') || str_contains($typeName, 'office') || str_contains($category, 'commercial')) {
-                            $division = 'commercial';
-                        } elseif (str_contains($typeName, 'residential') || str_contains($category, 'residential')) {
-                            $division = 'residential';
-                        }
-                    }
-                }
-
-                if (!$division) {
-                    $division    = 'residential'; // safe default
-                    $needsReview = true;
-                }
-
-                // Deduplicate by (phone, division) — silently skip if already exists
-                $alreadyExists = Lead::withTrashed()
-                    ->where('phone', $phone)
-                    ->where('division', $division)
-                    ->exists();
-
-                if ($alreadyExists) {
-                    return;
-                }
-
-                $lead = Lead::create([
-                    'division'              => $division,
-                    'name'                  => $name,
-                    'phone'                 => $phone,
-                    'email'                 => $email,
-                    'property_id'           => $propertyId,
-                    'stage'                 => 'new_lead',
-                    'origin_table'          => 'property_inquiries',
-                    'needs_division_review' => $needsReview,
-                ]);
-
-                // Auto-assign an SE for this division (round-robin by active load)
-                $se = User::where('role', 'sales_executive')
-                    ->where('division', $division)
-                    ->where('is_active', true)
-                    ->withCount([
-                        'assignedLeadsSE as active_se_lead_count' => function ($q) {
-                            $q->whereIn('stage', Lead::SE_STAGES)->whereNull('side_state');
-                        },
-                    ])
-                    ->orderBy('active_se_lead_count')
-                    ->first();
-
-                if ($se) {
-                    $due = WorkingHours::addWorkingHours(null, 4);
-                    $lead->update([
-                        'assigned_se_id'       => $se->id,
-                        'se_assigned_at'        => now(),
-                        'sla_contact_due_at'    => $due,
-                        'sla_contact_breached'  => false,
-                    ]);
-                }
-            });
-        } catch (\Throwable $e) {
-            // CRM pipeline failure must never break the public inquiry flow
-            \Log::warning('Lead creation from inquiry failed: ' . $e->getMessage(), [
-                'phone' => $phone,
-                'property_id' => $propertyId,
-            ]);
         }
     }
 
