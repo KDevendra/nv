@@ -26,11 +26,12 @@ class PropertyInquiryObserver
 
         try {
             app(LeadPipelineService::class)->createFromPropertyInquiry(
-                name:       $inquiry->name,
-                phone:      $inquiry->phone,
-                email:      $inquiry->email,
-                propertyId: $inquiry->property_id,
-                message:    $inquiry->message,
+                name:              $inquiry->name,
+                phone:             $inquiry->phone,
+                email:             $inquiry->email,
+                propertyId:        $inquiry->property_id,
+                propertyEntryCode: $inquiry->property_entry_code,
+                message:           $inquiry->message,
             );
         } catch (\Throwable $e) {
             // Never let an observer error surface to the end user

@@ -58,17 +58,23 @@ class LeadPipelineService
     }
 
     /**
-     * Called from InquiryController::storePropertyInquiry() — property form.
-     * Division resolved from the property's type FK first, then falls back.
+     * Called from PropertyInquiryObserver::created() — property form.
+     * Division resolved from property FK or PropertyEntry facility_type.
      */
     public function createFromPropertyInquiry(
         string  $name,
         string  $phone,
         ?string $email,
         ?int    $propertyId,
+        ?string $propertyEntryCode = null,
         ?string $message = null
     ): void {
-        [$division, $needsReview] = $this->divisionFromProperty($propertyId);
+        // Try PropertyEntry first (new system), then Property (old system)
+        if ($propertyEntryCode) {
+            [$division, $needsReview] = $this->divisionFromPropertyEntry($propertyEntryCode);
+        } else {
+            [$division, $needsReview] = $this->divisionFromProperty($propertyId);
+        }
 
         $this->upsertLead(
             name:          $name,
@@ -199,6 +205,29 @@ class LeadPipelineService
     // ──────────────────────────────────────────────────────────────────────
     // Division resolution helpers
     // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * Resolve division from a PropertyEntry code (new warehouse system).
+     * Returns [$division, $needsReview].
+     */
+    private function divisionFromPropertyEntry(?string $code): array
+    {
+        if (!$code) {
+            return ['residential', true];
+        }
+
+        $entry = \App\Models\PropertyEntry::where('code', $code)->first();
+        if (!$entry || !$entry->facility_type) {
+            return ['residential', true];
+        }
+
+        $facilityType = strtolower($entry->facility_type);
+        $division = $this->classifyType($facilityType, $facilityType);
+
+        return $division
+            ? [$division, false]
+            : ['residential', true];
+    }
 
     /**
      * Resolve division from a property FK.
