@@ -3,145 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * Panel 3 — Supply Head (relay / feasibility response)
- *
- * Routes prefix : /sh/leads
- * Middleware    : auth (role check enforced in each method)
- *
- * The SH sees only feasibility requests for their own division.
- * They respond with feasible / not_feasible / conditional + notes.
- * SH does NOT advance pipeline stages directly — CC does that on receipt.
- */
 class SupplyHeadLeadController extends Controller
 {
-    // ──────────────────────────────────────────────────────────────────────
-    // Gate helpers
-    // ──────────────────────────────────────────────────────────────────────
-
-    private function authorise(): User
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'supply_head') {
-            abort(403, 'Access restricted to Supply Heads.');
-        }
-
-        return $user;
-    }
-
-    private function authoriseLead(Lead $lead, User $sh): void
-    {
-        if ((int) $lead->feasibility_sh_id !== $sh->id) {
-            abort(403, 'This feasibility request is not assigned to you.');
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Index — feasibility queue
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /sh/leads
+     * Display listing of feasibility check requests assigned to this SH for their division.
      */
     public function index(Request $request)
     {
-        $sh    = $this->authorise();
-        $query = Lead::where('feasibility_sh_id', $sh->id)
-            ->where('division', $sh->division)
-            ->with(['assignedCC', 'assignedSE'])
-            ->latest('feasibility_requested_at');
+        $user = Auth::user();
 
-        // Filter by feasibility status
-        $statusFilter = $request->query('status', 'pending');
-        if ($statusFilter !== 'all') {
-            $query->where('feasibility_status', $statusFilter);
-        }
-
-        $leads = $query->paginate(20)->withQueryString();
+        // Division scoping query filter
+        $query = Lead::where('division', $user->division)
+            ->where('feasibility_sh_id', $user->id)
+            ->whereNotNull('feasibility_raised_at')
+            ->with(['property' => function ($q) {
+                $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'address', 'latitude', 'longitude', 'user_id', 'city_id', 'location_id')
+                  ->with('user:id,name,phone,email');
+            }, 'assignedCC:id,name']);
 
         $stats = [
-            'pending'       => Lead::where('feasibility_sh_id', $sh->id)->where('feasibility_status', 'pending')->count(),
-            'responded'     => Lead::where('feasibility_sh_id', $sh->id)->whereNotIn('feasibility_status', ['pending', null])->count(),
-            'sla_breached'  => Lead::where('feasibility_sh_id', $sh->id)->where('sla_feasibility_breached', true)->count(),
+            'pending'      => (clone $query)->whereNull('feasibility_responded_at')->count(),
+            'responded'    => (clone $query)->whereNotNull('feasibility_responded_at')->count(),
+            'sla_breached' => (clone $query)->whereNull('feasibility_responded_at')->where('feasibility_raised_at', '<=', now()->subHours(24))->count(),
         ];
 
-        if ($request->ajax()) {
-            return response()->json([
-                'html'  => view('sh.leads._table', compact('leads'))->render(),
-                'links' => $leads->links()->toHtml(),
-            ]);
-        }
+        $pendingCount = $stats['pending'];
+        $leads = $query->orderBy('feasibility_raised_at', 'desc')->paginate(15);
 
-        return view('sh.leads.index', compact('leads', 'stats', 'sh'));
+        return view('sh.leads.index', compact('leads', 'pendingCount', 'stats'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Show — feasibility detail
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /sh/leads/{lead}
+     * Display single feasibility check request for response.
      */
     public function show(Lead $lead)
     {
-        $sh = $this->authorise();
-        $this->authoriseLead($lead, $sh);
+        $user = Auth::user();
 
-        $lead->load(['assignedCC', 'assignedSE', 'stageHistories.changedBy']);
+        if ($lead->division !== $user->division || $lead->feasibility_sh_id !== $user->id) {
+            abort(403, 'Unauthorized access to this feasibility request.');
+        }
 
-        // SH gets a property snapshot — info-gated (no owner/GPS)
-        $propertySnapshot = $lead->publicPropertySnapshot();
-        $history          = $lead->stageHistories;
+        $lead->load(['stageHistories.changedBy', 'assignedCC']);
+        $propertySnapshot = Lead::publicPropertySnapshot($lead->property);
+        $history = $lead->stageHistories;
 
-        return view('sh.leads.show', compact('lead', 'sh', 'propertySnapshot', 'history'));
+        return view('sh.leads.show', compact('lead', 'propertySnapshot', 'history'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Submit feasibility response
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * POST /sh/leads/{lead}/respond
+     * Respond to a feasibility check request (relay response only).
      */
     public function respond(Request $request, Lead $lead)
     {
-        $sh = $this->authorise();
-        $this->authoriseLead($lead, $sh);
+        $user = Auth::user();
 
-        if ($lead->feasibility_status !== 'pending') {
-            $msg = 'This feasibility request has already been responded to.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
+        if ($lead->division !== $user->division || $lead->feasibility_sh_id !== $user->id) {
+            abort(403, 'Unauthorized access to this feasibility request.');
         }
 
         $request->validate([
-            'feasibility_status' => 'required|in:feasible,not_feasible,conditional',
-            'feasibility_notes'  => 'required|string|min:10|max:5000',
+            'feasibility_notes' => 'required|string|max:2000',
         ]);
 
         $lead->update([
-            'feasibility_status'          => $request->feasibility_status,
-            'feasibility_notes'           => $request->feasibility_notes,
-            'feasibility_responded_at'    => now(),
-            // SLA is resolved once response arrives — clear breach flag
-            'sla_feasibility_breached'    => false,
+            'feasibility_notes'        => $request->feasibility_notes,
+            'feasibility_responded_at' => now(),
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Feasibility response submitted.',
-                'status'  => $request->feasibility_status,
+                'message' => 'Feasibility check response recorded successfully.',
+                'lead'    => $lead->fresh()
             ]);
         }
 
-        return redirect()->route('sh.leads.index')->with('success', 'Feasibility response submitted.');
+        return back()->with('success', 'Feasibility check response recorded successfully.');
     }
 }

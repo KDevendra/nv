@@ -2,365 +2,197 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\WorkingHours;
 use App\Models\Lead;
 use App\Models\Property;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
-/**
- * Panel 1 — Sales Executive
- *
- * Routes prefix : /se/leads
- * Middleware    : auth (role check enforced in each method)
- *
- * Stages owned  : new_lead → contacted → interest_confirmed
- * Actions       : log contact, qualify, share property options, submit handover note → escalate to CC
- */
 class SalesExecutiveLeadController extends Controller
 {
-    // ──────────────────────────────────────────────────────────────────────
-    // Middleware / gate helper
-    // ──────────────────────────────────────────────────────────────────────
-
-    private function authorise(): User
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'sales_executive') {
-            abort(403, 'Access restricted to Sales Executives.');
-        }
-
-        return $user;
-    }
-
-    private function authoriseLead(Lead $lead, User $se): void
-    {
-        if ((int) $lead->assigned_se_id !== $se->id) {
-            abort(403, 'This lead is not assigned to you.');
-        }
-
-        if (!in_array($lead->stage, Lead::SE_STAGES, true)) {
-            abort(403, 'This lead has already been escalated to the CC panel.');
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Index — dashboard
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /se/leads
+     * Display a listing of assigned SE leads for auth user's division.
      */
     public function index(Request $request)
     {
-        $se     = $this->authorise();
-        $query  = Lead::forSE($se->id)
-            ->whereIn('stage', Lead::SE_STAGES)
-            ->with(['property', 'assignedCC'])
-            ->latest();
+        $user = Auth::user();
 
-        // Filters
-        if ($stage = $request->query('stage')) {
-            $query->where('stage', $stage);
+        $query = Lead::where('division', $user->division)
+            ->where('assigned_se_id', $user->id)
+            ->whereIn('stage', Lead::SE_STAGES)
+            ->with(['property' => function ($q) {
+                $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'plot_area', 'city_id', 'location_id', 'property_type_id');
+            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name']);
+
+        if ($request->filled('stage')) {
+            $query->where('stage', $request->stage);
         }
-        if ($sideState = $request->query('side_state')) {
-            $query->where('side_state', $sideState);
-        } else {
-            // Default: show active + held (exclude lost)
-            $query->where(function ($q) {
-                $q->whereNull('side_state')->orWhere('side_state', '!=', 'lost');
+
+        if ($request->filled('side_state')) {
+            $query->where('side_state', $request->side_state);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'LIKE', "%{$s}%")
+                  ->orWhere('phone', 'LIKE', "%{$s}%")
+                  ->orWhere('email', 'LIKE', "%{$s}%");
             });
         }
 
-        $leads = $query->paginate(25)->withQueryString();
-
         $stats = [
-            'total'    => Lead::forSE($se->id)->whereIn('stage', Lead::SE_STAGES)->count(),
-            'active'   => Lead::forSE($se->id)->whereIn('stage', Lead::SE_STAGES)->whereNull('side_state')->count(),
-            'on_hold'  => Lead::forSE($se->id)->where('side_state', 'on_hold')->count(),
-            'sla_breached' => Lead::forSE($se->id)->where('sla_contact_breached', true)->count(),
+            'total'        => (clone $query)->count(),
+            'active'       => (clone $query)->whereNull('side_state')->count(),
+            'on_hold'      => (clone $query)->where('side_state', 'inquiry_hold')->count(),
+            'sla_breached' => (clone $query)->whereNull('first_contacted_at')->count(),
         ];
 
-        if ($request->ajax()) {
-            return response()->json([
-                'html'  => view('se.leads._table', compact('leads'))->render(),
-                'links' => $leads->links()->toHtml(),
-            ]);
-        }
+        $leads = $query->orderBy('updated_at', 'desc')->paginate(15);
 
-        return view('se.leads.index', compact('leads', 'stats', 'se'));
+        return view('se.leads.index', compact('leads', 'stats'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Show — detail panel
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /se/leads/{lead}
+     * Display the specified SE lead (info-gated property details).
      */
     public function show(Lead $lead)
     {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
+        $user = Auth::user();
 
-        $lead->load(['property', 'stageHistories.changedBy', 'assignedCC']);
-        $propertySnapshot = $lead->publicPropertySnapshot();
-        $history          = $lead->stageHistories;
-
-        return view('se.leads.show', compact('lead', 'se', 'propertySnapshot', 'history'));
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Log a contact attempt
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /se/leads/{lead}/log-contact
-     */
-    public function logContact(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-
-        $request->validate([
-            'notes' => 'nullable|string|max:2000',
-        ]);
-
-        DB::transaction(function () use ($lead, $request, $se) {
-            $attempts = $lead->contact_attempts + 1;
-            $lead->contact_attempts  = $attempts;
-            $lead->last_contacted_at = now();
-
-            if ($request->filled('notes')) {
-                $existing = $lead->qualification_notes ?? '';
-                $lead->qualification_notes = $existing
-                    ? $existing . "\n[" . now()->toDateTimeString() . '] ' . $request->notes
-                    : '[' . now()->toDateTimeString() . '] ' . $request->notes;
-            }
-
-            // Auto-advance stage on first contact
-            if ($lead->stage === 'new_lead' && $attempts === 1) {
-                $lead->save();
-                $lead->transitionTo('contacted', 'First contact logged.', $se);
-            } else {
-                $lead->save();
-            }
-        });
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success'           => true,
-                'message'           => 'Contact attempt logged.',
-                'contact_attempts'  => $lead->fresh()->contact_attempts,
-                'stage'             => $lead->fresh()->stage,
-            ]);
+        if ($lead->division !== $user->division || $lead->assigned_se_id !== $user->id) {
+            abort(403, 'Unauthorized access to this lead.');
         }
 
-        return back()->with('success', 'Contact attempt logged.');
+        $lead->load(['stageHistories.changedBy']);
+        $propertySnapshot = Lead::publicPropertySnapshot($lead->property);
+
+        // Fetch properties for options sharing (info-gated)
+        $availableOptions = Property::where('is_active', true)
+            ->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'city_id', 'location_id', 'property_type_id')
+            ->with(['city:id,name', 'location:id,name', 'propertyType:id,name'])
+            ->limit(30)
+            ->get()
+            ->map(fn ($p) => Lead::publicPropertySnapshot($p));
+
+        $history = $lead->stageHistories;
+
+        return view('se.leads.show', compact('lead', 'propertySnapshot', 'availableOptions', 'history'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Save qualification notes
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * POST /se/leads/{lead}/qualify
+     * Update lead stage, contact log, qualification notes, options shared, or handover note.
      */
-    public function qualify(Request $request, Lead $lead)
+    public function update(Request $request, Lead $lead)
     {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
+        $user = Auth::user();
 
-        $request->validate([
-            'qualification_notes' => 'required|string|max:5000',
-            'advance_stage'       => 'nullable|boolean',
-        ]);
+        if ($lead->division !== $user->division || $lead->assigned_se_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        DB::transaction(function () use ($lead, $request, $se) {
+        // Side-state action handling
+        if ($request->has('action')) {
+            return $this->handleSideStateAction($request, $lead);
+        }
+
+        // Stage transition handling
+        if ($request->filled('stage')) {
+            $newStage = $request->stage;
+
+            // Block transition if currently on hold
+            if ($lead->side_state === 'inquiry_hold') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lead is on inquiry hold. Resume lead before advancing stage.'
+                ], 422);
+            }
+
+            // Stage 5 Handover Gate enforcement
+            if ($newStage === 'escalated_to_cc') {
+                $handoverNote = trim((string) $request->input('handover_note', $lead->handover_note));
+                if (empty($handoverNote)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Handover note is required before escalating lead to Chief Coordinator.'
+                    ], 422);
+                }
+                $lead->handover_note = $handoverNote;
+                $lead->handover_completed_at = now();
+                $lead->save();
+            }
+
+            try {
+                $lead->transitionTo($newStage, $user);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+        }
+
+        // Update qualification or contact outcome fields
+        if ($request->filled('qualification_notes')) {
             $lead->qualification_notes = $request->qualification_notes;
-            $lead->save();
+        }
 
-            if ($request->boolean('advance_stage') && $lead->canTransitionTo('interest_confirmed')) {
-                $lead->transitionTo('interest_confirmed', 'Interest confirmed after qualification.', $se);
+        if ($request->filled('contact_outcome')) {
+            $lead->contact_outcome = $request->contact_outcome;
+            $lead->contact_attempts = $lead->contact_attempts + 1;
+            if (!$lead->first_contacted_at) {
+                $lead->first_contacted_at = now();
             }
-        });
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Qualification saved.', 'stage' => $lead->fresh()->stage]);
         }
 
-        return back()->with('success', 'Qualification saved.');
-    }
+        if ($request->has('options_shared_property_ids')) {
+            $lead->options_shared_property_ids = (array) $request->options_shared_property_ids;
+        }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Share property options
-    // ──────────────────────────────────────────────────────────────────────
+        $lead->save();
 
-    /**
-     * POST /se/leads/{lead}/share-options
-     * Body: property_ids[] (array of property IDs visible to SE's division)
-     */
-    public function shareOptions(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-
-        $request->validate([
-            'property_ids'   => 'required|array|min:1|max:10',
-            'property_ids.*' => 'integer|exists:properties,id',
-        ]);
-
-        // Build info-gated snapshots
-        $properties = Property::whereIn('id', $request->property_ids)
-            ->where('is_active', true)
-            ->get();
-
-        $snapshots = $properties->mapWithKeys(function ($p) use ($lead) {
-            return [$p->id => $lead->publicPropertySnapshot($p)];
-        });
-
-        $lead->update([
-            'options_shared_property_ids' => array_values($request->property_ids),
-            'options_shared_at'           => now(),
-        ]);
-
-        if ($request->ajax()) {
+        if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'success'   => true,
-                'message'   => count($properties) . ' option(s) shared with lead.',
-                'snapshots' => $snapshots,
+                'success' => true,
+                'message' => 'Lead updated successfully.',
+                'lead'    => $lead->fresh(['stageHistories'])
             ]);
         }
 
-        return back()->with('success', count($properties) . ' option(s) shared.');
+        return back()->with('success', 'Lead updated successfully.');
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Submit handover note & escalate to CC
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /se/leads/{lead}/handover
-     */
-    public function handover(Request $request, Lead $lead)
+    private function handleSideStateAction(Request $request, Lead $lead)
     {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
+        $action = $request->action;
+        $user = Auth::user();
 
-        if ($lead->stage !== 'interest_confirmed') {
-            $msg = 'Lead must be at interest_confirmed stage before handover.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
+        try {
+            match ($action) {
+                'put_on_hold' => $lead->putOnHold(
+                    reason: (string) $request->input('hold_reason'),
+                    expectedResumeDate: $request->input('hold_expected_resume_date')
+                ),
+                'resume_from_hold' => $lead->resumeFromHold(),
+                'defer' => $lead->deferFollowUp(
+                    date: (string) $request->input('follow_up_date')
+                ),
+                'mark_lost' => $lead->markLost(
+                    reason: (string) $request->input('lost_reason'),
+                    otherText: $request->input('lost_reason_other')
+                ),
+                default => throw new \InvalidArgumentException("Invalid side-state action '{$action}'."),
+            };
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            return back()->with('error', $e->getMessage());
         }
 
-        $request->validate([
-            'handover_note' => 'required|string|min:20|max:5000',
-        ]);
-
-        DB::transaction(function () use ($lead, $request, $se) {
-            $lead->handover_note          = $request->handover_note;
-            $lead->handover_completed_at  = now();
-            $lead->save();
-
-            // Attempt CC auto-assignment
-            $lead->assignBestCC();
-
-            // Transition stage — hard gate passes because handover fields are now set
-            $lead->transitionTo('escalated_to_cc', 'Handover to CC: ' . $request->handover_note, $se);
-        });
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success'      => true,
-                'message'      => 'Lead escalated to Chief Coordinator.',
-                'assigned_cc'  => $lead->fresh()->assignedCC?->name ?? 'Holding queue',
-            ]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead side-state updated.', 'lead' => $lead->fresh()]);
         }
 
-        return redirect()->route('se.leads.index')->with('success', 'Lead escalated to Chief Coordinator.');
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Side-state actions
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /se/leads/{lead}/hold
-     */
-    public function hold(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-
-        $request->validate([
-            'reason'     => 'nullable|string|max:500',
-            'hold_until' => 'nullable|date|after:today',
-        ]);
-
-        $until = $request->filled('hold_until') ? new \DateTime($request->hold_until) : null;
-        $lead->putOnHold($request->reason, $until, $se);
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Lead placed on hold.']);
-        }
-        return back()->with('success', 'Lead placed on hold.');
-    }
-
-    /**
-     * POST /se/leads/{lead}/resume
-     */
-    public function resume(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-        $lead->resumeFromHold($se);
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Lead resumed.']);
-        }
-        return back()->with('success', 'Lead resumed from hold.');
-    }
-
-    /**
-     * POST /se/leads/{lead}/defer
-     */
-    public function defer(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-
-        $request->validate([
-            'defer_until' => 'required|date|after:now',
-            'reason'      => 'nullable|string|max:500',
-        ]);
-
-        $lead->deferFollowUp(new \DateTime($request->defer_until), $request->reason, $se);
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Follow-up deferred.']);
-        }
-        return back()->with('success', 'Follow-up deferred.');
-    }
-
-    /**
-     * POST /se/leads/{lead}/lost
-     */
-    public function markLost(Request $request, Lead $lead)
-    {
-        $se = $this->authorise();
-        $this->authoriseLead($lead, $se);
-
-        $request->validate(['reason' => 'required|string|max:500']);
-        $lead->markLost($request->reason, $se);
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Lead marked as lost.']);
-        }
-        return redirect()->route('se.leads.index')->with('success', 'Lead marked as lost.');
+        return back()->with('success', 'Lead side-state updated.');
     }
 }

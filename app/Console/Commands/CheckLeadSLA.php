@@ -2,84 +2,83 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\WorkingHours;
-use App\Models\Lead;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
+use App\Models\Lead;
+use App\Models\LeadStageHistory;
+use App\Helpers\WorkingHours;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
-/**
- * Artisan command: app:check-lead-sla
- *
- * Runs hourly (scheduled in console.php) and flags SLA breaches:
- *
- *  1. SE contact SLA — 4 working hours from SE assignment.
- *     Applies to leads in stage 'new_lead' with contact_attempts = 0.
- *
- *  2. SH feasibility response SLA — 24 clock hours from feasibility request.
- *     Applies to leads in stage 'feasibility_check' with feasibility_status = 'pending'.
- *
- * Held leads are excluded from SLA breach detection.
- * After a lead resumes from hold, the SLA deadline is not retroactively
- * set to "breached" for the hold period.
- */
 class CheckLeadSLA extends Command
 {
-    protected $signature   = 'app:check-lead-sla
-                                {--dry-run : Report breaches without writing flags}';
-
-    protected $description = 'Check SLA breaches for active (non-held) leads and flag them.';
+    protected $signature = 'app:check-lead-sla';
+    protected $description = 'Check for SLA breaches on active leads (contact SLA & feasibility SLA)';
 
     public function handle(): int
     {
-        $dryRun = $this->option('dry-run');
-        $now    = Carbon::now();
+        $activeLeads = Lead::whereNotIn('side_state', ['inquiry_hold', 'lost'])->get();
 
-        $contactBreached     = 0;
-        $feasibilityBreached = 0;
+        $contactBreaches = 0;
+        $feasibilityBreaches = 0;
 
-        // ── 1. SE contact SLA ─────────────────────────────────────────────
-        // 4 working hours from se_assigned_at, first contact not yet made.
-        Lead::query()
-            ->where('stage', 'new_lead')
-            ->where('contact_attempts', 0)
-            ->whereNotNull('assigned_se_id')
-            ->whereNotNull('sla_contact_due_at')
-            ->where('sla_contact_breached', false)
-            ->whereNull('side_state')        // exclude held/lost/deferred
-            ->where('sla_contact_due_at', '<', $now)
-            ->chunk(200, function ($leads) use ($dryRun, &$contactBreached) {
-                foreach ($leads as $lead) {
-                    $contactBreached++;
-                    if (!$dryRun) {
-                        $lead->update(['sla_contact_breached' => true]);
-                    }
-                    $this->line("  [SLA-CONTACT] Lead #{$lead->id} ({$lead->name}) breached — due {$lead->sla_contact_due_at}");
+        foreach ($activeLeads as $lead) {
+            // 1. Contact SLA check (4 working hours from created_at)
+            if ($lead->first_contacted_at === null) {
+                $now = now();
+                $workingHoursElapsed = WorkingHours::getWorkingHoursElapsed($lead->created_at, $now);
+
+                // Calculate total working hours spent while on hold, if any
+                $holdWorkingHours = $this->calculateHoldWorkingHours($lead);
+                $effectiveWorkingHours = max(0, $workingHoursElapsed - $holdWorkingHours);
+
+                if ($effectiveWorkingHours > 4.0) {
+                    $contactBreaches++;
+                    Log::warning("SLA Breach: Lead #{$lead->id} not contacted within 4 working hours. Effective elapsed: {$effectiveWorkingHours} hrs.");
                 }
-            });
+            }
 
-        // ── 2. SH feasibility response SLA ───────────────────────────────
-        // 24 clock hours from feasibility_requested_at.
-        Lead::query()
-            ->where('stage', 'feasibility_check')
-            ->where('feasibility_status', 'pending')
-            ->whereNotNull('feasibility_requested_at')
-            ->whereNotNull('sla_feasibility_due_at')
-            ->where('sla_feasibility_breached', false)
-            ->whereNull('side_state')        // exclude held/lost/deferred
-            ->where('sla_feasibility_due_at', '<', $now)
-            ->chunk(200, function ($leads) use ($dryRun, &$feasibilityBreached) {
-                foreach ($leads as $lead) {
-                    $feasibilityBreached++;
-                    if (!$dryRun) {
-                        $lead->update(['sla_feasibility_breached' => true]);
-                    }
-                    $this->line("  [SLA-FEASIBILITY] Lead #{$lead->id} ({$lead->name}) breached — due {$lead->sla_feasibility_due_at}");
+            // 2. Feasibility SLA check (>24h elapsed since raised)
+            if ($lead->feasibility_raised_at !== null && $lead->feasibility_responded_at === null) {
+                $raisedAt = Carbon::parse($lead->feasibility_raised_at);
+                $elapsedHours = $raisedAt->diffInHours(now());
+
+                if ($elapsedHours > 24) {
+                    $feasibilityBreaches++;
+                    Log::warning("SLA Breach: Lead #{$lead->id} feasibility response delayed (>24h since raised). SH ID: {$lead->feasibility_sh_id}.");
                 }
-            });
+            }
+        }
 
-        $this->newLine();
-        $this->info("SLA check complete. Contact breaches: {$contactBreached}, Feasibility breaches: {$feasibilityBreached}" . ($dryRun ? ' [DRY RUN — nothing written]' : ''));
+        $this->info("SLA Check completed. Contact breaches: {$contactBreaches}, Feasibility breaches: {$feasibilityBreaches}");
+        return Command::SUCCESS;
+    }
 
-        return self::SUCCESS;
+    /**
+     * Calculate working hours spent on hold for a lead.
+     */
+    private function calculateHoldWorkingHours(Lead $lead): float
+    {
+        $holdHistories = LeadStageHistory::where('lead_id', $lead->id)
+            ->where(function ($q) {
+                $q->where('to_side_state', 'inquiry_hold')
+                  ->orWhere('from_side_state', 'inquiry_hold');
+            })
+            ->orderBy('id')
+            ->get();
+
+        $totalHoldWorkingHours = 0.0;
+        $holdStart = null;
+
+        foreach ($holdHistories as $h) {
+            if ($h->to_side_state === 'inquiry_hold' && !$holdStart) {
+                $holdStart = Carbon::parse($h->created_at);
+            } elseif ($h->from_side_state === 'inquiry_hold' && $holdStart) {
+                $holdEnd = Carbon::parse($h->created_at);
+                $totalHoldWorkingHours += WorkingHours::getWorkingHoursElapsed($holdStart, $holdEnd);
+                $holdStart = null;
+            }
+        }
+
+        return $totalHoldWorkingHours;
     }
 }

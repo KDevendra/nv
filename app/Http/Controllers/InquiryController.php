@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inquiry;
+use App\Models\Lead;
 use App\Models\User;
-use App\Services\LeadPipelineService;
+use App\Models\Property;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InquiryController extends Controller
 {
     /**
-     * Store a newly created inquiry in storage.
+     * Store a newly created inquiry in storage. Writes ONLY to leads table.
      */
     public function store(Request $request)
     {
-        // Check if this is a property-specific inquiry
         if ($request->has('property_id')) {
             return $this->storePropertyInquiry($request);
         }
@@ -32,7 +31,6 @@ class InquiryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -44,37 +42,41 @@ class InquiryController extends Controller
         }
 
         try {
-            $inquiry = Inquiry::create([
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'property_type' => $request->property_type,
-                'message' => $request->message,
-                'status' => 'pending'
-            ]);
+            $lead = null;
+            DB::transaction(function () use ($request, &$lead) {
+                $division = $this->determineDivision(null, $request->property_type);
 
-            // ── Feed the CRM pipeline ─────────────────────────────────────
-            app(LeadPipelineService::class)->createFromGeneralInquiry(
-                name:               $request->name,
-                phone:              $request->phone,
-                email:              $request->email,
-                propertyTypeString: $request->property_type,
-                message:            $request->message,
-            );
+                $lead = Lead::where('phone', $request->phone)
+                    ->where('division', $division)
+                    ->first();
 
-            // Check if this is an AJAX request
+                if (!$lead) {
+                    $se = User::getSalesExecutivesByDivision($division)->first();
+
+                    $lead = Lead::create([
+                        'division' => $division,
+                        'name' => $request->name,
+                        'phone' => $request->phone,
+                        'email' => $request->email,
+                        'stage' => 'new_lead',
+                        'assigned_se_id' => $se?->id,
+                        'qualification_notes' => $request->message,
+                    ]);
+                }
+            });
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Thank you for your inquiry! We will get back to you soon.',
-                    'data' => $inquiry
+                    'data' => $lead
                 ], 201);
             }
 
             return back()->with('success', 'Thank you for your inquiry! We will get back to you soon.');
 
         } catch (\Exception $e) {
-            // Check if this is an AJAX request
+            \Log::error('Inquiry creation error: ' . $e->getMessage());
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -87,7 +89,7 @@ class InquiryController extends Controller
     }
 
     /**
-     * Store a property-specific inquiry.
+     * Store a property-specific inquiry. Writes ONLY to leads table.
      */
     public function storePropertyInquiry(Request $request)
     {
@@ -101,7 +103,6 @@ class InquiryController extends Controller
         ]);
         
         if ($validator->fails()) {
-            // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -113,80 +114,70 @@ class InquiryController extends Controller
         }
 
         try {
-            \Log::info('Processing property inquiry', [
-                'property_entry_code' => $request->property_entry_code,
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'user_logged_in' => Auth::check()
-            ]);
-            
-            // Get the current page visit ID from session safely
-            $pageVisitId = $request->hasSession() ? $request->session()->get('current_page_visit_id') : null;
-            
-            // Note: Removed strict validation - users can now submit multiple inquiries for the same property
-            
-            // ── Auto-create user if not logged in ──
             $wasLoggedInInitially = Auth::check();
-            $user = Auth::user();
             $userWasCreated = false;
-            
-            if (!$user) {
-                // Try to find existing user by phone or email
-                $existingUser = null;
-                
-                if ($request->filled('phone')) {
-                    $existingUser = User::where('phone', $request->phone)->first();
-                }
-                
-                if (!$existingUser && $request->filled('email')) {
-                    $existingUser = User::where('email', $request->email)->first();
-                }
-                
-                if ($existingUser) {
-                    $user = $existingUser;
-                } else {
-                    // Create new user - email is optional
-                    $user = User::create([
-                        'name' => $request->name,
-                        'email' => $request->email ?: null,
-                        'phone' => $request->phone,
-                        'password' => Hash::make($request->phone ?: 'password123'),
-                        'role' => 'user',
-                        'email_verified_at' => $request->filled('email') ? now() : null,
-                    ]);
-                    $userWasCreated = true;
-                }
-                
-                // Auto-login the user
-                if ($user) {
+            $lead = null;
+
+            DB::transaction(function () use ($request, &$userWasCreated, &$lead) {
+                // 1. User account registration/login
+                $user = Auth::user();
+                if (!$user) {
+                    $existingUser = null;
+                    if ($request->filled('phone')) {
+                        $existingUser = User::where('phone', $request->phone)->first();
+                    }
+                    if (!$existingUser && $request->filled('email')) {
+                        $existingUser = User::where('email', $request->email)->first();
+                    }
+
+                    if ($existingUser) {
+                        $user = $existingUser;
+                    } else {
+                        $user = User::create([
+                            'name' => $request->name,
+                            'email' => $request->email ?: null,
+                            'phone' => $request->phone,
+                            'password' => Hash::make($request->phone ?: 'password123'),
+                            'role' => 'user',
+                            'email_verified_at' => $request->filled('email') ? now() : null,
+                        ]);
+                        $userWasCreated = true;
+                    }
+
                     Auth::login($user);
                 }
-            }
-            
-            \App\Models\PropertyInquiry::create([
-                'property_id' => $request->filled('property_id') ? $request->property_id : null,
-                'property_entry_code' => $request->property_entry_code,
-                'page_visit_id' => $pageVisitId,
-                'user_id' => $user ? $user->id : null,
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'message' => $request->message,
-                'inquiry_type' => $request->input('inquiry_type', 'call_back'),
-                'status' => 'pending',
-                'ip_address' => $request->ip()
-            ]);
-            // Observer (PropertyInquiryObserver::created) automatically
-            // upserts a Lead entry in the CRM pipeline.
-            // Check if this is an AJAX request
+
+                // 2. Create Lead strictly in leads table
+                $division = $this->determineDivision($request->property_id, null);
+
+                $lead = Lead::where('phone', $request->phone)
+                    ->where('division', $division)
+                    ->first();
+
+                if (!$lead) {
+                    $se = User::getSalesExecutivesByDivision($division)->first();
+
+                    $lead = Lead::create([
+                        'division' => $division,
+                        'name' => $request->name,
+                        'phone' => $request->phone,
+                        'email' => $request->email,
+                        'property_id' => $request->property_id ?: null,
+                        'stage' => 'new_lead',
+                        'assigned_se_id' => $se?->id,
+                        'qualification_notes' => $request->message,
+                    ]);
+                }
+            });
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Thank you for your inquiry! We will contact you shortly.',
                     'user_created' => $userWasCreated,
                     'logged_in' => Auth::check(),
-                    'reload_required' => !$wasLoggedInInitially && Auth::check()
+                    'reload_required' => !$wasLoggedInInitially && Auth::check(),
+                    'data' => $lead
                 ], 200);
             }
 
@@ -195,7 +186,6 @@ class InquiryController extends Controller
         } catch (\Exception $e) {
             \Log::error('Property inquiry error: ' . $e->getMessage());
             
-            // Check if this is an AJAX request
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -208,7 +198,8 @@ class InquiryController extends Controller
     }
 
     /**
-     * Check if visitor has already submitted inquiry for a property     */
+     * Check if visitor has already submitted inquiry for a property
+     */
     public function checkSubmission(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -223,17 +214,16 @@ class InquiryController extends Controller
         }
 
         try {
-            $pageVisitId = $request->session()->get('current_page_visit_id');
-            
-            $hasSubmitted = \App\Models\PropertyInquiry::where('property_id', $request->property_id)
-                ->where(function($query) use ($request, $pageVisitId) {
-                    $query->where('ip_address', $request->ip());
-                    if ($pageVisitId) {
-                        $query->orWhere('page_visit_id', $pageVisitId);
-                    }
-                })
-                ->where('created_at', '>=', now()->subHours(24))
-                ->exists();
+            $division = $this->determineDivision($request->property_id, null);
+            $user = Auth::user();
+
+            $hasSubmitted = false;
+            if ($user && $user->phone) {
+                $hasSubmitted = Lead::where('phone', $user->phone)
+                    ->where('division', $division)
+                    ->where('property_id', $request->property_id)
+                    ->exists();
+            }
 
             return response()->json([
                 'success' => true,
@@ -246,5 +236,35 @@ class InquiryController extends Controller
                 'message' => 'Error checking submission status'
             ], 500);
         }
+    }
+
+    private function determineDivision(?int $propertyId = null, ?string $propertyType = null): string
+    {
+        if ($propertyId) {
+            $property = Property::with('propertyType')->find($propertyId);
+            if ($property) {
+                $typeName = strtolower($property->propertyType?->name ?? '');
+                $category = strtolower($property->propertyType?->category ?? '');
+                if (str_contains($typeName, 'warehous') || str_contains($category, 'warehous')) {
+                    return 'warehousing';
+                }
+                if (str_contains($typeName, 'comm') || str_contains($typeName, 'office') || str_contains($typeName, 'shop') || str_contains($category, 'comm')) {
+                    return 'commercial';
+                }
+                return 'residential';
+            }
+        }
+
+        if ($propertyType) {
+            $str = strtolower($propertyType);
+            if (str_contains($str, 'warehous')) {
+                return 'warehousing';
+            }
+            if (str_contains($str, 'comm') || str_contains($str, 'office') || str_contains($str, 'shop')) {
+                return 'commercial';
+            }
+        }
+
+        return 'residential';
     }
 }

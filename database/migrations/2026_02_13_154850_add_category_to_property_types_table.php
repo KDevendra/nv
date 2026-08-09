@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('property_types', function (Blueprint $table) {
-            $table->enum('category', ['residential', 'commercial'])->after('name')->nullable();
+            $table->enum('category', ['residential', 'commercial', 'warehousing'])->after('name')->nullable();
         });
     }
 

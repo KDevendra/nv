@@ -176,6 +176,14 @@ class PermissionSeeder extends Seeder
             'owner'       => [
                 'dashboard' => ['view'],
             ],
+            'sales_executive' => [
+                'dashboard'  => ['view'],
+                'properties' => ['view'],
+            ],
+            'chief_coordinator' => [
+                'dashboard'  => ['view'],
+                'properties' => ['view'],
+            ],
             'channel_partner' => [
                 'properties'         => ['view'],
                 'property-inquiries' => ['view'],

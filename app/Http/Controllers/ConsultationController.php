@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Consultation;
-use App\Services\LeadPipelineService;
+use App\Models\Lead;
+use App\Models\User;
+use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ConsultationController extends Controller
 {
     /**
-     * Store a newly created consultation in storage.
+     * Store a newly created consultation in storage. Writes ONLY to leads table.
      */
     public function store(Request $request)
     {
@@ -34,42 +36,63 @@ class ConsultationController extends Controller
         }
 
         try {
-            $consultation = Consultation::create([
-                'inquiry_type' => 'consultation',
-                'source'       => 'website',
-                'name'         => $request->name,
-                'phone'        => $request->phone,
-                'email'        => $request->email,
-                'property_type'=> $request->property_type,
-                'location'     => $request->location,
-                'budget_range' => $request->budget_range,
-                'message'      => $request->message,
-                'requirements' => $request->requirements,
-                'status'       => 'pending',
-                'priority'     => 'medium',
-            ]);
+            $lead = null;
+            DB::transaction(function () use ($request, &$lead) {
+                $division = $this->determineDivision(null, $request->property_type);
 
-            // ── Feed the CRM pipeline ─────────────────────────────────────
-            app(LeadPipelineService::class)->createFromConsultation(
-                name:               $request->name,
-                phone:              $request->phone,
-                email:              $request->email,
-                propertyTypeString: $request->property_type,
-                message:            $request->message,
-                requirements:       $request->requirements,
-            );
+                $lead = Lead::where('phone', $request->phone)
+                    ->where('division', $division)
+                    ->first();
+
+                if (!$lead) {
+                    $se = User::getSalesExecutivesByDivision($division)->first();
+
+                    $notes = implode("\n", array_filter([
+                        $request->location ? "Location: {$request->location}" : null,
+                        $request->budget_range ? "Budget: {$request->budget_range}" : null,
+                        $request->requirements ? "Requirements: {$request->requirements}" : null,
+                        $request->message ? "Message: {$request->message}" : null,
+                    ]));
+
+                    $lead = Lead::create([
+                        'division' => $division,
+                        'name' => $request->name,
+                        'phone' => $request->phone,
+                        'email' => $request->email,
+                        'stage' => 'new_lead',
+                        'assigned_se_id' => $se?->id,
+                        'qualification_notes' => $notes,
+                    ]);
+                }
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Thank you for your consultation request! We will get back to you soon.',
-                'data'    => $consultation
+                'data'    => $lead
             ], 201);
 
         } catch (\Exception $e) {
+            \Log::error('Consultation submission error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again later.'
             ], 500);
         }
+    }
+
+    private function determineDivision(?int $propertyId = null, ?string $propertyType = null): string
+    {
+        if ($propertyType) {
+            $str = strtolower($propertyType);
+            if (str_contains($str, 'warehous')) {
+                return 'warehousing';
+            }
+            if (str_contains($str, 'comm') || str_contains($str, 'office') || str_contains($str, 'shop')) {
+                return 'commercial';
+            }
+        }
+
+        return 'residential';
     }
 }

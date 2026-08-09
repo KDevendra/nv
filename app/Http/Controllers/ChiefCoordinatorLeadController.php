@@ -3,374 +3,211 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
-use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-/**
- * Panel 2 — Chief Coordinator
- *
- * Routes prefix : /cc/leads
- * Middleware    : auth (role check enforced in each method)
- *
- * Stages owned  : escalated_to_cc → feasibility_check → options_shared
- *               → site_visit_scheduled → site_visit_done → negotiation → deal_closed
- *
- * Actions       : raise feasibility to SH, generate site-visit link,
- *                 log site-visit feedback, negotiate, close deal
- */
 class ChiefCoordinatorLeadController extends Controller
 {
-    // ──────────────────────────────────────────────────────────────────────
-    // Gate helpers
-    // ──────────────────────────────────────────────────────────────────────
-
-    private function authorise(): User
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'chief_coordinator') {
-            abort(403, 'Access restricted to Chief Coordinators.');
-        }
-
-        return $user;
-    }
-
-    private function authoriseLead(Lead $lead, User $cc): void
-    {
-        if ((int) $lead->assigned_cc_id !== $cc->id) {
-            abort(403, 'This lead is not assigned to you.');
-        }
-
-        if (!in_array($lead->stage, Lead::CC_STAGES, true)) {
-            abort(403, 'This lead is not in the CC pipeline.');
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Index
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /cc/leads
+     * Display a listing of assigned CC leads for auth user's division.
      */
     public function index(Request $request)
     {
-        $cc    = $this->authorise();
-        $query = Lead::forCC($cc->id)
-            ->whereIn('stage', Lead::CC_STAGES)
-            ->with(['property', 'assignedSE', 'feasibilitySH'])
-            ->latest();
+        $user = Auth::user();
 
-        if ($stage = $request->query('stage')) {
-            $query->where('stage', $stage);
+        $query = Lead::where('division', $user->division)
+            ->where('assigned_cc_id', $user->id)
+            ->whereIn('stage', Lead::CC_STAGES)
+            ->with(['property' => function ($q) {
+                $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'plot_area', 'city_id', 'location_id', 'property_type_id');
+            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name', 'assignedSE:id,name']);
+
+        if ($request->filled('stage')) {
+            $query->where('stage', $request->stage);
         }
-        if ($sideState = $request->query('side_state')) {
-            $query->where('side_state', $sideState);
-        } else {
-            $query->where(function ($q) {
-                $q->whereNull('side_state')->orWhere('side_state', '!=', 'lost');
+
+        if ($request->filled('side_state')) {
+            $query->where('side_state', $request->side_state);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'LIKE', "%{$s}%")
+                  ->orWhere('phone', 'LIKE', "%{$s}%")
+                  ->orWhere('email', 'LIKE', "%{$s}%");
             });
         }
 
-        $leads = $query->paginate(25)->withQueryString();
-
         $stats = [
-            'total'              => Lead::forCC($cc->id)->whereIn('stage', Lead::CC_STAGES)->count(),
-            'active'             => Lead::forCC($cc->id)->whereIn('stage', Lead::CC_STAGES)->whereNull('side_state')->count(),
-            'feasibility_pending'=> Lead::forCC($cc->id)->where('stage', 'feasibility_check')
-                                        ->where('feasibility_status', 'pending')->count(),
-            'sla_breached'       => Lead::forCC($cc->id)->where('sla_feasibility_breached', true)->count(),
-            'load_cap'           => Lead::CC_MAX_ACTIVE_LEADS,
-            'load_current'       => $cc->activeCCLeadCount(),
+            'total'               => (clone $query)->count(),
+            'active'              => (clone $query)->whereNull('side_state')->count(),
+            'feasibility_pending' => (clone $query)->whereNotNull('feasibility_raised_at')->whereNull('feasibility_responded_at')->count(),
+            'sla_breached'        => (clone $query)->whereNotNull('feasibility_raised_at')->whereNull('feasibility_responded_at')->where('feasibility_raised_at', '<=', now()->subHours(24))->count(),
+            'load_current'        => $user->activeCCLeadCount(),
+            'load_cap'            => Lead::CC_MAX_ACTIVE_LEADS,
         ];
 
-        if ($request->ajax()) {
-            return response()->json([
-                'html'  => view('cc.leads._table', compact('leads'))->render(),
-                'links' => $leads->links()->toHtml(),
-            ]);
-        }
+        $leads = $query->orderBy('updated_at', 'desc')->paginate(15);
+        $supplyHeads = User::getSupplyHeadsByDivision($user->division);
 
-        return view('cc.leads.index', compact('leads', 'stats', 'cc'));
+        return view('cc.leads.index', compact('leads', 'supplyHeads', 'stats'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Show
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * GET /cc/leads/{lead}
+     * Display the specified CC lead (info-gated property snapshot).
      */
     public function show(Lead $lead)
     {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
+        $user = Auth::user();
 
-        $lead->load(['property', 'assignedSE', 'feasibilitySH', 'stageHistories.changedBy']);
+        if ($lead->division !== $user->division || $lead->assigned_cc_id !== $user->id) {
+            abort(403, 'Unauthorized access to this lead.');
+        }
 
-        $propertySnapshot = $lead->publicPropertySnapshot();
-        $supplyHeads      = User::getSupplyHeadsByDivision($lead->division);
-        $history          = $lead->stageHistories;
+        $lead->load(['stageHistories.changedBy', 'assignedSE']);
+        $propertySnapshot = Lead::publicPropertySnapshot($lead->property);
+        $supplyHeads = User::getSupplyHeadsByDivision($user->division);
+        $history = $lead->stageHistories;
 
-        return view('cc.leads.show', compact('lead', 'cc', 'propertySnapshot', 'supplyHeads', 'history'));
+        return view('cc.leads.show', compact('lead', 'propertySnapshot', 'supplyHeads', 'history'));
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Raise feasibility request to SH
-    // ──────────────────────────────────────────────────────────────────────
-
     /**
-     * POST /cc/leads/{lead}/request-feasibility
+     * Update CC lead stage, feasibility request, site visit link, or deal close.
      */
-    public function requestFeasibility(Request $request, Lead $lead)
+    public function update(Request $request, Lead $lead)
     {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
+        $user = Auth::user();
 
-        if ($lead->stage !== 'escalated_to_cc') {
-            $msg = 'Feasibility can only be raised from escalated_to_cc stage.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
+        if ($lead->division !== $user->division || $lead->assigned_cc_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
         }
 
-        $request->validate([
-            'feasibility_sh_id' => 'required|exists:users,id',
-            'notes'             => 'nullable|string|max:2000',
-        ]);
-
-        // Verify the chosen SH belongs to the same division
-        $sh = User::where('id', $request->feasibility_sh_id)
-            ->where('role', 'supply_head')
-            ->where('division', $lead->division)
-            ->firstOrFail();
-
-        DB::transaction(function () use ($lead, $request, $sh, $cc) {
-            $lead->update([
-                'feasibility_sh_id'          => $sh->id,
-                'feasibility_status'         => 'pending',
-                'feasibility_requested_at'   => now(),
-                'feasibility_notes'          => $request->notes,
-                // Set SH SLA: 24 clock hours
-                'sla_feasibility_due_at'     => now()->addHours(24),
-                'sla_feasibility_breached'   => false,
-            ]);
-
-            $lead->transitionTo('feasibility_check', "Feasibility raised to SH #{$sh->id}.", $cc);
-        });
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Feasibility request sent to {$sh->name}.",
-                'stage'   => $lead->fresh()->stage,
-            ]);
+        // Side-state action handling
+        if ($request->has('action')) {
+            return $this->handleSideStateAction($request, $lead);
         }
 
-        return back()->with('success', "Feasibility request sent to {$sh->name}.");
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Generate single-use site-visit token
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /cc/leads/{lead}/generate-site-visit-link
-     */
-    public function generateSiteVisitLink(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-
-        if (!in_array($lead->stage, ['options_shared', 'site_visit_scheduled'], true)) {
-            $msg = 'Site-visit link can only be generated after options are shared.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
-        }
-
-        $token = $lead->generateSiteVisitToken();
-        $url   = route('site-visit.show', ['token' => $token]);
-
-        if ($lead->stage === 'options_shared') {
-            $lead->transitionTo('site_visit_scheduled', 'Site-visit link generated.', $cc);
-        }
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success'    => true,
-                'message'    => 'Single-use site-visit link generated (valid 24 h).',
-                'url'        => $url,
-                'expires_at' => $lead->fresh()->site_visit_token_expires_at->toIso8601String(),
-            ]);
-        }
-
-        return back()->with('success', 'Site-visit link generated.')->with('site_visit_url', $url);
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Log site-visit feedback
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /cc/leads/{lead}/site-visit-feedback
-     */
-    public function siteVisitFeedback(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-
-        if ($lead->stage !== 'site_visit_scheduled') {
-            $msg = 'Lead must be at site_visit_scheduled to log feedback.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
-        }
-
-        $request->validate([
-            'feedback' => 'required|string|min:10|max:5000',
-        ]);
-
-        DB::transaction(function () use ($lead, $request, $cc) {
-            $lead->update(['site_visit_feedback' => $request->feedback]);
-            $lead->transitionTo('site_visit_done', 'Site-visit feedback logged.', $cc);
-        });
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Site-visit feedback saved.', 'stage' => $lead->fresh()->stage]);
-        }
-
-        return back()->with('success', 'Site-visit feedback saved.');
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Negotiation notes
-    // ──────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /cc/leads/{lead}/negotiate
-     */
-    public function negotiate(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-
-        $request->validate([
-            'negotiation_notes' => 'required|string|max:5000',
-            'advance_stage'     => 'nullable|boolean',
-        ]);
-
-        DB::transaction(function () use ($lead, $request, $cc) {
-            $lead->negotiation_notes = $request->negotiation_notes;
-            $lead->save();
-
-            if ($request->boolean('advance_stage') && $lead->canTransitionTo('negotiation')) {
-                $lead->transitionTo('negotiation', 'Entered negotiation.', $cc);
+        // Raise Feasibility Relay to Supply Head (Stage 7)
+        if ($request->has('raise_feasibility')) {
+            if ($lead->side_state === 'inquiry_hold') {
+                return response()->json(['success' => false, 'message' => 'Lead is on hold. Cannot raise feasibility.'], 422);
             }
-        });
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Negotiation notes saved.', 'stage' => $lead->fresh()->stage]);
+            $shId = $request->input('feasibility_sh_id');
+            $sh = User::where('id', $shId)->where('role', 'supply_head')->where('division', $user->division)->first();
+
+            if (!$sh) {
+                return response()->json(['success' => false, 'message' => 'Invalid Supply Head selected for this division.'], 422);
+            }
+
+            $lead->update([
+                'feasibility_sh_id'     => $sh->id,
+                'feasibility_raised_at' => now(),
+                'feasibility_notes'     => $request->input('feasibility_notes'),
+            ]);
+
+            if ($lead->canTransitionTo('inventory_check_done')) {
+                $lead->transitionTo('inventory_check_done', $user);
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Feasibility check raised to Supply Head.', 'lead' => $lead->fresh()]);
+            }
+            return back()->with('success', 'Feasibility check raised to Supply Head.');
         }
 
-        return back()->with('success', 'Negotiation notes saved.');
-    }
+        // Trigger Site-Visit Expiring Link (Stage 8)
+        if ($request->has('trigger_visit_link')) {
+            $token = $lead->generateVisitLinkToken();
+            $linkUrl = route('leads.visit_link', ['token' => $token]);
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Close deal
-    // ──────────────────────────────────────────────────────────────────────
+            Log::info("SMS SENT to {$lead->phone}: Click link to view site visit address (valid 24h): {$linkUrl}");
 
-    /**
-     * POST /cc/leads/{lead}/close-deal
-     */
-    public function closeDeal(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-
-        if ($lead->stage !== 'negotiation') {
-            $msg = 'Lead must be at negotiation stage to close.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->withErrors($msg);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Site visit link sent to visitor via SMS (valid for 24h).',
+                    'visit_link_sent_at' => $lead->visit_link_sent_at,
+                    'visit_link_expires_at' => $lead->visit_link_expires_at
+                ]);
+            }
+            return back()->with('success', 'Site visit link sent via SMS.');
         }
 
-        $request->validate([
-            'deal_value' => 'required|numeric|min:1',
-            'deal_notes' => 'nullable|string|max:2000',
-        ]);
-
-        DB::transaction(function () use ($lead, $request, $cc) {
-            $lead->deal_value  = $request->deal_value;
-            $lead->deal_notes  = $request->deal_notes;
+        // Log Site Visit Feedback (Stage 9)
+        if ($request->filled('site_visit_feedback')) {
+            $lead->site_visit_feedback = $request->site_visit_feedback;
+            if ($request->filled('site_visit_date')) {
+                $lead->site_visit_date = $request->site_visit_date;
+            }
             $lead->save();
-            $lead->transitionTo('deal_closed', "Deal closed at ₹{$request->deal_value}.", $cc);
-        });
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Deal closed successfully.', 'stage' => 'deal_closed']);
         }
 
-        return redirect()->route('cc.leads.index')->with('success', 'Deal closed successfully.');
+        // Stage Transition
+        if ($request->filled('stage')) {
+            try {
+                $lead->transitionTo($request->stage, $user);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+        }
+
+        // Close Deal (Stage 11)
+        if ($request->has('close_deal')) {
+            $lead->deal_closed_at = now();
+            if ($request->filled('commission_amount')) {
+                $lead->commission_amount = $request->commission_amount;
+            }
+            $lead->owner_notified_at = now();
+            $lead->reminder_6mo_at = now()->addMonths(6);
+
+            if ($lead->canTransitionTo('deal_closed')) {
+                $lead->transitionTo('deal_closed', $user);
+            } else {
+                $lead->save();
+            }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead updated successfully.', 'lead' => $lead->fresh(['stageHistories'])]);
+        }
+
+        return back()->with('success', 'Lead updated successfully.');
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    // Side-state actions (mirrors SE panel)
-    // ──────────────────────────────────────────────────────────────────────
-
-    /** POST /cc/leads/{lead}/hold */
-    public function hold(Request $request, Lead $lead)
+    private function handleSideStateAction(Request $request, Lead $lead)
     {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-        $request->validate(['reason' => 'nullable|string|max:500', 'hold_until' => 'nullable|date|after:today']);
-        $until = $request->filled('hold_until') ? new \DateTime($request->hold_until) : null;
-        $lead->putOnHold($request->reason, $until, $cc);
+        try {
+            match ($request->action) {
+                'put_on_hold' => $lead->putOnHold(
+                    reason: (string) $request->input('hold_reason'),
+                    expectedResumeDate: $request->input('hold_expected_resume_date')
+                ),
+                'resume_from_hold' => $lead->resumeFromHold(),
+                'defer' => $lead->deferFollowUp(
+                    date: (string) $request->input('follow_up_date')
+                ),
+                'mark_lost' => $lead->markLost(
+                    reason: (string) $request->input('lost_reason'),
+                    otherText: $request->input('lost_reason_other')
+                ),
+                default => throw new \InvalidArgumentException("Invalid side-state action."),
+            };
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            return back()->with('error', $e->getMessage());
+        }
 
-        return $request->ajax()
-            ? response()->json(['success' => true, 'message' => 'Lead placed on hold.'])
-            : back()->with('success', 'Lead placed on hold.');
-    }
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead side-state updated.', 'lead' => $lead->fresh()]);
+        }
 
-    /** POST /cc/leads/{lead}/resume */
-    public function resume(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-        $lead->resumeFromHold($cc);
-
-        return $request->ajax()
-            ? response()->json(['success' => true, 'message' => 'Lead resumed.'])
-            : back()->with('success', 'Lead resumed from hold.');
-    }
-
-    /** POST /cc/leads/{lead}/defer */
-    public function defer(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-        $request->validate(['defer_until' => 'required|date|after:now', 'reason' => 'nullable|string|max:500']);
-        $lead->deferFollowUp(new \DateTime($request->defer_until), $request->reason, $cc);
-
-        return $request->ajax()
-            ? response()->json(['success' => true, 'message' => 'Follow-up deferred.'])
-            : back()->with('success', 'Follow-up deferred.');
-    }
-
-    /** POST /cc/leads/{lead}/lost */
-    public function markLost(Request $request, Lead $lead)
-    {
-        $cc = $this->authorise();
-        $this->authoriseLead($lead, $cc);
-        $request->validate(['reason' => 'required|string|max:500']);
-        $lead->markLost($request->reason, $cc);
-
-        return $request->ajax()
-            ? response()->json(['success' => true, 'message' => 'Lead marked as lost.'])
-            : redirect()->route('cc.leads.index')->with('success', 'Lead marked as lost.');
+        return back()->with('success', 'Lead side-state updated.');
     }
 }

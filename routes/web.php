@@ -85,7 +85,7 @@ Route::post('/inquiries/check-submission', [InquiryController::class, 'checkSubm
 Route::post('/consultations', [ConsultationController::class, 'store'])->name('consultations.store');
 
 // ── Public single-use site-visit link (no auth required — token is the key) ──
-Route::get('/site-visit/{token}', [PublicSiteVisitController::class, 'show'])->name('site-visit.show');
+Route::get('/site-visit/{token}', [PublicSiteVisitController::class, 'show'])->name('site-visit.show')->name('leads.visit_link');
 Route::get('/calculators/acre-to-bigha', [HomeController::class, 'acreToBigha'])->name('calculators.acre-to-bigha');
 Route::get('/calculators/acre-to-hectare', [HomeController::class, 'acreToHectare'])->name('calculators.acre-to-hectare');
 Route::get('/calculators/emi-calculator', [HomeController::class, 'emiCalculator'])->name('calculators.emi-calculator');
@@ -242,6 +242,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('se')->name('se.')->group(function () {
         Route::get('leads', [SalesExecutiveLeadController::class, 'index'])->name('leads.index');
         Route::get('leads/{lead}', [SalesExecutiveLeadController::class, 'show'])->name('leads.show');
+        Route::patch('leads/{lead}', [SalesExecutiveLeadController::class, 'update'])->name('leads.update');
         Route::post('leads/{lead}/log-contact', [SalesExecutiveLeadController::class, 'logContact'])->name('leads.log-contact');
         Route::post('leads/{lead}/qualify', [SalesExecutiveLeadController::class, 'qualify'])->name('leads.qualify');
         Route::post('leads/{lead}/share-options', [SalesExecutiveLeadController::class, 'shareOptions'])->name('leads.share-options');
@@ -293,5 +294,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 })->middleware('auth');
+
+// Public Expiring Site Visit Link (single-use, 24h)
+Route::get('/site-visit/{token}', [\App\Http\Controllers\PublicSiteVisitController::class, 'show'])->name('site_visit.show');
+Route::get('/site-visit/{token}', [\App\Http\Controllers\PublicSiteVisitController::class, 'show'])->name('leads.visit_link');
 
 require __DIR__ . '/auth.php';

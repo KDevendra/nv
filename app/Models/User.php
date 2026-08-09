@@ -256,7 +256,9 @@ class User extends Authenticatable
     {
         return $this->assignedLeadsCC()
             ->whereNotIn('stage', ['deal_closed'])
-            ->whereNull('side_state')
+            ->where(function ($q) {
+                $q->whereNull('side_state')->orWhere('side_state', '!=', 'lost');
+            })
             ->count();
     }
 
@@ -292,7 +294,10 @@ class User extends Authenticatable
             ->where('is_active', true)
             ->withCount([
                 'assignedLeadsCC as active_cc_lead_count' => function ($q) {
-                    $q->whereNotIn('stage', ['deal_closed'])->whereNull('side_state');
+                    $q->whereNotIn('stage', ['deal_closed'])
+                        ->where(function ($sq) {
+                            $sq->whereNull('side_state')->orWhere('side_state', '!=', 'lost');
+                        });
                 },
             ])
             ->orderBy('active_cc_lead_count')
