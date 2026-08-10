@@ -21,6 +21,10 @@ class UserController extends Controller
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
         
         if ($request->filled('supply_head_id')) {
             $query->where('supply_head_id', $request->supply_head_id);
@@ -69,11 +73,17 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validRoles = implode(',', array_keys(User::ROLES));
+        $validDivisions = implode(',', array_keys(User::DIVISIONS));
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:' . $validRoles],
+            'division' => [
+                Rule::requiredIf(fn() => in_array($request->role, User::DIVISION_REQUIRED_ROLES, true)),
+                'nullable',
+                'in:' . $validDivisions,
+            ],
             'is_active' => ['boolean'],
             'region_id' => ['required', 'exists:regions,id'],
             'area_id' => ['required', 'exists:areas,id'],
@@ -102,6 +112,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'division' => $request->division,
             'supply_head_id' => $request->role === 'field_officer' ? $request->supply_head_id : null,
             'region_id' => $request->region_id,
             'area_id' => $request->area_id,
@@ -140,11 +151,17 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validRoles = implode(',', array_keys(User::ROLES));
+        $validDivisions = implode(',', array_keys(User::DIVISIONS));
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:' . $validRoles],
+            'division' => [
+                Rule::requiredIf(fn() => in_array($request->role, User::DIVISION_REQUIRED_ROLES, true)),
+                'nullable',
+                'in:' . $validDivisions,
+            ],
             'is_active' => ['boolean'],
             'region_id' => ['required', 'exists:regions,id'],
             'area_id' => ['required', 'exists:areas,id'],
@@ -176,6 +193,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'division' => $request->division,
             'supply_head_id' => $request->role === 'field_officer' ? $request->supply_head_id : null,
             'region_id' => $request->region_id,
             'area_id' => $request->area_id,

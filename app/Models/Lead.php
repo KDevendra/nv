@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Lead extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     const STAGES = [
         'new_lead',
@@ -412,5 +413,10 @@ class Lead extends Model
     {
         return $query->whereNull('assigned_cc_id')
                      ->where('stage', 'escalated_to_cc');
+    }
+
+    public function scopeNeedsReview($query)
+    {
+        return $query->whereRaw('1 = 0');
     }
 }
