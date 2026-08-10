@@ -554,12 +554,11 @@
                             @php 
                                 $activeLeads = App\Models\Lead::whereNull('side_state')->count();
                                 $holdingQueue = App\Models\Lead::holdingQueue()->count();
-                                $needsReview = App\Models\Lead::needsReview()->count();
                             @endphp
-                            @if($holdingQueue > 0 || $needsReview > 0)
+                            @if($holdingQueue > 0)
                                 <span x-show="!sidebarCollapsed"
                                     class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 min-w-[18px] h-4 justify-center">
-                                    {{ $holdingQueue + $needsReview }}
+                                    {{ $holdingQueue }}
                                 </span>
                                 <span x-show="sidebarCollapsed"
                                     class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-indigo-500"></span>

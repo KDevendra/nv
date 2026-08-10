@@ -70,6 +70,23 @@
                         @enderror
                     </div>
 
+                    <div id="division-field" style="display: none;">
+                        <label for="division" class="block text-sm font-medium text-gray-700 mb-2">Division *</label>
+                        <select name="division" id="division"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('division') border-red-500 @enderror select2-division">
+                            <option value="">Select Division</option>
+                            @foreach(App\Models\User::DIVISIONS as $key => $label)
+                                <option value="{{ $key }}" {{ old('division') === $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Required for Sales Executive, Chief Coordinator, Supply Head, and Field Officer</p>
+                        @error('division')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="md:col-span-3" id="supply-head-field" style="display: none;">
                         <label for="supply_head_id" class="block text-sm font-medium text-gray-700 mb-2">Assign to Supply Head *</label>
                         <select name="supply_head_id" id="supply_head_id"
@@ -244,6 +261,9 @@ function toggleSupplyHeadField() {
     const supplyHeadField = document.getElementById('supply-head-field');
     const supplyHeadSelect = document.getElementById('supply_head_id');
     const ownerApprovalField = document.getElementById('owner-approval-field');
+    const divisionField = document.getElementById('division-field');
+    const divisionSelect = document.getElementById('division');
+    const divisionRoles = ['sales_executive', 'chief_coordinator', 'supply_head', 'field_officer'];
     
     if (roleSelect.value === 'field_officer') {
         supplyHeadField.style.display = 'block';
@@ -259,6 +279,14 @@ function toggleSupplyHeadField() {
     } else {
         if (ownerApprovalField) ownerApprovalField.style.display = 'none';
     }
+
+    if (divisionRoles.includes(roleSelect.value)) {
+        if (divisionField) divisionField.style.display = 'block';
+        if (divisionSelect) divisionSelect.required = true;
+    } else {
+        if (divisionField) divisionField.style.display = 'none';
+        if (divisionSelect) divisionSelect.required = false;
+    }
 }
 
 // Initialize on page load
@@ -267,6 +295,13 @@ $(document).ready(function() {
     $('.select2-role').select2({
         placeholder: 'Select a role',
         allowClear: false,
+        width: '100%'
+    });
+
+    // Initialize Select2 for division dropdown
+    $('.select2-division').select2({
+        placeholder: 'Select a division',
+        allowClear: true,
         width: '100%'
     });
     

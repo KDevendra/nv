@@ -76,8 +76,9 @@ class AdminLeadController extends Controller
         
         $salesExecs = User::where('role', 'sales_executive')->where('division', $lead->division)->where('is_active', true)->get();
         $chiefCoords = User::where('role', 'chief_coordinator')->where('division', $lead->division)->where('is_active', true)->get();
+        $history = $lead->stageHistories;
 
-        return view('admin.leads.show', compact('lead', 'salesExecs', 'chiefCoords'));
+        return view('admin.leads.show', compact('lead', 'salesExecs', 'chiefCoords', 'history'));
     }
 
     /**

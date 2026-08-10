@@ -80,6 +80,7 @@ return new class extends Migration
             $table->timestamp('owner_notified_at')->nullable();
             $table->timestamp('reminder_6mo_at')->nullable();
 
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['phone', 'division']);
