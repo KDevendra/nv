@@ -364,6 +364,26 @@
                         </a>
                     @endif
 
+                    <!-- Zones -->
+                    @if (in_array('users.view', $navPerms))
+                        <a href="{{ route('admin.zones.index') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.zones.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
+                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Zones</span>
+                            <!-- Tooltip -->
+                            <div x-show="tooltip" x-cloak
+                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+                                Zones
+                            </div>
+                        </a>
+                    @endif
+
                     <!-- Lead Tracking Dropdown -->
                     @if (in_array('inquiries.view', $navPerms) ||
                             in_array('consultations.view', $navPerms) ||

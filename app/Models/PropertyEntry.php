@@ -14,6 +14,7 @@ class PropertyEntry extends Model
     protected $fillable = [
         'field_officer_id',
         'supply_head_id',
+        'zone_id',
         'status',
         'supply_head_note',
         'allow_resubmit',
@@ -270,6 +271,11 @@ class PropertyEntry extends Model
     public function fieldReviews(): HasMany
     {
         return $this->hasMany(PropertyEntryFieldReview::class);
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class, 'zone_id');
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────────

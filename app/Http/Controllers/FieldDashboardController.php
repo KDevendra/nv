@@ -24,8 +24,10 @@ class FieldDashboardController extends Controller
         $officerStats = collect();
 
         if ($user->role === 'supply_head') {
-            // Get field officers under this supply head, and owners if can_approve_owner_listings is enabled
-            $fieldOfficerIds = User::where('supply_head_id', $userId)->pluck('id');
+            // Field officers are reached through the zones this supply head
+            // covers; owners are added when can_approve_owner_listings is on.
+            $zoneIds = $user->zoneIds();
+            $fieldOfficerIds = User::where('role', 'field_officer')->whereIn('zone_id', $zoneIds)->pluck('id');
             $ownerIds = $user->can_approve_owner_listings
                 ? User::where('role', 'owner')->pluck('id')
                 : collect();
@@ -50,8 +52,8 @@ class FieldDashboardController extends Controller
                 ->get();
 
             // Chart data for officer & owner submissions — no draft
-            $officerStats = User::where(function($q) use ($userId, $user) {
-                $q->where('supply_head_id', $userId);
+            $officerStats = User::where(function($q) use ($zoneIds, $user) {
+                $q->where('role', 'field_officer')->whereIn('zone_id', $zoneIds);
                 if ($user->can_approve_owner_listings) {
                     $q->orWhere('role', 'owner');
                 }
