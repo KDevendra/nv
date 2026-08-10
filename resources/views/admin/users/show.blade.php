@@ -111,29 +111,45 @@
                             @endif
                         </div>
                     </div>
-                    @if($user->isFieldOfficer() && $user->supplyHead)
+                    @if($user->isFieldOfficer() && $user->zone)
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Reports To</p>
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-2">
-                                    <span class="text-white text-xs font-semibold">{{ substr($user->supplyHead->name, 0, 1) }}</span>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $user->supplyHead->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $user->supplyHead->email }}</p>
-                                </div>
+                            <p class="text-sm text-gray-600 mb-1">Zone</p>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $user->zone->name }}
+                            </span>
+                        </div>
+                    @endif
+                    @if($user->isSupplyHead() && $user->zones->isNotEmpty())
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Zones Covered</p>
+                            <div class="flex flex-wrap gap-1">
+                                @foreach($user->zones as $zone)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ $zone->name }}
+                                    </span>
+                                @endforeach
                             </div>
                         </div>
                     @endif
                 </div>
             </div>
 
-            @if($user->isSupplyHead() && $user->fieldOfficers->count() > 0)
+            @php
+                // Field officers now reach a supply head through shared zones
+                // rather than a direct supply_head_id link.
+                $zoneOfficers = $user->isSupplyHead()
+                    ? \App\Models\User::where('role', 'field_officer')
+                        ->whereIn('zone_id', $user->zones->pluck('id'))
+                        ->orderBy('name')
+                        ->get()
+                    : collect();
+            @endphp
+            @if($zoneOfficers->isNotEmpty())
                 <!-- Field Officers Section -->
                 <div class="pt-6 border-t border-gray-200">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">Field Officers ({{ $user->fieldOfficers->count() }})</h3>
+                    <h3 class="text-base font-semibold text-gray-900 mb-4">Field Officers in Covered Zones ({{ $zoneOfficers->count() }})</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($user->fieldOfficers as $officer)
+                        @foreach($zoneOfficers as $officer)
                             <div class="flex items-center p-3 bg-gray-50 rounded-lg">
                                 <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mr-3">
                                     <span class="text-white text-sm font-semibold">{{ substr($officer->name, 0, 1) }}</span>

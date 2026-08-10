@@ -74,15 +74,15 @@
                     </select>
                 </div>
 
-                <!-- Supply Head Filter -->
+                <!-- Zone Filter -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Supply Head</label>
-                    <select name="supply_head_id"
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Zone</label>
+                    <select name="zone_id"
                         class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-zendo-gold focus:border-zendo-gold">
-                        <option value="">All Supply Heads</option>
-                        @foreach($supplyHeads as $sh)
-                            <option value="{{ $sh->id }}" {{ request('supply_head_id') == $sh->id ? 'selected' : '' }}>
-                                {{ $sh->name }}
+                        <option value="">All Zones</option>
+                        @foreach($zones as $zone)
+                            <option value="{{ $zone->id }}" {{ request('zone_id') == $zone->id ? 'selected' : '' }}>
+                                {{ $zone->name }}
                             </option>
                         @endforeach
                     </select>
@@ -158,7 +158,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Region / Area</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reports To / Officers</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone(s)</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -223,15 +223,20 @@
                                 @endif
                             </td>
 
-                            <!-- Reports To / Officers -->
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                @if($user->isFieldOfficer() && $user->supplyHead)
-                                    <div class="text-sm text-gray-900">{{ $user->supplyHead->name }}</div>
-                                    <div class="text-xs text-gray-500">{{ $user->supplyHead->email }}</div>
-                                @elseif($user->isSupplyHead())
+                            <!-- Zone(s) -->
+                            <td class="px-4 py-4">
+                                @if($user->isFieldOfficer() && $user->zone)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
-                                        {{ $user->field_officers_count }} officer(s)
+                                        {{ $user->zone->name }}
                                     </span>
+                                @elseif($user->isSupplyHead() && $user->zones->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1 max-w-xs">
+                                        @foreach($user->zones as $zone)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">
+                                                {{ $zone->name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
                                 @else
                                     <span class="text-sm text-gray-400">—</span>
                                 @endif
@@ -374,10 +379,10 @@
                                     </span>
                                 @endif
                             </div>
-                            @if($user->isFieldOfficer() && $user->supplyHead)
-                                <p class="text-xs text-gray-600 mt-1">Reports to: <span class="font-medium">{{ $user->supplyHead->name }}</span></p>
-                            @elseif($user->isSupplyHead())
-                                <p class="text-xs text-gray-600 mt-1">Manages <span class="font-medium">{{ $user->field_officers_count }}</span> field officer(s)</p>
+                            @if($user->isFieldOfficer() && $user->zone)
+                                <p class="text-xs text-gray-600 mt-1">Zone: <span class="font-medium">{{ $user->zone->name }}</span></p>
+                            @elseif($user->isSupplyHead() && $user->zones->isNotEmpty())
+                                <p class="text-xs text-gray-600 mt-1">Zones: <span class="font-medium">{{ $user->zones->pluck('name')->join(', ') }}</span></p>
                             @endif
                             <p class="text-xs text-gray-400 mt-1">Joined {{ $user->created_at->format('M d, Y') }}</p>
                         </div>

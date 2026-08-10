@@ -57,6 +57,8 @@ class Lead extends Model
         'phone',
         'email',
         'property_id',
+        'origin_table',
+        'needs_division_review',
         'stage',
         'side_state',
         'pre_hold_status',
@@ -71,6 +73,8 @@ class Lead extends Model
         'cc_load_at_assignment',
         'contact_attempts',
         'first_contacted_at',
+        'sla_contact_due_at',
+        'sla_contact_breached',
         'contact_outcome',
         'qualification_notes',
         'options_shared_property_ids',
@@ -79,6 +83,8 @@ class Lead extends Model
         'feasibility_raised_at',
         'feasibility_sh_id',
         'feasibility_responded_at',
+        'sla_feasibility_due_at',
+        'sla_feasibility_breached',
         'feasibility_notes',
         'visit_link_token',
         'visit_link_sent_at',
@@ -94,6 +100,11 @@ class Lead extends Model
 
     protected $casts = [
         'options_shared_property_ids' => 'array',
+        'needs_division_review'       => 'boolean',
+        'sla_contact_due_at'          => 'datetime',
+        'sla_contact_breached'        => 'boolean',
+        'sla_feasibility_due_at'      => 'datetime',
+        'sla_feasibility_breached'    => 'boolean',
         'hold_started_at'             => 'datetime',
         'hold_expected_resume_date'   => 'date',
         'follow_up_date'              => 'date',
@@ -415,8 +426,12 @@ class Lead extends Model
                      ->where('stage', 'escalated_to_cc');
     }
 
+    /**
+     * Leads whose division could not be inferred automatically and still
+     * need an admin to confirm it.
+     */
     public function scopeNeedsReview($query)
     {
-        return $query->whereRaw('1 = 0');
+        return $query->where('needs_division_review', true);
     }
 }

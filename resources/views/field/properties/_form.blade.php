@@ -167,6 +167,34 @@ textarea[disabled] {
 }
 </style>
 
+@php
+    // Zone shown to the field officer: taken from the entry once it exists,
+    // otherwise from the logged-in officer's own assignment. The entry is
+    // routed to the supply heads of this zone on submit — the officer never
+    // picks it, so it is displayed read-only.
+    $entryZone = $entry?->zone ?? (auth()->check() ? auth()->user()->zone : null);
+@endphp
+
+@if(auth()->check() && auth()->user()->role === 'field_officer')
+    <div class="mb-4 flex items-center justify-between gap-3 rounded-lg border border-zendo-gold/40 bg-amber-50 px-4 py-3">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-zendo-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+            <div>
+                <p class="text-xs uppercase tracking-wide text-gray-500 font-medium">Zone</p>
+                <p class="text-base font-semibold text-zendo-navy">{{ $entryZone?->name ?? 'Not assigned' }}</p>
+            </div>
+        </div>
+        @unless($entryZone)
+            <p class="text-xs text-red-700 text-right max-w-xs">
+                No zone is assigned to your account — ask an administrator to assign one before submitting.
+            </p>
+        @endunless
+    </div>
+@endif
+
 @unless($requiredEnforced)
     <div class="mb-4 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
         <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
