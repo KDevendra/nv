@@ -10,8 +10,25 @@
     $v = fn($f) => old($f, $entry?->$f ?? '');
     $sel = fn($f, $o) => old($f, $entry?->$f ?? '') == $o ? 'selected' : '';
     $bv = fn($f) => old($f, $entry?->$f ?? '') !== '' ? (int) old($f, $entry?->$f ?? '') : '';
-    $req = fn(string $k) => $fc($k)->mandatory_field ? 'required' : '';
-    $ast = fn(string $k) => $fc($k)->mandatory_field ? '<span class="text-red-500 ml-0.5">*</span>' : '';
+
+    // Supply head adds properties remotely (never visits the site), so the
+    // location section swaps the field officer's live-GPS readout for a
+    // search-and-select map picker — see the location section below and its
+    // script block near the end of this file.
+    $isRemoteEntry = auth()->check() && in_array(auth()->user()->role, ['supply_head', 'owner']);
+    $isSupplyHead = auth()->check() && auth()->user()->role === 'supply_head';
+
+    // Supply heads can be exempted from PropertyFieldConfig's mandatory
+    // fields entirely via SUPPLY_HEAD_ENFORCE_REQUIRED_FIELDS (see
+    // config/property.php) — mirrors the server-side rule building in
+    // SupplyHead\PropertyEntryController::validateEntry(). $mand() is the
+    // single source of truth for "is this field required right now"; use it
+    // instead of reading ->mandatory_field directly.
+    $requiredEnforced = !$isSupplyHead || \App\Http\Controllers\SupplyHead\PropertyEntryController::enforcesRequiredFields();
+    $mand = fn(string $k) => $requiredEnforced && $fc($k)->mandatory_field;
+
+    $req = fn(string $k) => $mand($k) ? 'required' : '';
+    $ast = fn(string $k) => $mand($k) ? '<span class="text-red-500 ml-0.5">*</span>' : '';
 
     $rmk = fn(string $k) => isset($fieldRemarks[$k]) && $fieldRemarks[$k]
         ? '<div class="mt-1"><p class="text-xs text-red-800">⚠ ' . e($fieldRemarks[$k]) . '</p></div>'
@@ -23,13 +40,6 @@
     $isRestrictedEdit = isset($entry) && $entry->status === 'rejected' && $entry->allow_resubmit && !empty($correctFields);
     $dis = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields) ? 'disabled' : '';
     $isLocked = fn(string $k) => $isRestrictedEdit && in_array($k, $correctFields);
-
-    // Supply head adds properties remotely (never visits the site), so the
-    // location section swaps the field officer's live-GPS readout for a
-    // search-and-select map picker — see the location section below and its
-    // script block near the end of this file.
-    $isRemoteEntry = auth()->check() && in_array(auth()->user()->role, ['supply_head', 'owner']);
-    $isSupplyHead = auth()->check() && auth()->user()->role === 'supply_head';
 
     $__sfm = [
         'A. Location & Identification' => ['facility_type', 'property_name', 'name_full_address', 'village', 'tehsil', 'district', 'state', 'country', 'postal_address_pin', 'nearest_city', 'nearest_highway', 'nearest_railway_station', 'nearest_airport', 'owner_contact_name', 'owner_contact_phone', 'owner_email'],
@@ -81,8 +91,7 @@
         }
         $complete = true;
         foreach ($fields as $f) {
-            $cfg = $fc($f);
-            if (!$cfg->keep_field || !$cfg->mandatory_field) {
+            if (!$fc($f)->keep_field || !$mand($f)) {
                 continue;
             }
             // Mirrors the display-only "India" default shown for country —
@@ -157,6 +166,15 @@ textarea[disabled] {
     cursor: not-allowed !important;
 }
 </style>
+
+@unless($requiredEnforced)
+    <div class="mb-4 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>All fields are optional right now — fill in whatever you have and submit. Leave the rest blank.</span>
+    </div>
+@endunless
 
 {{-- Captured client-side via the browser's Geolocation API — see script at the bottom of this file --}}
 <input type="hidden" name="form_submited_location" id="form_submited_location"
@@ -859,13 +877,13 @@ STEP 0 — A. Location & Identification
                     @if($fc('dock_leveller_front')->keep_field)
                         <div>
                             <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Front
-                                @if($fc('dock_leveller_front')->mandatory_field)
+                                @if($mand('dock_leveller_front'))
                                     <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
                                 @endif
                             </label>
                             <input type="number" min="0" name="dock_leveller_front" x-model.number="lev_front"
                                 :readonly="hasLev===false"
-                                :required="{{ $fc('dock_leveller_front')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
+                                :required="{{ $mand('dock_leveller_front') ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic('dock_leveller_front') }}'">
                             @error('dock_leveller_front')
                             <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -874,13 +892,13 @@ STEP 0 — A. Location & Identification
                     @if($fc('dock_leveller_left')->keep_field)
                         <div>
                             <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Left
-                                @if($fc('dock_leveller_left')->mandatory_field)
+                                @if($mand('dock_leveller_left'))
                                     <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
                                 @endif
                             </label>
                             <input type="number" min="0" name="dock_leveller_left" x-model.number="lev_left"
                                 :readonly="hasLev===false"
-                                :required="{{ $fc('dock_leveller_left')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
+                                :required="{{ $mand('dock_leveller_left') ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic('dock_leveller_left') }}'">
                             @error('dock_leveller_left')
                             <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -889,13 +907,13 @@ STEP 0 — A. Location & Identification
                     @if($fc('dock_leveller_right')->keep_field)
                         <div>
                             <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Right
-                                @if($fc('dock_leveller_right')->mandatory_field)
+                                @if($mand('dock_leveller_right'))
                                     <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
                                 @endif
                             </label>
                             <input type="number" min="0" name="dock_leveller_right" x-model.number="lev_right"
                                 :readonly="hasLev===false"
-                                :required="{{ $fc('dock_leveller_right')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
+                                :required="{{ $mand('dock_leveller_right') ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic('dock_leveller_right') }}'">
                             @error('dock_leveller_right')
                             <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -904,13 +922,13 @@ STEP 0 — A. Location & Identification
                     @if($fc('dock_leveller_back')->keep_field)
                         <div>
                             <label class="{{ $lc }}" :class="hasLev===false ? 'text-gray-400' : ''">Back
-                                @if($fc('dock_leveller_back')->mandatory_field)
+                                @if($mand('dock_leveller_back'))
                                     <span x-show="hasLev===true && total===0" class="text-red-500 ml-0.5">*</span>
                                 @endif
                             </label>
                             <input type="number" min="0" name="dock_leveller_back" x-model.number="lev_back"
                                 :readonly="hasLev===false"
-                                :required="{{ $fc('dock_leveller_back')->mandatory_field ? '(hasLev===true && total===0)' : 'false' }}"
+                                :required="{{ $mand('dock_leveller_back') ? '(hasLev===true && total===0)' : 'false' }}"
                                 :class="hasLev===false ? 'w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed' : '{{ $ic('dock_leveller_back') }}'">
                             @error('dock_leveller_back')
                             <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1122,21 +1140,23 @@ STEP 0 — A. Location & Identification
                                 <div class="w-20 flex-shrink-0">
                                     <span class="text-xs font-semibold text-gray-500 uppercase"
                                         x-text="'Office '+(i+1)"></span>
-                                    <span x-show="i===0" class="block text-[10px] text-red-500 font-medium">Required</span>
-                                    <span x-show="i>0" class="block text-[10px] text-gray-400">Optional</span>
+                                    @if($requiredEnforced)
+                                        <span x-show="i===0" class="block text-[10px] text-red-500 font-medium">Required</span>
+                                    @endif
+                                    <span x-show="{{ $requiredEnforced ? 'i>0' : 'true' }}" class="block text-[10px] text-gray-400">Optional</span>
                                 </div>
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Length (L) <span
-                                            x-show="i===0" class="text-red-500">*</span></label>
+                                            x-show="{{ $requiredEnforced ? 'i===0' : 'false' }}" class="text-red-500">*</span></label>
                                     <input type="number" step="0.01" min="0" x-model="office.l"
-                                        :required="i===0 && !$el.form.noValidate" placeholder="L (ft)"
+                                        :required="{!! $requiredEnforced ? 'i===0 && !$el.form.noValidate' : 'false' !!}" placeholder="L (ft)"
                                         class="{{ $ic('office_sizes') }} text-sm">
                                 </div>
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Width (W) <span
-                                            x-show="i===0" class="text-red-500">*</span></label>
+                                            x-show="{{ $requiredEnforced ? 'i===0' : 'false' }}" class="text-red-500">*</span></label>
                                     <input type="number" step="0.01" min="0" x-model="office.w"
-                                        :required="i===0 && !$el.form.noValidate" placeholder="W (ft)"
+                                        :required="{!! $requiredEnforced ? 'i===0 && !$el.form.noValidate' : 'false' !!}" placeholder="W (ft)"
                                         class="{{ $ic('office_sizes') }} text-sm">
                                 </div>
                                 <div class="w-24 flex-shrink-0">
@@ -1188,12 +1208,12 @@ STEP 0 — A. Location & Identification
             @if($fc('canteen_size')->keep_field)
                 <div x-show="canteen == '1'" x-cloak>
                     <label class="{{ $lc }}">Canteen Size
-                        @if($fc('canteen_size')->mandatory_field)
+                        @if($mand('canteen_size'))
                             <span x-show="canteen == '1'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="text" name="canteen_size" x-model="canteen_size"
-                        :required="{{ $fc('canteen_size')->mandatory_field ? 'canteen == \'1\'' : 'false' }}"
+                        :required="{{ $mand('canteen_size') ? 'canteen == \'1\'' : 'false' }}"
                         :disabled="canteen != '1'" class="{{ $ic('canteen_size') }}">
                     @error('canteen_size')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1220,12 +1240,12 @@ STEP 0 — A. Location & Identification
             @if($fc('stp_capacity')->keep_field)
                 <div x-show="stp_plant == '1'" x-cloak>
                     <label class="{{ $lc }}">STP Capacity
-                        @if($fc('stp_capacity')->mandatory_field)
+                        @if($mand('stp_capacity'))
                             <span x-show="stp_plant == '1'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="text" name="stp_capacity" x-model="stp_capacity"
-                        :required="{{ $fc('stp_capacity')->mandatory_field ? 'stp_plant == \'1\'' : 'false' }}"
+                        :required="{{ $mand('stp_capacity') ? 'stp_plant == \'1\'' : 'false' }}"
                         :disabled="stp_plant != '1'" class="{{ $ic('stp_capacity') }}">
                     @error('stp_capacity')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1294,12 +1314,12 @@ STEP 0 — A. Location & Identification
             @if($fc('mezzanine_size')->keep_field)
                 <div x-show="mezzanine == '1'" x-cloak>
                     <label class="{{ $lc }}">Mezzanine Size
-                        @if($fc('mezzanine_size')->mandatory_field)
+                        @if($mand('mezzanine_size'))
                             <span x-show="mezzanine == '1'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="text" name="mezzanine_size" x-model="mezzanine_size"
-                        :required="{{ $fc('mezzanine_size')->mandatory_field ? 'mezzanine == \'1\'' : 'false' }}"
+                        :required="{{ $mand('mezzanine_size') ? 'mezzanine == \'1\'' : 'false' }}"
                         :disabled="mezzanine != '1'" class="{{ $ic('mezzanine_size') }}">
                     @error('mezzanine_size')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1597,12 +1617,12 @@ STEP 0 — A. Location & Identification
             @if($fc('expected_rent')->keep_field)
                 <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
                     <label class="{{ $lc }}">Expected Rent (₹/sq ft/month)
-                        @if($fc('expected_rent')->mandatory_field)
+                        @if($mand('expected_rent'))
                             <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="number" step="0.01" min="0" name="expected_rent" x-model="expected_rent"
-                        :required="{{ $fc('expected_rent')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :required="{{ $mand('expected_rent') ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
                         :disabled="deal_type === 'Sale'" class="{{ $ic('expected_rent') }}">
                     @error('expected_rent')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1612,12 +1632,12 @@ STEP 0 — A. Location & Identification
             @if($fc('expected_sale_price')->keep_field)
                 <div :class="deal_type === 'Lease' ? 'opacity-50' : ''">
                     <label class="{{ $lc }}">Expected Sale Price (₹)
-                        @if($fc('expected_sale_price')->mandatory_field)
+                        @if($mand('expected_sale_price'))
                             <span x-show="deal_type === 'Sale' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="number" step="0.01" min="0" name="expected_sale_price" x-model="expected_sale_price"
-                        :required="{{ $fc('expected_sale_price')->mandatory_field ? '(deal_type === \'Sale\' || deal_type === \'Both\')' : 'false' }}"
+                        :required="{{ $mand('expected_sale_price') ? '(deal_type === \'Sale\' || deal_type === \'Both\')' : 'false' }}"
                         :disabled="deal_type === 'Lease'" class="{{ $ic('expected_sale_price') }}">
                     @error('expected_sale_price')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1627,13 +1647,13 @@ STEP 0 — A. Location & Identification
             @if($fc('security_deposit_months')->keep_field)
                 <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
                     <label class="{{ $lc }}">Security Deposit (months)
-                        @if($fc('security_deposit_months')->mandatory_field)
+                        @if($mand('security_deposit_months'))
                             <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="number" step="0.1" min="0" max="60" name="security_deposit_months"
                         x-model="security_deposit_months"
-                        :required="{{ $fc('security_deposit_months')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :required="{{ $mand('security_deposit_months') ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
                         :disabled="deal_type === 'Sale'" class="{{ $ic('security_deposit_months') }}">
                     @error('security_deposit_months')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1643,12 +1663,12 @@ STEP 0 — A. Location & Identification
             @if($fc('lock_in_years')->keep_field)
                 <div :class="deal_type === 'Sale' ? 'opacity-50' : ''">
                     <label class="{{ $lc }}">Lock-in Period (years)
-                        @if($fc('lock_in_years')->mandatory_field)
+                        @if($mand('lock_in_years'))
                             <span x-show="deal_type === 'Lease' || deal_type === 'Both'" class="text-red-500 ml-0.5">*</span>
                         @endif
                     </label>
                     <input type="number" step="0.1" min="0" max="99" name="lock_in_years" x-model="lock_in_years"
-                        :required="{{ $fc('lock_in_years')->mandatory_field ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
+                        :required="{{ $mand('lock_in_years') ? '(deal_type === \'Lease\' || deal_type === \'Both\')' : 'false' }}"
                         :disabled="deal_type === 'Sale'" class="{{ $ic('lock_in_years') }}">
                     @error('lock_in_years')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -1985,14 +2005,13 @@ WIZARD — BOTTOM NAV BAR
 
         <div class="flex items-center gap-2 flex-1 justify-end">
 
-            {{-- Save Draft (supply head submits in one shot — no draft/resume flow for that role) --}}
-            @unless($isSupplyHead)
-                <button type="submit" name="action" value="draft" formnovalidate
-                    onclick="document.querySelector('form').noValidate=true"
-                    class="px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
-                    Save Draft
-                </button>
-            @endunless
+            {{-- Save Draft — every role can park a half-filled entry and resume
+                 it later from its own properties list --}}
+            <button type="submit" name="action" value="draft" formnovalidate
+                onclick="document.querySelector('form').noValidate=true"
+                class="px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
+                Save Draft
+            </button>
 
             {{-- Save & Next (hidden on last step) --}}
             <button type="button" id="wiz-next-btn" onclick="wizardNext()"
@@ -2039,6 +2058,11 @@ WIZARD — BOTTOM NAV BAR
     ];
     // Step error counts baked in from server (0 if no errors)
     const WIZ_ERR_COUNTS = @json($stepErrCounts);
+
+    // With required-field enforcement switched off there is nothing left for a
+    // walk-through of every section to catch, so submitting no longer waits on
+    // one — see wizardCanSubmit().
+    const WIZ_REQUIRE_ALL_VISITED = @json($requiredEnforced);
 
     let wizCurrent = 0; // will be set correctly in DOMContentLoaded
 
@@ -2290,7 +2314,7 @@ WIZARD — BOTTOM NAV BAR
     // supply head flagged, since their previously-filled values already
     // pass plain field validation.
     function wizardCanSubmit() {
-        if (!wizardAllVisited()) {
+        if (WIZ_REQUIRE_ALL_VISITED && !wizardAllVisited()) {
             const first = wizardFirstUnvisited();
             wizardGoTo(first >= 0 ? first : 0);
             alert('Please open and check every section before submitting — some sections haven\'t been visited yet.');
@@ -2405,7 +2429,7 @@ WIZARD — BOTTOM NAV BAR
 
         const unvisitedBanner = document.getElementById('wiz-unvisited-banner');
         const unvisitedText = document.getElementById('wiz-unvisited-text');
-        if (unvisitedBanner && unvisitedText) {
+        if (unvisitedBanner && unvisitedText && WIZ_REQUIRE_ALL_VISITED) {
             const unvisited = [];
             for (let i = 0; i < WIZ_TOTAL - 1; i++) {
                 if (!wizVisited.has(i)) unvisited.push(WIZ_TITLES[i]);
