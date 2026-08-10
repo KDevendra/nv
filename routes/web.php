@@ -134,6 +134,8 @@ Route::middleware('auth')->group(function () {
         Route::get('properties/create', [SupplyHeadPropertyEntryController::class, 'create'])->name('properties.create');
         Route::post('properties', [SupplyHeadPropertyEntryController::class, 'store'])->name('properties.store');
         Route::get('location/reverse-geocode', [SupplyHeadPropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
+        Route::get('properties/{property}/edit', [SupplyHeadPropertyEntryController::class, 'edit'])->name('properties.edit');
+        Route::put('properties/{property}', [SupplyHeadPropertyEntryController::class, 'update'])->name('properties.update');
         Route::get('properties/{property}', [SupplyHeadPropertyEntryController::class, 'show'])->name('properties.show');
         Route::post('properties/{property}/action', [SupplyHeadPropertyEntryController::class, 'action'])->name('properties.action');
         Route::post('properties/{property}/toggle-resubmit', [SupplyHeadPropertyEntryController::class, 'toggleResubmit'])->name('properties.toggle-resubmit');

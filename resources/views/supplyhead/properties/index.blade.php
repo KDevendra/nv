@@ -65,6 +65,46 @@
         </div>
     @endif
 
+    {{-- ═══════════════════════════════════════════════════════════════════════
+         MY DRAFTS — entries this supply head started but hasn't submitted yet.
+         Kept out of the two tables below, which only list submitted entries.
+    ══════════════════════════════════════════════════════════════════════════ --}}
+    @if($drafts->isNotEmpty())
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+                    <h3 class="text-sm font-semibold text-gray-800">My Drafts</h3>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-gray-200 text-gray-700">
+                        {{ $drafts->count() }}
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500">Not submitted yet — pick up where you left off</p>
+            </div>
+
+            <ul class="divide-y divide-gray-100">
+                @foreach($drafts as $draft)
+                    <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-zendo-navy truncate">
+                                {{ $draft->property_name ?: 'Untitled property' }}
+                                <span class="font-mono text-xs text-gray-400 ml-1">{{ $draft->code }}</span>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                {{ $draft->nearest_city ?: '—' }}
+                                · Last saved {{ $draft->updated_at->diffForHumans() }}
+                            </p>
+                        </div>
+                        <a href="{{ route('supplyhead.properties.edit', $draft) }}"
+                            class="inline-flex items-center px-3 py-1.5 bg-zendo-navy text-white text-xs font-semibold rounded-lg hover:bg-opacity-90 transition-all whitespace-nowrap">
+                            Continue
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     {{-- Filters --}}
     <form method="GET" class="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
         <div class="flex flex-wrap items-center gap-2">

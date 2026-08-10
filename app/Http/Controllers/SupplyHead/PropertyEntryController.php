@@ -114,7 +114,14 @@ class PropertyEntryController extends Controller
             'not_opened' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', '!=', 'draft')->whereNull('supply_head_viewed_at')->count(),
         ];
 
-        return view('supplyhead.properties.index', compact('entries', 'notOpenedEntries', 'counters', 'fieldOfficers'));
+        // The supply head's own unfinished entries — kept out of both tables
+        // above (they filter drafts out) and shown in their own resume panel.
+        $drafts = PropertyEntry::where('field_officer_id', $user->id)
+            ->where('status', 'draft')
+            ->latest('updated_at')
+            ->get();
+
+        return view('supplyhead.properties.index', compact('entries', 'notOpenedEntries', 'counters', 'fieldOfficers', 'drafts'));
     }
 
     // ── Create ────────────────────────────────────────────────────────────────
@@ -148,9 +155,6 @@ class PropertyEntryController extends Controller
         }
 
         if ($isDraft) {
-            // Defensive fallback only — the form doesn't expose a "Save Draft"
-            // action for supply head, since there is no edit/resume route for
-            // this role yet.
             $entry = PropertyEntry::create(array_merge($data, [
                 'field_officer_id' => auth()->id(),
                 'supply_head_id'   => auth()->id(),
@@ -161,8 +165,9 @@ class PropertyEntryController extends Controller
 
             $this->handlePhotos($entry, $request);
 
-            return redirect()->route('supplyhead.properties.index')
-                ->with('success', 'Draft saved. Code: ' . $entry->code);
+            return redirect()->route('supplyhead.properties.edit', $entry)
+                ->with('success', 'Draft saved. You can continue editing and submit when ready. Code: ' . $entry->code)
+                ->with('wizard_step', $request->input('wizard_step', 0));
         }
 
         // Supply head is both the submitter and the reviewer for entries they
@@ -187,6 +192,85 @@ class PropertyEntryController extends Controller
 
         return redirect()->route('supplyhead.properties.index')
             ->with('success', 'Property added successfully and sent for admin approval. Code: ' . $entry->code);
+    }
+
+    // ── Edit (own drafts only) ────────────────────────────────────────────────
+
+    public function edit(PropertyEntry $property): View
+    {
+        $this->authorizeDraft($property);
+
+        $property->load('photos');
+
+        $slots = self::PHOTO_SLOTS;
+        $fieldConfigs = PropertyFieldConfig::allKeyed();
+        $fieldRemarks = [];
+
+        return view('supplyhead.properties.edit', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks'));
+    }
+
+    // ── Update (own drafts only) ──────────────────────────────────────────────
+
+    public function update(Request $request, PropertyEntry $property): RedirectResponse
+    {
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300);
+
+        $this->authorizeDraft($property);
+
+        $action = $request->input('action', 'submit');
+        $isDraft = ($action === 'draft');
+
+        $data = $this->validateEntry($request, $isDraft);
+
+        if (isset($data['office_sizes']) && is_string($data['office_sizes'])) {
+            $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
+        }
+
+        if ($isDraft) {
+            $property->update(array_merge($data, [
+                'status'       => 'draft',
+                'submitted_at' => null,
+                'area_unit'    => $request->input('area_unit', $property->area_unit ?? 'sq_ft'),
+            ]));
+
+            $this->handlePhotos($property, $request);
+
+            return redirect()->route('supplyhead.properties.edit', $property)
+                ->with('success', 'Draft saved. You can continue editing and submit when ready.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        // Same one-shot flow as store(): a supply head reviewing their own
+        // entry adds nothing, so skip straight to "verified" for admin approval.
+        $property->update(array_merge($data, [
+            'status'                => 'verified',
+            'submitted_at'          => now(),
+            'reviewed_at'           => now(),
+            'reviewed_by'           => auth()->id(),
+            'verified_at'           => now(),
+            'supply_head_viewed_at' => now(),
+            'area_unit'             => $request->input('area_unit', $property->area_unit ?? 'sq_ft'),
+        ]));
+
+        $this->handlePhotos($property, $request);
+
+        PropertyEntryLog::logAction($property, 'verified', 'draft', 'verified', 'Added directly by supply head — sent straight to admin for approval.');
+
+        return redirect()->route('supplyhead.properties.index')
+            ->with('success', 'Property added successfully and sent for admin approval. Code: ' . $property->code);
+    }
+
+    /**
+     * Editing through this controller is limited to the supply head's own
+     * drafts — everything else they see belongs to a field officer or owner
+     * and is handled through the review actions instead.
+     */
+    private function authorizeDraft(PropertyEntry $property): void
+    {
+        abort_if(auth()->user()->role !== 'supply_head', 403);
+        abort_if($property->field_officer_id !== auth()->id(), 403);
+        abort_if($property->status !== 'draft', 403, 'Only your own drafts can be edited here.');
     }
 
     // ── Reverse Geocode (Mappls proxy) ───────────────────────────────────────
@@ -805,9 +889,25 @@ class PropertyEntryController extends Controller
         'form_submited_location' => 'Submitted Location',
     ];
 
+    /**
+     * Whether the mandatory fields configured in PropertyFieldConfig are
+     * actually enforced for supply-head entries. Driven by
+     * SUPPLY_HEAD_ENFORCE_REQUIRED_FIELDS — when it's off, every field is
+     * optional so a supply head can record whatever they have on hand. The
+     * form partial reads the same config flag for its client-side markers.
+     */
+    public static function enforcesRequiredFields(): bool
+    {
+        return (bool) config('property.supply_head.enforce_required_fields', true);
+    }
+
     private function validateEntry(Request $request, bool $isDraft = false): array
     {
         $configs = PropertyFieldConfig::allKeyed();
+
+        // Drafts are always fields-optional; full submissions are only
+        // fields-optional when required-field enforcement is switched off.
+        $allOptional = $isDraft || !self::enforcesRequiredFields();
 
         $typeRules = [
             'facility_type' => 'string',
@@ -928,7 +1028,7 @@ class PropertyEntryController extends Controller
                 continue;
             }
 
-            if ($isDraft) {
+            if ($allOptional) {
                 $presence = 'nullable';
             } else {
                 $isMandatory = $cfg && $cfg->mandatory_field;
@@ -988,7 +1088,7 @@ class PropertyEntryController extends Controller
             }
         }
 
-        if (!$isDraft && (string) $request->input('has_dock_leveller') === '1') {
+        if (!$allOptional && (string) $request->input('has_dock_leveller') === '1') {
             $levellerFields = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'];
             $anyMandatory = collect($levellerFields)->contains(fn ($f) => (bool) optional($configs->get($f))->mandatory_field);
 
