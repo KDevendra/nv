@@ -40,17 +40,26 @@ class PropertyEntryReportController extends Controller
         // Filtered, paginated entries
         $entries = $this->buildQuery($request)->latest()->paginate(20)->appends($request->query());
 
-        // All supply heads for top-level filter — include their field officers for JS dropdown
+        // All supply heads for top-level filter, with the zones they cover
         $supplyHeads = User::where('role', 'supply_head')
-            ->with(['fieldOfficers' => fn($q) => $q->orderBy('name')->select('id', 'name', 'supply_head_id')])
+            ->with('zones:id')
             ->orderBy('name')->get(['id', 'name']);
+
+        $allOfficers = User::where('role', 'field_officer')->orderBy('name')->get(['id', 'name', 'zone_id']);
+
+        // A supply head's officers are the ones working in the zones they
+        // cover — there is no direct supply head link on the user any more.
+        $officersBySupplyHead = $supplyHeads->mapWithKeys(function ($sh) use ($allOfficers) {
+            $zoneIds = $sh->zones->pluck('id')->all();
+            return [$sh->id => $allOfficers->whereIn('zone_id', $zoneIds)->values()];
+        });
 
         // Field officers: if a supply head is selected, scope to that head's officers only
         $officers = $request->filled('supply_head_id')
-            ? User::where('role', 'field_officer')
-                  ->where('supply_head_id', $request->supply_head_id)
-                  ->orderBy('name')->get(['id', 'name'])
-            : User::where('role', 'field_officer')->orderBy('name')->get(['id', 'name']);
+            ? ($officersBySupplyHead[(int) $request->supply_head_id] ?? collect())
+            : $allOfficers;
+
+        $zones = \App\Models\Zone::ordered()->get(['id', 'name']);
 
         $statuses      = ['draft', 'submitted', 'verified', 'recheck', 'rejected'];
         $facilityTypes = PropertyEntry::whereNotNull('facility_type')
@@ -59,7 +68,8 @@ class PropertyEntryReportController extends Controller
             ->distinct()->orderBy('nearest_city')->pluck('nearest_city');
 
         return view('admin.property-entry-report.index', compact(
-            'summary', 'entries', 'supplyHeads', 'officers', 'statuses', 'facilityTypes', 'cities'
+            'summary', 'entries', 'supplyHeads', 'officers', 'officersBySupplyHead',
+            'zones', 'statuses', 'facilityTypes', 'cities'
         ));
     }
 
@@ -91,7 +101,7 @@ class PropertyEntryReportController extends Controller
 
     private function buildQuery(Request $request)
     {
-        $query = PropertyEntry::with(['fieldOfficer', 'supplyHead']);
+        $query = PropertyEntry::with(['fieldOfficer', 'supplyHead', 'zone']);
 
         if ($request->filled('supply_head_id')) {
             $query->where('supply_head_id', $request->supply_head_id);
@@ -99,6 +109,10 @@ class PropertyEntryReportController extends Controller
 
         if ($request->filled('officer_id')) {
             $query->where('field_officer_id', $request->officer_id);
+        }
+
+        if ($request->filled('zone_id')) {
+            $query->where('zone_id', $request->zone_id);
         }
 
         if ($request->filled('status')) {

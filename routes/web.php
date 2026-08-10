@@ -51,6 +51,7 @@ use App\Http\Controllers\Admin\VideoTourController;
 use App\Http\Controllers\Admin\PropertyEntryReportController;
 use App\Http\Controllers\Admin\RegionController;
 use App\Http\Controllers\Admin\AreaController;
+use App\Http\Controllers\Admin\ZoneController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -233,6 +234,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('areas', AreaController::class);
         Route::patch('areas/{area}/toggle-status', [AreaController::class, 'toggleStatus'])->name('areas.toggle-status');
         Route::get('areas-by-region', [AreaController::class, 'getByRegion'])->name('areas.by-region');
+        Route::resource('zones', ZoneController::class)->except(['show']);
+        Route::patch('zones/{zone}/toggle-status', [ZoneController::class, 'toggleStatus'])->name('zones.toggle-status');
     });
 
     // CSRF Token refresh route for long forms

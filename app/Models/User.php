@@ -54,6 +54,7 @@ class User extends Authenticatable
         'supply_head_id',
         'region_id',
         'area_id',
+        'zone_id',
         'is_active',
         'can_approve_owner_listings',
     ];
@@ -138,11 +139,48 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the single zone assigned to this user (field officers).
+     */
+    public function zone()
+    {
+        return $this->belongsTo(Zone::class);
+    }
+
+    /**
+     * Get every zone this supply head covers.
+     */
+    public function zones()
+    {
+        return $this->belongsToMany(Zone::class, 'supply_head_zone', 'user_id', 'zone_id')->withTimestamps();
+    }
+
+    /**
      * Get all property entries created by this field officer.
      */
     public function propertyEntries()
     {
         return $this->hasMany(\App\Models\PropertyEntry::class, 'field_officer_id');
+    }
+
+    /**
+     * Get all property entries this user owns as supply head.
+     */
+    public function supplyHeadEntries()
+    {
+        return $this->hasMany(\App\Models\PropertyEntry::class, 'supply_head_id');
+    }
+
+    /**
+     * Zone ids this user works across — the covered zones for a supply
+     * head, the single assigned zone for everyone else.
+     */
+    public function zoneIds(): array
+    {
+        if ($this->isSupplyHead()) {
+            return $this->zones()->pluck('zones.id')->all();
+        }
+
+        return $this->zone_id ? [$this->zone_id] : [];
     }
 
     /**

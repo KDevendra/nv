@@ -115,6 +115,20 @@
                 </select>
             </div>
 
+            {{-- Zone --}}
+            <div class="flex-1 min-w-[160px]">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Zone</label>
+                <select name="zone_id" id="filter-zone"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
+                    <option value="">All Zones</option>
+                    @foreach($zones as $zone)
+                        <option value="{{ $zone->id }}" {{ request('zone_id') == $zone->id ? 'selected' : '' }}>
+                            {{ $zone->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             {{-- Field Officer --}}
             <div class="flex-1 min-w-[160px]">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Field Officer</label>
@@ -212,6 +226,7 @@
 @php
     $activeFilters = array_filter([
         'supply_head_id' => request('supply_head_id') ? ['label' => 'Supply Head: ' . ($supplyHeads->firstWhere('id', request('supply_head_id'))?->name ?? request('supply_head_id')), 'key' => 'supply_head_id'] : null,
+        'zone_id'       => request('zone_id')       ? ['label' => 'Zone: ' . ($zones->firstWhere('id', request('zone_id'))?->name ?? request('zone_id')), 'key' => 'zone_id'] : null,
         'officer_id'    => request('officer_id')    ? ['label' => 'Officer: ' . ($officers->firstWhere('id', request('officer_id'))?->name ?? request('officer_id')), 'key' => 'officer_id'] : null,
         'status'        => request('status')        ? ['label' => 'Status: ' . ucfirst(request('status')),                'key' => 'status']        : null,
         'facility_type' => request('facility_type') ? ['label' => 'Type: '   . request('facility_type'),                  'key' => 'facility_type'] : null,
@@ -365,9 +380,9 @@
             { id: {{ $officer->id }}, name: {{ json_encode($officer->name) }} },
             @endforeach
         ],
-        @foreach($supplyHeads as $sh)
-        '{{ $sh->id }}': [
-            @foreach($sh->fieldOfficers as $fo)
+        @foreach($officersBySupplyHead as $supplyHeadId => $zoneOfficers)
+        '{{ $supplyHeadId }}': [
+            @foreach($zoneOfficers as $fo)
             { id: {{ $fo->id }}, name: {{ json_encode($fo->name) }} },
             @endforeach
         ],
