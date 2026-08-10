@@ -2185,29 +2185,48 @@ WIZARD — BOTTOM NAV BAR
         });
         stepEl.querySelectorAll('.wiz-inline-err').forEach(el => el.remove());
 
-        const fields = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+        const fields = stepEl.querySelectorAll('input, select, textarea');
         let firstInvalid = null;
 
         fields.forEach(field => {
             // Skip hidden / disabled / readonly fields
-            // offsetParent === null catches ALL hidden cases (Blade's
-            // style="display:none" AND Alpine's x-show generated
-            // style="display: none;" with a space) — the old string match
-            // [style*="display:none"] missed Alpine's spaced version, which
-            // caused required-but-hidden office L/W fields (Step E) to
-            // block "Save & Next" even when Offices = "No" or unset.
+            // offsetParent === null catches ALL hidden cases (Blade's style="display:none" AND Alpine's x-show)
             if (field.disabled || field.type === 'hidden' || field.offsetParent === null) return;
 
             const val = field.value ? field.value.trim() : '';
-            if (val === '') {
+            let errMsg = null;
+
+            if (field.required && val === '') {
+                errMsg = 'This field is required';
+            } else if (val !== '') {
+                if (field.type === 'number') {
+                    const num = parseFloat(val);
+                    if (isNaN(num)) {
+                        errMsg = 'Please enter a valid number';
+                    } else if (field.hasAttribute('min') && field.getAttribute('min') !== '' && !isNaN(parseFloat(field.getAttribute('min'))) && num < parseFloat(field.getAttribute('min'))) {
+                        errMsg = `Value must not be less than ${field.getAttribute('min')}`;
+                    } else if (field.hasAttribute('max') && field.getAttribute('max') !== '' && !isNaN(parseFloat(field.getAttribute('max'))) && num > parseFloat(field.getAttribute('max'))) {
+                        errMsg = `Value must not be greater than ${field.getAttribute('max')}`;
+                    }
+                } else if (field.type === 'email') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(val)) {
+                        errMsg = 'Please enter a valid email address';
+                    }
+                }
+            }
+
+            if (errMsg) {
                 field.classList.add('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
-                // Insert inline error message if not already there
                 let wrapper = field.parentElement;
-                if (!wrapper.querySelector('.wiz-inline-err')) {
-                    const msg = document.createElement('p');
-                    msg.className = 'wiz-inline-err mt-1 text-xs text-red-600 font-medium';
-                    msg.textContent = 'This field is required';
-                    wrapper.appendChild(msg);
+                if (wrapper) {
+                    wrapper.querySelectorAll('p.text-red-600').forEach(m => m.remove());
+                    if (!wrapper.querySelector('.wiz-inline-err')) {
+                        const msg = document.createElement('p');
+                        msg.className = 'wiz-inline-err mt-1 text-xs text-red-600 font-medium';
+                        msg.textContent = errMsg;
+                        wrapper.appendChild(msg);
+                    }
                 }
                 if (!firstInvalid) firstInvalid = field;
             }
@@ -2480,7 +2499,7 @@ WIZARD — BOTTOM NAV BAR
         wizardGoTo(wizCurrent);
     });
 
-    // ── Auto-strip non-numeric characters from all number inputs ──
+    // ── Auto-strip non-numeric characters & clear field errors live on edit ──
     document.addEventListener('input', function (e) {
         const el = e.target;
         if (el.tagName === 'INPUT' && el.type === 'number') {
@@ -2502,7 +2521,44 @@ WIZARD — BOTTOM NAV BAR
                 }
             }
         }
+
+        // Live clear error styling and messages (server & inline) as field is edited
+        if (el.matches('input, select, textarea')) {
+            clearFieldError(el);
+        }
     }, true);
+
+    document.addEventListener('change', function (e) {
+        const el = e.target;
+        if (el.matches('input, select, textarea')) {
+            clearFieldError(el);
+        }
+    }, true);
+
+    function clearFieldError(el) {
+        el.classList.remove('wiz-field-error', 'border-red-500', 'ring-2', 'ring-red-300');
+        const wrapper = el.parentElement;
+        if (wrapper) {
+            wrapper.querySelectorAll('.wiz-inline-err').forEach(m => m.remove());
+            wrapper.querySelectorAll('p.text-red-600').forEach(m => m.remove());
+        }
+
+        const stepEl = el.closest('.wizard-step');
+        if (stepEl) {
+            const stepIdx = parseInt(stepEl.getAttribute('data-step'), 10);
+            if (!isNaN(stepIdx) && typeof WIZ_ERR_COUNTS !== 'undefined') {
+                const remainingErrs = stepEl.querySelectorAll('.wiz-field-error, .wiz-inline-err, p.text-red-600').length;
+                if (remainingErrs === 0 && WIZ_ERR_COUNTS[stepIdx] > 0) {
+                    WIZ_ERR_COUNTS[stepIdx] = 0;
+                    const dot = document.getElementById(`wiz-dot-${stepIdx}`);
+                    if (dot) {
+                        const badge = dot.querySelector('.bg-red-500');
+                        if (badge) badge.remove();
+                    }
+                }
+            }
+        }
+    }
 
     // ── Also block letter keys at keydown level (extra safety, blocks 'e', 'E' exponent too) ──
     document.addEventListener('keydown', function (e) {
