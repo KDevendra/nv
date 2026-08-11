@@ -97,6 +97,30 @@
                     </div>
                 </a>
 
+                <!-- Centre: role-aware quick nav (hidden on mobile) -->
+                @if(auth()->user()->role === 'supply_head')
+                    @php
+                        $shPendingCount = \App\Models\Lead::where('division', auth()->user()->division)
+                            ->where('feasibility_sh_id', auth()->id())
+                            ->whereNotNull('feasibility_raised_at')
+                            ->whereNull('feasibility_responded_at')
+                            ->count();
+                    @endphp
+                    <nav class="hidden md:flex items-center space-x-2 text-sm">
+                        <a href="{{ route('field.dashboard') }}"
+                           class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors {{ request()->routeIs('field.*') ? 'bg-white/15 text-white font-semibold' : '' }}">
+                            Property Submissions
+                        </a>
+                        <a href="{{ route('sh.leads.index') }}"
+                           class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5 {{ request()->routeIs('sh.leads.*') ? 'bg-white/15 text-white font-semibold' : '' }}">
+                            <span>Feasibility Requests</span>
+                            @if($shPendingCount > 0)
+                                <span class="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $shPendingCount }}</span>
+                            @endif
+                        </a>
+                    </nav>
+                @endif
+
                 <!-- Right: user info + logout -->
                 <div class="flex items-center space-x-4">
                     <!-- User dropdown -->

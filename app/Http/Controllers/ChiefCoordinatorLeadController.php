@@ -19,7 +19,6 @@ class ChiefCoordinatorLeadController extends Controller
 
         $query = Lead::where('division', $user->division)
             ->where('assigned_cc_id', $user->id)
-            ->whereIn('stage', Lead::CC_STAGES)
             ->with(['property' => function ($q) {
                 $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'plot_area', 'city_id', 'location_id', 'property_type_id');
             }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name', 'assignedSE:id,name']);
@@ -107,6 +106,7 @@ class ChiefCoordinatorLeadController extends Controller
             $lead->update([
                 'feasibility_sh_id'     => $sh->id,
                 'feasibility_raised_at' => now(),
+                'feasibility_status'    => 'pending',
                 'feasibility_notes'     => $request->input('feasibility_notes'),
             ]);
 
@@ -209,5 +209,157 @@ class ChiefCoordinatorLeadController extends Controller
         }
 
         return back()->with('success', 'Lead side-state updated.');
+    }
+
+    public function requestFeasibility(Request $request, Lead $lead)
+    {
+        $request->merge(['raise_feasibility' => 1]);
+        return $this->update($request, $lead);
+    }
+
+    public function requestInventoryCheck(Request $request, Lead $lead)
+    {
+        return $this->requestFeasibility($request, $lead);
+    }
+
+    public function generateSiteVisitLink(Request $request, Lead $lead)
+    {
+        $token = $lead->generateVisitLinkToken();
+        $linkUrl = route('leads.visit_link', ['token' => $token]);
+
+        if ($lead->stage === 'inventory_check_done') {
+            $lead->transitionTo('site_visit_scheduled', Auth::user());
+        }
+
+        Log::info("SMS SENT to {$lead->phone}: Click link to view site visit address (valid 24h): {$linkUrl}");
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Site visit link generated.',
+                'url'     => $linkUrl,
+                'expires_at' => $lead->visit_link_expires_at?->format('d M Y, H:i')
+            ]);
+        }
+        return back()->with('success', 'Site visit link generated.');
+    }
+
+    public function sendVisitLink(Request $request, Lead $lead)
+    {
+        return $this->generateSiteVisitLink($request, $lead);
+    }
+
+    public function siteVisitFeedback(Request $request, Lead $lead)
+    {
+        $feedback = $request->input('feedback') ?: $request->input('site_visit_feedback');
+        $request->merge(['site_visit_feedback' => $feedback]);
+        $request->validate([
+            'site_visit_feedback' => 'required|string',
+        ]);
+
+        $lead->site_visit_feedback = $feedback;
+        if ($request->filled('site_visit_date')) {
+            $lead->site_visit_date = $request->site_visit_date;
+        }
+        if ($lead->canTransitionTo('site_visit_completed')) {
+            $lead->transitionTo('site_visit_completed', Auth::user());
+        } else {
+            $lead->save();
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Site visit feedback recorded.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Site visit feedback recorded.');
+    }
+
+    public function recordVisitFeedback(Request $request, Lead $lead)
+    {
+        return $this->siteVisitFeedback($request, $lead);
+    }
+
+    public function negotiate(Request $request, Lead $lead)
+    {
+        if ($request->filled('negotiation_notes')) {
+            $lead->negotiation_notes = $request->negotiation_notes;
+        }
+        if ($request->boolean('advance_stage') || $lead->stage === 'site_visit_completed') {
+            $lead->transitionTo('negotiation', Auth::user());
+        } else {
+            $lead->save();
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Negotiation notes saved.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Negotiation notes saved.');
+    }
+
+    public function closeDeal(Request $request, Lead $lead)
+    {
+        $lead->deal_closed_at = now();
+        if ($request->filled('commission_amount')) {
+            $lead->commission_amount = $request->commission_amount;
+        }
+        $lead->owner_notified_at = now();
+        $lead->reminder_6mo_at = now()->addMonths(6);
+
+        if ($lead->canTransitionTo('deal_closed')) {
+            $lead->transitionTo('deal_closed', Auth::user());
+        } else {
+            $lead->save();
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Deal closed successfully.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Deal closed successfully.');
+    }
+
+    public function hold(Request $request, Lead $lead)
+    {
+        $reason = $request->input('reason') ?: 'On Hold';
+        $holdUntil = $request->input('hold_until') ?: now()->addDays(7)->toDateString();
+        $lead->putOnHold($reason, $holdUntil);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead placed on hold.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Lead placed on hold.');
+    }
+
+    public function resume(Request $request, Lead $lead)
+    {
+        $lead->resumeFromHold();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead resumed.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Lead resumed.');
+    }
+
+    public function defer(Request $request, Lead $lead)
+    {
+        $date = $request->input('defer_until') ?: $request->input('follow_up_date') ?: now()->addDays(1)->toDateString();
+        $lead->deferFollowUp($date);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead follow-up deferred.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Lead follow-up deferred.');
+    }
+
+    public function markLost(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $lead->markLost($request->reason);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Lead marked as lost.', 'lead' => $lead->fresh()]);
+        }
+        return back()->with('success', 'Lead marked as lost.');
     }
 }

@@ -66,10 +66,12 @@ class SupplyHeadLeadController extends Controller
         }
 
         $request->validate([
-            'feasibility_notes' => 'required|string|max:2000',
+            'feasibility_status' => 'required|in:feasible,not_feasible,conditional',
+            'feasibility_notes'  => 'required|string|max:2000',
         ]);
 
         $lead->update([
+            'feasibility_status'       => $request->feasibility_status,
             'feasibility_notes'        => $request->feasibility_notes,
             'feasibility_responded_at' => now(),
         ]);
