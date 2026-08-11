@@ -73,6 +73,7 @@ class Lead extends Model
         'cc_load_at_assignment',
         'contact_attempts',
         'first_contacted_at',
+        'last_contacted_at',
         'sla_contact_due_at',
         'sla_contact_breached',
         'contact_outcome',
@@ -86,12 +87,14 @@ class Lead extends Model
         'sla_feasibility_due_at',
         'sla_feasibility_breached',
         'feasibility_notes',
+        'feasibility_status',
         'visit_link_token',
         'visit_link_sent_at',
         'visit_link_expires_at',
         'visit_link_opened_at',
         'site_visit_date',
         'site_visit_feedback',
+        'negotiation_notes',
         'deal_closed_at',
         'commission_amount',
         'owner_notified_at',
@@ -109,6 +112,7 @@ class Lead extends Model
         'hold_expected_resume_date'   => 'date',
         'follow_up_date'              => 'date',
         'first_contacted_at'          => 'datetime',
+        'last_contacted_at'           => 'datetime',
         'handover_completed_at'       => 'datetime',
         'feasibility_raised_at'       => 'datetime',
         'feasibility_responded_at'    => 'datetime',
@@ -433,5 +437,78 @@ class Lead extends Model
     public function scopeNeedsReview($query)
     {
         return $query->where('needs_division_review', true);
+    }
+
+    // Accessors
+    public function getLastContactedAtAttribute($value)
+    {
+        if ($value) {
+            return $value instanceof Carbon ? $value : Carbon::parse($value);
+        }
+        if ($this->first_contacted_at) {
+            return $this->first_contacted_at;
+        }
+        return null;
+    }
+
+    public function getIsActiveAttribute(): bool
+    {
+        return empty($this->side_state) || $this->side_state === 'none';
+    }
+
+    public function getIsOnHoldAttribute(): bool
+    {
+        return $this->side_state === 'inquiry_hold';
+    }
+
+    public function getIsDeferredAttribute(): bool
+    {
+        return $this->side_state === 'follow_up_later';
+    }
+
+    public function getIsLostAttribute(): bool
+    {
+        return $this->side_state === 'lost';
+    }
+
+    public function getStageLabelAttribute(): string
+    {
+        return ucwords(str_replace('_', ' ', $this->stage ?? 'new_lead'));
+    }
+
+    public function getSideStateLabelAttribute(): string
+    {
+        if (empty($this->side_state) || $this->side_state === 'none') {
+            return 'Active';
+        }
+        return ucwords(str_replace('_', ' ', $this->side_state));
+    }
+
+    public function getStageBadgeAttribute(): string
+    {
+        return match($this->stage) {
+            'new_lead'             => 'bg-blue-100 text-blue-800',
+            'contacted'            => 'bg-indigo-100 text-indigo-800',
+            'qualified'            => 'bg-cyan-100 text-cyan-800',
+            'options_shared'       => 'bg-teal-100 text-teal-800',
+            'interest_confirmed'   => 'bg-amber-100 text-amber-800',
+            'escalated_to_cc'      => 'bg-purple-100 text-purple-800',
+            'inventory_check_done' => 'bg-violet-100 text-violet-800',
+            'site_visit_scheduled' => 'bg-fuchsia-100 text-fuchsia-800',
+            'site_visit_completed' => 'bg-pink-100 text-pink-800',
+            'negotiation'          => 'bg-orange-100 text-orange-800',
+            'deal_closed'          => 'bg-green-100 text-green-800',
+            default                => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getSideStateBadgeAttribute(): string
+    {
+        return match($this->side_state) {
+            'inquiry_hold'    => 'bg-orange-100 text-orange-800',
+            'follow_up_later' => 'bg-blue-100 text-blue-800',
+            'lost'            => 'bg-red-100 text-red-800',
+            default           => 'bg-gray-100 text-gray-800',
+        };
     }
 }

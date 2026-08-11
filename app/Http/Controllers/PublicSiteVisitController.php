@@ -40,11 +40,25 @@ class PublicSiteVisitController extends Controller
         $lead->consumeVisitLinkToken();
 
         $property = $lead->property;
+        $propertyEntries = collect();
+
+        if ($lead->options_shared_property_ids && is_array($lead->options_shared_property_ids)) {
+            $codes = $lead->options_shared_property_ids;
+            $propertyEntries = \App\Models\PropertyEntry::whereIn('code', $codes)->get();
+        }
+
+        if (!$property && $propertyEntries->isEmpty()) {
+            $firstPe = \App\Models\PropertyEntry::first();
+            if ($firstPe) {
+                $propertyEntries = collect([$firstPe]);
+            }
+        }
 
         return view('site_visit.show', [
-            'expired'  => false,
-            'lead'     => $lead,
-            'property' => $property,
+            'expired'         => false,
+            'lead'            => $lead,
+            'property'        => $property,
+            'propertyEntries' => $propertyEntries,
         ]);
     }
 }

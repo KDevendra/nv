@@ -453,7 +453,7 @@
         {{-- Override Stage --}}
         <details class="border border-amber-300 rounded-lg overflow-hidden bg-amber-50">
             <summary class="px-4 py-2.5 cursor-pointer font-semibold text-sm text-amber-900 hover:bg-amber-100 transition">
-                ⚙ Override Pipeline Stage
+                Override Pipeline Stage
             </summary>
             <form data-ajax-form data-reload="1" action="{{ route('admin.leads.override-stage', $lead) }}" method="POST" class="p-4 space-y-3 bg-white">
                 @csrf
@@ -475,16 +475,15 @@
             </form>
         </details>
 
-        {{-- Resolve Division Conflict --}}
-        @if($lead->needs_division_review)
-        <details class="border border-orange-300 rounded-lg overflow-hidden bg-orange-50" open>
+        {{-- Change Lead Division --}}
+        <details class="border border-orange-300 rounded-lg overflow-hidden bg-orange-50">
             <summary class="px-4 py-2.5 cursor-pointer font-semibold text-sm text-orange-900 hover:bg-orange-100 transition">
-                ⚠ Resolve Division Conflict
+                Change Lead Division
             </summary>
             <form data-ajax-form data-reload="1" action="{{ route('admin.leads.resolve-division', $lead) }}" method="POST" class="p-4 space-y-3 bg-white">
                 @csrf
                 <div>
-                    <label class="text-xs text-gray-500 block mb-1">Correct Division</label>
+                    <label class="text-xs text-gray-500 block mb-1">Target Division</label>
                     <select name="division" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
                         <option value="">— Select Division —</option>
                         @foreach(['warehousing','residential','commercial'] as $d)
@@ -493,11 +492,10 @@
                     </select>
                 </div>
                 <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-                    Confirm Division
+                    Update Division
                 </button>
             </form>
         </details>
-        @endif
 
         {{-- Side-state quick actions --}}
         <div class="border-t border-gray-200 pt-3 mt-3">

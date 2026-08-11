@@ -146,6 +146,16 @@ class AdminLeadController extends Controller
 
         $lead->assigned_cc_id = $cc->id;
         $lead->cc_load_at_assignment = $cc->activeCCLeadCount();
+        
+        // If lead stage is prior to escalated_to_cc, advance stage to escalated_to_cc
+        if (Lead::stageIndex($lead->stage) < Lead::stageIndex('escalated_to_cc')) {
+            $lead->stage = 'escalated_to_cc';
+            if (empty($lead->handover_note)) {
+                $lead->handover_note = 'Assigned to Chief Coordinator by Admin.';
+                $lead->handover_completed_at = now();
+            }
+        }
+        
         $lead->save();
 
         \App\Models\LeadStageHistory::create([
@@ -239,6 +249,54 @@ class AdminLeadController extends Controller
         }
 
         return back()->with('success', "Lead stage changed to '{$newStage}' successfully.");
+    }
+
+    /**
+     * Admin change / resolve lead division.
+     */
+    public function resolveDivision(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'division' => 'required|in:warehousing,residential,commercial',
+        ]);
+
+        $oldDivision = $lead->division;
+        $newDivision = $request->division;
+
+        if ($oldDivision !== $newDivision) {
+            $lead->division = $newDivision;
+
+            // If assigned SE division doesn't match new division, unassign SE
+            if ($lead->assignedSE && $lead->assignedSE->division !== $newDivision) {
+                $lead->assigned_se_id = null;
+            }
+
+            // If assigned CC division doesn't match new division, unassign CC
+            if ($lead->assignedCC && $lead->assignedCC->division !== $newDivision) {
+                $lead->assigned_cc_id = null;
+                $lead->cc_load_at_assignment = null;
+            }
+
+            $lead->save();
+
+            \App\Models\LeadStageHistory::create([
+                'lead_id'            => $lead->id,
+                'from_stage'         => $lead->stage,
+                'to_stage'           => $lead->stage,
+                'changed_by_user_id' => auth()->id(),
+                'note'               => "Admin changed division from '" . ucfirst((string)$oldDivision) . "' to '" . ucfirst($newDivision) . "'",
+            ]);
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Lead division changed to '" . ucfirst($newDivision) . "' successfully.",
+                'lead'    => $lead->fresh(['assignedSE', 'assignedCC'])
+            ]);
+        }
+
+        return back()->with('success', "Lead division changed to '" . ucfirst($newDivision) . "' successfully.");
     }
 
     /**

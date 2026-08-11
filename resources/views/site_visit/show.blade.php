@@ -78,8 +78,8 @@
                             </svg>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Address</div>
-                            <div class="mt-0.5">{{ $property->address }}</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Confirmed Address</div>
+                            <div class="mt-0.5 font-semibold text-gray-900">{{ $property->address }}</div>
                         </div>
                     </div>
                     @endif
@@ -126,6 +126,49 @@
                 @if($property->city)
                     <span class="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{{ $property->city->name }}</span>
                 @endif
+            </div>
+
+            @elseif(isset($propertyEntries) && $propertyEntries->isNotEmpty())
+            <div class="space-y-4">
+                @foreach($propertyEntries as $pe)
+                    <div class="border border-gray-100 bg-slate-50/50 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-semibold text-zendo-gold uppercase tracking-wide">{{ $pe->code ?: ('PE-' . $pe->id) }}</span>
+                                <h3 class="font-heading text-zendo-navy text-lg leading-tight">{{ $pe->property_name ?: ('Property #' . ($pe->code ?: $pe->id)) }}</h3>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $pe->facility_type ?: 'Warehouse' }}</span>
+                        </div>
+
+                        <div class="space-y-2.5 text-sm text-gray-700">
+                            {{-- Full Address --}}
+                            <div class="flex gap-3 items-start">
+                                <div class="w-8 h-8 bg-zendo-gold/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-4 h-4 text-zendo-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Confirmed Address</div>
+                                    <div class="mt-0.5 font-semibold text-gray-900">{{ $pe->name_full_address ?: 'Contact coordinator for gate directions.' }}</div>
+                                </div>
+                            </div>
+
+                            {{-- City & Region --}}
+                            <div class="flex gap-3 items-start">
+                                <div class="w-8 h-8 bg-zendo-gold/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg class="w-4 h-4 text-zendo-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Location / City</div>
+                                    <div class="mt-0.5 font-medium">{{ $pe->nearest_city ?: $pe->village_town_district ?: 'Raipur' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
             @else
             <p class="text-gray-500 text-sm">Property details are not available for this visit.</p>

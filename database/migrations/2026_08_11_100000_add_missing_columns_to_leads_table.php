@@ -24,8 +24,11 @@ return new class extends Migration
                 // originating record and an admin has to confirm it.
                 $table->boolean('needs_division_review')->default(false)->after('origin_table');
             }
+            if (!Schema::hasColumn('leads', 'last_contacted_at')) {
+                $table->timestamp('last_contacted_at')->nullable()->after('first_contacted_at');
+            }
             if (!Schema::hasColumn('leads', 'sla_contact_due_at')) {
-                $table->timestamp('sla_contact_due_at')->nullable()->after('first_contacted_at');
+                $table->timestamp('sla_contact_due_at')->nullable()->after('last_contacted_at');
             }
             if (!Schema::hasColumn('leads', 'sla_contact_breached')) {
                 $table->boolean('sla_contact_breached')->default(false)->after('sla_contact_due_at');

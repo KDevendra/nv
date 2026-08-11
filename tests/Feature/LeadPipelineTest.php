@@ -423,7 +423,7 @@ class LeadPipelineTest extends TestCase
 
         return Property::create(array_merge([
             'title'            => 'Test Property ' . rand(100, 999),
-            'slug'             => 'test-property-' . rand(1000, 9999),
+            'slug'             => 'test-property-' . \Illuminate\Support\Str::random(12),
             'property_type_id' => $type->id,
             'city_id'          => $city->id,
             'location_id'      => $location->id,

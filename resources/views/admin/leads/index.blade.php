@@ -143,6 +143,7 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">#</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lead</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
@@ -155,6 +156,7 @@
                     <tbody class="divide-y divide-gray-50">
                         @foreach($leads as $lead)
                             <tr class="hover:bg-gray-50 transition-colors {{ $lead->trashed() ? 'opacity-60' : '' }}">
+                                <td class="px-3 py-3 text-center text-xs text-gray-500 font-mono">{{ $leads->firstItem() + $loop->index }}</td>
                                 <td class="px-5 py-3">
                                     <div class="font-medium text-gray-900">{{ $lead->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $lead->phone }}</div>

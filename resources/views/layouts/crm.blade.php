@@ -129,9 +129,9 @@
                                   {{ request()->routeIs('sh.leads.*') ? 'bg-white/15 text-white font-semibold' : '' }}">
                             Feasibility Queue
                         </a>
-                        <a href="{{ route('supplyhead.properties.index') }}"
+                        <a href="{{ route('field.dashboard') }}"
                            class="px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors">
-                            Properties
+                            Property Submissions
                         </a>
                     @endif
                 </nav>

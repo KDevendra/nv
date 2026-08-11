@@ -251,6 +251,7 @@ Route::middleware('auth')->group(function () {
         Route::post('leads/{lead}/log-contact', [SalesExecutiveLeadController::class, 'logContact'])->name('leads.log-contact');
         Route::post('leads/{lead}/qualify', [SalesExecutiveLeadController::class, 'qualify'])->name('leads.qualify');
         Route::post('leads/{lead}/share-options', [SalesExecutiveLeadController::class, 'shareOptions'])->name('leads.share-options');
+        Route::post('leads/{lead}/confirm-interest', [SalesExecutiveLeadController::class, 'confirmInterest'])->name('leads.confirm-interest');
         Route::post('leads/{lead}/handover', [SalesExecutiveLeadController::class, 'handover'])->name('leads.handover');
         Route::post('leads/{lead}/hold', [SalesExecutiveLeadController::class, 'hold'])->name('leads.hold');
         Route::post('leads/{lead}/resume', [SalesExecutiveLeadController::class, 'resume'])->name('leads.resume');
