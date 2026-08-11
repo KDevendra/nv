@@ -139,11 +139,17 @@ class PropertyEntryController extends Controller
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
         }
 
+        // Zone comes from the officer's own assignment and decides which
+        // supply head takes the entry — the officer never picks either.
+        $zoneId = auth()->user()->zone_id;
+        $supplyHeadId = $this->resolveZoneSupplyHeadId($zoneId);
+
         if ($isDraft) {
             // Save as draft — no status change, no submitted_at, no log
             $entry = PropertyEntry::create(array_merge($data, [
                 'field_officer_id' => auth()->id(),
-                'supply_head_id' => auth()->user()->supply_head_id,
+                'zone_id' => $zoneId,
+                'supply_head_id' => $supplyHeadId,
                 'status' => 'draft',
                 'submitted_at' => null,
                 'area_unit' => $request->input('area_unit', 'sq_ft'),
@@ -159,7 +165,8 @@ class PropertyEntryController extends Controller
         // Default: submit
         $entry = PropertyEntry::create(array_merge($data, [
             'field_officer_id' => auth()->id(),
-            'supply_head_id' => auth()->user()->supply_head_id,
+            'zone_id' => $zoneId,
+            'supply_head_id' => $supplyHeadId,
             'status' => 'submitted',
             'submitted_at' => now(),
             'area_unit' => $request->input('area_unit', 'sq_ft'),
@@ -278,9 +285,17 @@ class PropertyEntryController extends Controller
             $data['office_sizes'] = json_decode($data['office_sizes'], true) ?: [];
         }
 
+        // Keep the entry pinned to the officer's zone, and (re)route it to a
+        // supply head of that zone whenever it doesn't have one yet.
+        $zoneId = $property->zone_id ?? auth()->user()->zone_id;
+        $routing = [
+            'zone_id' => $zoneId,
+            'supply_head_id' => $property->supply_head_id ?: $this->resolveZoneSupplyHeadId($zoneId),
+        ];
+
         if ($isDraft) {
             // Save as draft — keep current status if already draft, otherwise set to draft
-            $property->update(array_merge($data, [
+            $property->update(array_merge($data, $routing, [
                 'status' => 'draft',
                 'submitted_at' => null,
                 'allow_resubmit' => null,
@@ -295,7 +310,7 @@ class PropertyEntryController extends Controller
         }
 
         // Default: submit
-        $property->update(array_merge($data, [
+        $property->update(array_merge($data, $routing, [
             'status' => 'submitted',
             'submitted_at' => now(),
             'allow_resubmit' => null,
@@ -313,6 +328,24 @@ class PropertyEntryController extends Controller
 
         return redirect()->route('field.properties.index')
             ->with('success', 'Entry resubmitted successfully. Code: ' . $property->code);
+    }
+
+    // ── Zone routing ──────────────────────────────────────────────────────────
+
+    /**
+     * Supply head that should own an entry submitted in the given zone.
+     * Returns null when the zone has no active supply head — the entry
+     * still carries its zone, so it surfaces for every supply head added
+     * to that zone later.
+     */
+    private function resolveZoneSupplyHeadId(?int $zoneId): ?int
+    {
+        $fromZone = $zoneId ? \App\Models\Zone::find($zoneId)?->primarySupplyHeadId() : null;
+
+        // Transitional fallback for officers created before zones existed
+        // and not yet assigned one — keeps their entries from landing with
+        // no reviewer at all.
+        return $fromZone ?? auth()->user()->supply_head_id;
     }
 
     // ── Validation ────────────────────────────────────────────────────────────

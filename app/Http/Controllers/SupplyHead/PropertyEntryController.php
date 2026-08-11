@@ -36,26 +36,29 @@ class PropertyEntryController extends Controller
         $user = auth()->user();
         abort_if($user->role !== 'supply_head', 403);
 
-        // Get field officers under this supply head, and owners if can_approve_owner_listings is enabled
-        $fieldOfficerIds = User::where('supply_head_id', $user->id)->pluck('id');
+        // Field officers are reached through the zones this supply head
+        // covers; owners are added when can_approve_owner_listings is on.
+        $zoneIds = $user->zoneIds();
+        $fieldOfficerIds = User::where('role', 'field_officer')->whereIn('zone_id', $zoneIds)->pluck('id');
         $ownerIds = $user->can_approve_owner_listings
             ? User::where('role', 'owner')->pluck('id')
             : collect();
         $assigneeIds = $fieldOfficerIds->concat($ownerIds);
 
-        $fieldOfficers = User::where(function($q) use ($user) {
-            $q->where('supply_head_id', $user->id);
+        $fieldOfficers = User::where(function($q) use ($user, $zoneIds) {
+            $q->where('role', 'field_officer')->whereIn('zone_id', $zoneIds);
             if ($user->can_approve_owner_listings) {
                 $q->orWhere('role', 'owner');
             }
         })->get();
 
+        $inScope = fn($q) => $q->whereIn('field_officer_id', $assigneeIds)
+            ->orWhere('supply_head_id', $user->id)
+            ->orWhereIn('zone_id', $zoneIds);
+
         // ── Not-opened entries (always shown at top, separate table) ──────────
         $notOpenedQuery = PropertyEntry::with(['fieldOfficer'])
-            ->where(function ($q) use ($assigneeIds, $user) {
-                $q->whereIn('field_officer_id', $assigneeIds)
-                  ->orWhere('supply_head_id', $user->id);
-            })
+            ->where($inScope)
             ->where('status', '!=', 'draft')
             ->whereNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
@@ -78,10 +81,7 @@ class PropertyEntryController extends Controller
 
         // ── All entries (paginated, with filters) - EXCLUDE not-opened entries ──
         $query = PropertyEntry::with(['fieldOfficer'])
-            ->where(function ($q) use ($assigneeIds, $user) {
-                $q->whereIn('field_officer_id', $assigneeIds)
-                  ->orWhere('supply_head_id', $user->id);
-            })
+            ->where($inScope)
             ->where('status', '!=', 'draft')
             ->whereNotNull('supply_head_viewed_at')
             ->orderByRaw('COALESCE(submitted_at, created_at) DESC');
@@ -106,12 +106,12 @@ class PropertyEntryController extends Controller
         $entries = $query->paginate(15)->appends($request->query());
 
         $counters = [
-            'total' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', '!=', 'draft')->count(),
-            'pending' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'submitted')->count(),
-            'verified' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'verified')->count(),
-            'rejected' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'rejected')->count(),
-            'recheck' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', 'recheck')->count(),
-            'not_opened' => PropertyEntry::whereIn('field_officer_id', $assigneeIds)->where('status', '!=', 'draft')->whereNull('supply_head_viewed_at')->count(),
+            'total' => PropertyEntry::where($inScope)->where('status', '!=', 'draft')->count(),
+            'pending' => PropertyEntry::where($inScope)->where('status', 'submitted')->count(),
+            'verified' => PropertyEntry::where($inScope)->where('status', 'verified')->count(),
+            'rejected' => PropertyEntry::where($inScope)->where('status', 'rejected')->count(),
+            'recheck' => PropertyEntry::where($inScope)->where('status', 'recheck')->count(),
+            'not_opened' => PropertyEntry::where($inScope)->where('status', '!=', 'draft')->whereNull('supply_head_viewed_at')->count(),
         ];
 
         // The supply head's own unfinished entries — kept out of both tables

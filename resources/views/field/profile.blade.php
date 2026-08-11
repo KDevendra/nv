@@ -90,19 +90,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        Reporting To
+                        My Zone
                     </h3>
-                    @if($user->supplyHead)
+                    @if($user->zone)
                         <div class="flex items-center space-x-3 p-4 bg-green-50 rounded-lg border border-green-100">
                             <div class="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span class="text-white font-bold text-base">{{ substr($user->supplyHead->name, 0, 1) }}</span>
+                                <span class="text-white font-bold text-base">{{ substr($user->zone->name, 0, 1) }}</span>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 truncate">{{ $user->supplyHead->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ $user->supplyHead->email }}</p>
-                                <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Supply Head
-                                </span>
+                                <p class="text-sm font-semibold text-gray-900 truncate">{{ $user->zone->name }}</p>
+                                <p class="text-xs text-gray-500">Properties you add are reviewed by this zone's supply head</p>
                             </div>
                         </div>
                     @else
@@ -111,7 +108,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            <p class="text-sm text-gray-400">No supply head assigned yet.</p>
+                            <p class="text-sm text-gray-400">No zone assigned yet.</p>
                         </div>
                     @endif
                 </div>
@@ -129,12 +126,12 @@
                             My Team
                         </h3>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            {{ $user->fieldOfficers->count() }}
+                            {{ $teamOfficers->count() }}
                         </span>
                     </div>
-                    @if($user->fieldOfficers->count() > 0)
+                    @if($teamOfficers->count() > 0)
                         <div class="divide-y divide-gray-50">
-                            @foreach($user->fieldOfficers as $officer)
+                            @foreach($teamOfficers as $officer)
                                 <div class="flex items-center justify-between px-5 py-3">
                                     <div class="flex items-center space-x-3 min-w-0">
                                         <div class="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0">

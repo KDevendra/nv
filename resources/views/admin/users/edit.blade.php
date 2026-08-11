@@ -73,7 +73,7 @@
                         <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                         <select name="role" id="role"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('role') border-red-500 @enderror select2-role"
-                                required onchange="toggleSupplyHeadField()">
+                                required onchange="toggleRoleFields()">
                             @foreach(App\Models\User::ROLES as $value => $label)
                                 <option value="{{ $value }}" {{ old('role', $user->role) === $value ? 'selected' : '' }}>
                                     {{ $label }}
@@ -85,36 +85,58 @@
                         @enderror
                     </div>
 
-                    <div id="division-field" style="display: none;">
+                    <div class="md:col-span-3" id="division-field" style="display: none;">
                         <label for="division" class="block text-sm font-medium text-gray-700 mb-2">Division *</label>
                         <select name="division" id="division"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('division') border-red-500 @enderror select2-division">
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('division') border-red-500 @enderror">
                             <option value="">Select Division</option>
-                            @foreach(App\Models\User::DIVISIONS as $key => $label)
-                                <option value="{{ $key }}" {{ old('division', $user->division) === $key ? 'selected' : '' }}>
+                            @foreach(App\Models\User::DIVISIONS as $value => $label)
+                                <option value="{{ $value }}" {{ old('division', $user->division) === $value ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-gray-500">Required for Sales Executive, Chief Coordinator, Supply Head, and Field Officer</p>
+                        <p class="mt-1 text-xs text-gray-500">Field officers are always Warehousing</p>
                         @error('division')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="md:col-span-3" id="supply-head-field" style="display: none;">
-                        <label for="supply_head_id" class="block text-sm font-medium text-gray-700 mb-2">Assign to Supply Head *</label>
-                        <select name="supply_head_id" id="supply_head_id"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('supply_head_id') border-red-500 @enderror select2-supply-head">
-                            <option value="">Select Supply Head</option>
-                            @foreach($supplyHeads as $head)
-                                <option value="{{ $head->id }}" {{ old('supply_head_id', $user->supply_head_id) == $head->id ? 'selected' : '' }}>
-                                    {{ $head->name }} ({{ $head->email }})
+                    <!-- Field officer: one zone -->
+                    <div class="md:col-span-3" id="zone-field" style="display: none;">
+                        <label for="zone_id" class="block text-sm font-medium text-gray-700 mb-2">Zone *</label>
+                        <select name="zone_id" id="zone_id"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('zone_id') border-red-500 @enderror select2-zone">
+                            <option value="">Select Zone</option>
+                            @foreach($zones as $zone)
+                                <option value="{{ $zone->id }}" {{ old('zone_id', $user->zone_id) == $zone->id ? 'selected' : '' }}>
+                                    {{ $zone->name }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-gray-500">Field officers must be assigned to a supply head</p>
-                        @error('supply_head_id')
+                        <p class="mt-1 text-xs text-gray-500">Properties added by this field officer go to the supply heads of this zone</p>
+                        @error('zone_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Supply head: many zones -->
+                    @php $selectedZoneIds = old('zone_ids', $user->zones->pluck('id')->all()); @endphp
+                    <div class="md:col-span-3" id="zones-field" style="display: none;">
+                        <label for="zone_ids" class="block text-sm font-medium text-gray-700 mb-2">Zones *</label>
+                        <select name="zone_ids[]" id="zone_ids" multiple
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('zone_ids') border-red-500 @enderror select2-zones">
+                            @foreach($zones as $zone)
+                                <option value="{{ $zone->id }}" {{ in_array($zone->id, $selectedZoneIds) ? 'selected' : '' }}>
+                                    {{ $zone->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">This supply head receives every property submitted in the selected zones</p>
+                        @error('zone_ids')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('zone_ids.*')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -279,36 +301,49 @@
 </style>
 
 <script>
-function toggleSupplyHeadField() {
-    const roleSelect = document.getElementById('role');
-    const supplyHeadField = document.getElementById('supply-head-field');
-    const supplyHeadSelect = document.getElementById('supply_head_id');
-    const ownerApprovalField = document.getElementById('owner-approval-field');
+const DIVISION_ROLES = @json(App\Models\User::DIVISION_REQUIRED_ROLES);
+
+function toggleRoleFields() {
+    const role = document.getElementById('role').value;
+    const zoneField = document.getElementById('zone-field');
+    const zoneSelect = document.getElementById('zone_id');
+    const zonesField = document.getElementById('zones-field');
+    const zonesSelect = document.getElementById('zone_ids');
     const divisionField = document.getElementById('division-field');
     const divisionSelect = document.getElementById('division');
-    const divisionRoles = ['sales_executive', 'chief_coordinator', 'supply_head', 'field_officer'];
-    
-    if (roleSelect.value === 'field_officer') {
-        supplyHeadField.style.display = 'block';
-        supplyHeadSelect.required = true;
+    const ownerApprovalField = document.getElementById('owner-approval-field');
+
+    // Field officer → exactly one zone
+    if (role === 'field_officer') {
+        zoneField.style.display = 'block';
+        zoneSelect.required = true;
     } else {
-        supplyHeadField.style.display = 'none';
-        supplyHeadSelect.required = false;
-        $('#supply_head_id').val('').trigger('change');
+        zoneField.style.display = 'none';
+        zoneSelect.required = false;
+        $('#zone_id').val('').trigger('change');
     }
 
-    if (roleSelect.value === 'supply_head') {
+    // Supply head → one or more zones
+    if (role === 'supply_head') {
+        zonesField.style.display = 'block';
+        zonesSelect.required = true;
         if (ownerApprovalField) ownerApprovalField.style.display = 'block';
     } else {
+        zonesField.style.display = 'none';
+        zonesSelect.required = false;
+        $('#zone_ids').val(null).trigger('change');
         if (ownerApprovalField) ownerApprovalField.style.display = 'none';
     }
 
-    if (divisionRoles.includes(roleSelect.value)) {
-        if (divisionField) divisionField.style.display = 'block';
-        if (divisionSelect) divisionSelect.required = true;
+    // Division is required for some roles, but field officers are locked
+    // to warehousing server-side so the field stays hidden for them.
+    if (DIVISION_ROLES.includes(role) && role !== 'field_officer') {
+        divisionField.style.display = 'block';
+        divisionSelect.required = true;
     } else {
-        if (divisionField) divisionField.style.display = 'none';
-        if (divisionSelect) divisionSelect.required = false;
+        divisionField.style.display = 'none';
+        divisionSelect.required = false;
+        divisionSelect.value = '';
     }
 }
 
@@ -328,9 +363,15 @@ $(document).ready(function() {
         width: '100%'
     });
     
-    // Initialize Select2 for supply head dropdown
-    $('.select2-supply-head').select2({
-        placeholder: 'Search and select supply head',
+    // Initialize Select2 for zone dropdowns
+    $('.select2-zone').select2({
+        placeholder: 'Select a zone',
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('.select2-zones').select2({
+        placeholder: 'Select one or more zones',
         allowClear: true,
         width: '100%'
     });
@@ -350,11 +391,11 @@ $(document).ready(function() {
     });
     
     // Initial toggle
-    toggleSupplyHeadField();
-    
+    toggleRoleFields();
+
     // Listen for role change
     $('#role').on('change', function() {
-        toggleSupplyHeadField();
+        toggleRoleFields();
     });
 
     // Load areas when region changes

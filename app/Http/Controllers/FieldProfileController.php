@@ -17,9 +17,18 @@ class FieldProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
-        $user->load(['supplyHead', 'fieldOfficers']);
+        $user->load(['zone', 'zones']);
 
-        return view('field.profile', compact('user'));
+        // A supply head's team is every field officer working in the zones
+        // they cover — officers are no longer linked to a head directly.
+        $teamOfficers = $user->isSupplyHead()
+            ? \App\Models\User::where('role', 'field_officer')
+                ->whereIn('zone_id', $user->zones->pluck('id'))
+                ->orderBy('name')
+                ->get()
+            : collect();
+
+        return view('field.profile', compact('user', 'teamOfficers'));
     }
 
     /**
