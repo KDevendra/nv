@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Zendo Advisory Services - Warehouse Decisions Made Smarter | ZendoIndia')
+@section('title', 'ZENDO Advisory Services - Warehouse Decisions Made Smarter | ZendoIndia')
 
 @section('content')
 
@@ -482,9 +482,9 @@
     <!-- ================= HERO ================= -->
     <section class="zadv-hero">
       <div class="zadv-container">
-        <span class="zadv-eyebrow">Zendo Advisory Services</span>
+        <span class="zadv-eyebrow">ZENDO Advisory Services</span>
         <h1>Enter Any Market. <span>Expand With Confidence.</span></h1>
-        <p>Zendo advises businesses entering or expanding across Indian markets — delivering the right space, logistics,
+        <p>ZENDO advises businesses entering or expanding across Indian markets — delivering the right space, logistics,
           feasibility, and a fully costed plan through one dedicated team.</p>
         <p class="zadv-hero-note">&mdash; Advisory across India's key industrial markets.</p>
         <div class="zadv-hero-actions">
@@ -512,13 +512,13 @@
         <div class="zadv-section-head">
           <span class="zadv-eyebrow">What We Offer</span>
           <h2>Two Advisory Tracks. One Growth Partner.</h2>
-          <p>Whether you're setting up in a new market or optimising an existing operation, Zendo has an advisory built
+          <p>Whether you're setting up in a new market or optimising an existing operation, ZENDO has an advisory built
             for you.</p>
         </div>
 
         <div class="zadv-cards">
 
-          <!-- Zendo Select -->
+          <!-- ZENDO Select -->
           <article class="zadv-card">
             <div class="zadv-card-icon zadv-card-icon--select" aria-hidden="true">
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8"
@@ -527,7 +527,7 @@
                 <path d="M10 28V16h12v12M13 20h6" />
               </svg>
             </div>
-            <h3>Zendo Select</h3>
+            <h3>ZENDO Select</h3>
             <div class="zadv-tagline">Plan Right. Enter Right.</div>
             <p>For businesses entering new markets or expanding into new locations.</p>
             <ul class="zadv-benefits">
@@ -554,7 +554,7 @@
             </ul>
           </article>
 
-          <!-- Zendo Upgrade -->
+          <!-- ZENDO Upgrade -->
           <article class="zadv-card">
             <div class="zadv-card-icon zadv-card-icon--upgrade" aria-hidden="true">
               <svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="#3E8E41" stroke-width="2"
@@ -563,7 +563,7 @@
                 <path d="M7 12 14 6l4 3 7-6M21 3h4v4" />
               </svg>
             </div>
-            <h3>Zendo Upgrade</h3>
+            <h3>ZENDO Upgrade</h3>
             <div class="zadv-tagline">Optimise Space. Enhance Performance.</div>
             <p>For businesses with existing operations looking to improve performance and cost.</p>
             <ul class="zadv-benefits">
@@ -594,7 +594,7 @@
     <section class="zadv-why">
       <div class="zadv-container">
         <div class="zadv-section-head">
-          <span class="zadv-eyebrow">Why Choose Zendo?</span>
+          <span class="zadv-eyebrow">Why Choose ZENDO?</span>
           <h2>Advisory You Can Rely On</h2>
         </div>
 
@@ -654,7 +654,7 @@
     <section class="zadv-cta" id="contact">
       <div class="zadv-container">
         <span class="zadv-eyebrow">Get Started</span>
-        <h2>Speak to a Zendo Advisor</h2>
+        <h2>Speak to a ZENDO Advisor</h2>
         <a class="zadv-phone" href="tel:+917494010101" aria-label="Call 7494 01 01 01">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round">
