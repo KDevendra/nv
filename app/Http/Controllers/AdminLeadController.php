@@ -129,4 +129,194 @@ class AdminLeadController extends Controller
 
         return back()->with('success', 'Lead updated by Admin successfully.');
     }
+
+    /**
+     * Admin assign / reassign Chief Coordinator.
+     */
+    public function assignCC(Request $request, Lead $lead)
+    {
+        $ccId = $request->input('cc_id') ?? $request->input('assigned_cc_id');
+        
+        $request->merge(['cc_id' => $ccId]);
+        $request->validate([
+            'cc_id' => 'required|exists:users,id',
+        ]);
+
+        $cc = User::where('id', $ccId)->where('role', 'chief_coordinator')->firstOrFail();
+
+        $lead->assigned_cc_id = $cc->id;
+        $lead->cc_load_at_assignment = $cc->activeCCLeadCount();
+        $lead->save();
+
+        \App\Models\LeadStageHistory::create([
+            'lead_id'            => $lead->id,
+            'from_stage'         => $lead->stage,
+            'to_stage'           => $lead->stage,
+            'changed_by_user_id' => auth()->id(),
+            'note'               => "Admin assigned Chief Coordinator: {$cc->name}",
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Chief Coordinator {$cc->name} assigned successfully.",
+                'lead'    => $lead->fresh(['assignedCC'])
+            ]);
+        }
+
+        return back()->with('success', "Chief Coordinator {$cc->name} assigned successfully.");
+    }
+
+    /**
+     * Admin assign / reassign Sales Executive.
+     */
+    public function assignSE(Request $request, Lead $lead)
+    {
+        $seId = $request->input('se_id') ?? $request->input('assigned_se_id');
+        
+        $request->merge(['se_id' => $seId]);
+        $request->validate([
+            'se_id' => 'required|exists:users,id',
+        ]);
+
+        $se = User::where('id', $seId)->where('role', 'sales_executive')->firstOrFail();
+
+        $lead->assigned_se_id = $se->id;
+        $lead->save();
+
+        \App\Models\LeadStageHistory::create([
+            'lead_id'            => $lead->id,
+            'from_stage'         => $lead->stage,
+            'to_stage'           => $lead->stage,
+            'changed_by_user_id' => auth()->id(),
+            'note'               => "Admin assigned Sales Executive: {$se->name}",
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Sales Executive {$se->name} assigned successfully.",
+                'lead'    => $lead->fresh(['assignedSE'])
+            ]);
+        }
+
+        return back()->with('success', "Sales Executive {$se->name} assigned successfully.");
+    }
+
+    /**
+     * Admin force stage override.
+     */
+    public function overrideStage(Request $request, Lead $lead)
+    {
+        $newStage = $request->input('stage') ?? $request->input('override_stage');
+        $reason = $request->input('reason') ?? $request->input('override_reason') ?? 'Manual Admin Stage Override';
+
+        if (!in_array($newStage, Lead::STAGES, true)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Invalid stage.'], 422);
+            }
+            return back()->with('error', 'Invalid stage specified.');
+        }
+
+        $fromStage = $lead->stage;
+        $lead->stage = $newStage;
+        $lead->save();
+
+        \App\Models\LeadStageHistory::create([
+            'lead_id'            => $lead->id,
+            'from_stage'         => $fromStage,
+            'to_stage'           => $newStage,
+            'changed_by_user_id' => auth()->id(),
+            'note'               => "Admin Stage Override: {$reason}",
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Lead stage changed to '{$newStage}' successfully.",
+                'lead'    => $lead->fresh()
+            ]);
+        }
+
+        return back()->with('success', "Lead stage changed to '{$newStage}' successfully.");
+    }
+
+    /**
+     * Admin put lead on hold.
+     */
+    public function hold(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        $lead->putOnHold($request->reason, $request->expected_resume_date);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead placed on hold.',
+                'lead'    => $lead->fresh()
+            ]);
+        }
+
+        return back()->with('success', 'Lead placed on hold.');
+    }
+
+    /**
+     * Admin resume lead from hold.
+     */
+    public function resume(Request $request, Lead $lead)
+    {
+        $lead->resumeFromHold();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead resumed from hold.',
+                'lead'    => $lead->fresh()
+            ]);
+        }
+
+        return back()->with('success', 'Lead resumed from hold.');
+    }
+
+    /**
+     * Admin mark lead as lost.
+     */
+    public function markLost(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $lead->markLost($request->reason, $request->reason_other);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead marked as lost.',
+                'lead'    => $lead->fresh()
+            ]);
+        }
+
+        return back()->with('success', 'Lead marked as lost.');
+    }
+
+    /**
+     * Admin soft delete lead.
+     */
+    public function destroy(Request $request, Lead $lead)
+    {
+        $lead->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lead deleted successfully.'
+            ]);
+        }
+
+        return redirect()->route('admin.leads.index')->with('success', 'Lead deleted successfully.');
+    }
 }
