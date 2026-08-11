@@ -5,12 +5,7 @@
 @section('content')
 
   <style>
-    /* ==============================================================
-     ZENDO ADVISORY SERVICES — LANDING PAGE
-     Theme sampled from zendoindia.com:
-     Gold #B39359 · Navy #0B2C3D · Cream #FBF8F2 · Light #F8F9FC
-     Font: Jost
-     ============================================================== */
+    
     .zadv {
       --gold: #B39359;
       --gold-dark: #9A7A3E;
@@ -124,7 +119,7 @@
     .zadv-eyebrow {
       display: inline-block;
       color: var(--gold);
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       letter-spacing: .22em;
       text-transform: uppercase;
@@ -176,14 +171,14 @@
     .zadv-hero p {
       max-width: 640px;
       margin: 22px auto 0;
-      font-size: 18px;
+      font-size: 15px;
       color: #CBD6DD;
     }
 
     .zadv-hero-note {
       margin: 20px auto 0;
       color: var(--gold);
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: .03em;
       font-weight: 600;
     }
@@ -210,7 +205,7 @@
 
     .zadv-section-head p {
       margin-top: 12px;
-      font-size: 17px
+      font-size: 15px
     }
 
     .zadv-section-head h2 {
@@ -263,12 +258,12 @@
     .zadv-card .zadv-tagline {
       color: var(--gold);
       font-weight: 600;
-      font-size: 15.5px;
+      font-size: 15px;
       margin: 4px 0 14px;
     }
 
     .zadv-card>p {
-      font-size: 15.5px
+      font-size: 15px
     }
 
     .zadv-benefits {
@@ -281,7 +276,7 @@
       gap: 12px;
       align-items: flex-start;
       padding: 9px 0;
-      font-size: 15.5px;
+      font-size: 15px;
       color: #43505B;
     }
 
@@ -333,7 +328,7 @@
     }
 
     .zadv-why-item p {
-      font-size: 14.5px
+      font-size: 15px
     }
 
     /* ---------------- FINAL CTA ---------------- */
@@ -378,7 +373,7 @@
     .zadv-cta p.zadv-small {
       margin-top: 10px;
       color: #B9C6CE;
-      font-size: 16px
+      font-size: 15px
     }
 
     .zadv-cta-actions {
@@ -396,7 +391,7 @@
       text-align: center;
       padding: 18px 16px;
       color: #8FA3AE;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     .zadv-footnote a {
@@ -447,7 +442,7 @@
       }
 
       .zadv-hero p {
-        font-size: 16px
+        font-size: 15px
       }
 
       .zadv-services,
