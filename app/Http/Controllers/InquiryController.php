@@ -26,6 +26,7 @@ class InquiryController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'pincode' => 'required|string|max:10',
             'property_type' => 'nullable|string|max:100',
             'message' => 'nullable|string|max:1000',
         ]);
@@ -50,6 +51,11 @@ class InquiryController extends Controller
                     ->where('division', $division)
                     ->first();
 
+                $notes = implode("\n", array_filter([
+                    $request->pincode ? "Pin Code: {$request->pincode}" : null,
+                    $request->message ? "Message: {$request->message}" : null,
+                ]));
+
                 if (!$lead) {
                     $se = User::getSalesExecutivesByDivision($division)->first();
 
@@ -58,10 +64,16 @@ class InquiryController extends Controller
                         'name' => $request->name,
                         'phone' => $request->phone,
                         'email' => $request->email,
+                        'pincode' => $request->pincode,
                         'stage' => 'new_lead',
                         'assigned_se_id' => $se?->id,
-                        'qualification_notes' => $request->message,
+                        'qualification_notes' => $notes,
                     ]);
+                } else {
+                    if ($request->filled('pincode')) {
+                        $lead->pincode = $request->pincode;
+                        $lead->save();
+                    }
                 }
             });
 
@@ -99,6 +111,7 @@ class InquiryController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'pincode' => 'required|string|max:10',
             'message' => 'nullable|string|max:1000',
         ]);
         
@@ -154,6 +167,11 @@ class InquiryController extends Controller
                     ->where('division', $division)
                     ->first();
 
+                $notes = implode("\n", array_filter([
+                    $request->pincode ? "Pin Code: {$request->pincode}" : null,
+                    $request->message ? "Message: {$request->message}" : null,
+                ]));
+
                 if (!$lead) {
                     $se = User::getSalesExecutivesByDivision($division)->first();
 
@@ -162,11 +180,17 @@ class InquiryController extends Controller
                         'name' => $request->name,
                         'phone' => $request->phone,
                         'email' => $request->email,
+                        'pincode' => $request->pincode,
                         'property_id' => $request->property_id ?: null,
                         'stage' => 'new_lead',
                         'assigned_se_id' => $se?->id,
-                        'qualification_notes' => $request->message,
+                        'qualification_notes' => $notes,
                     ]);
+                } else {
+                    if ($request->filled('pincode')) {
+                        $lead->pincode = $request->pincode;
+                        $lead->save();
+                    }
                 }
             });
 

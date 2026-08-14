@@ -1141,8 +1141,12 @@
                   <input type="email" name="email" placeholder="Your Email Address" class="inquiry-form-input w-full"
                      required>
                </div>
-               <!-- Property Type -->
+               <!-- Pin Code -->
                <div>
+                  <input type="text" name="pincode" placeholder="Your Pin Code" class="inquiry-form-input w-full" required>
+               </div>
+               <!-- Property Type -->
+               <div class="md:col-span-2">
                   <select name="property_type" class="inquiry-form-input w-full">
                      <option value="">Property Type</option>
                      <option value="apartment">Apartment</option>
@@ -1534,8 +1538,16 @@
                      <input type="tel" name="phone" placeholder="+91" required>
                   </div>
                </div>
-               <label><i class="fas fa-envelope"></i> Email Address</label>
-               <input type="email" name="email" placeholder="Enter your email" required>
+               <div class="lux-double">
+                  <div>
+                     <label><i class="fas fa-envelope"></i> Email Address</label>
+                     <input type="email" name="email" placeholder="Enter your email" required>
+                  </div>
+                  <div>
+                     <label><i class="fas fa-map-pin"></i> Pin Code</label>
+                     <input type="text" name="pincode" placeholder="Pin Code" required>
+                  </div>
+               </div>
                <div class="lux-double">
                   <div>
                      <label><i class="fas fa-map-marker-alt"></i> Location</label>

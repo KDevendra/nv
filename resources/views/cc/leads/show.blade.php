@@ -33,8 +33,9 @@
                 @endif
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-600">
             <div><span class="font-medium text-gray-700">Division:</span> {{ ucfirst($lead->division) }}</div>
+            <div><span class="font-medium text-gray-700">Zone:</span> <span class="font-semibold text-purple-700">{{ $lead->zone?->name ?? '—' }}</span></div>
             <div><span class="font-medium text-gray-700">SE:</span> {{ $lead->assignedSE?->name ?? '—' }}</div>
             <div><span class="font-medium text-gray-700">CC Assigned:</span> {{ $lead->cc_assigned_at?->diffForHumans() ?? '—' }}</div>
             <div>

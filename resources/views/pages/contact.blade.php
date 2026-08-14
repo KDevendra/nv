@@ -157,6 +157,8 @@
                             class="w-full border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zendo-gold">
                         <input type="text" name="phone" placeholder="Phone Number" value="{{ old('phone') }}" required
                             class="w-full border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zendo-gold">
+                        <input type="text" name="pincode" placeholder="Pin Code" value="{{ old('pincode') }}" required
+                            class="w-full border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zendo-gold">
                         <textarea name="message" rows="4" placeholder="Your Message" required
                             class="w-full border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zendo-gold">{{ old('message') }}</textarea>
                         <button type="submit"
@@ -179,7 +181,7 @@
             </div>
             <div class="w-full max-w-6xl mx-auto mt-12">
                 <form action="{{ route('inquiries.store') }}" method="POST"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-center">
                     @csrf
                     <div>
                         <label for="name-2" class="sr-only">Name</label>
@@ -195,6 +197,11 @@
                         <label for="phone-2" class="sr-only">Phone number</label>
                         <input type="tel" name="phone" id="phone-2" class="inquiry-form-input w-full"
                             placeholder="Phone number" required>
+                    </div>
+                    <div>
+                        <label for="pincode-2" class="sr-only">Pin Code</label>
+                        <input type="text" name="pincode" id="pincode-2" class="inquiry-form-input w-full"
+                            placeholder="Pin Code" required>
                     </div>
                     <div>
                         <label for="requirement-2" class="sr-only">Requirement</label>

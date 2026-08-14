@@ -15,6 +15,7 @@ class Consultation extends Model
         'name',
         'phone',
         'email',
+        'pincode',
         'property_type',
         'location',
         'budget_range',

@@ -21,7 +21,7 @@ class ChiefCoordinatorLeadController extends Controller
             ->where('assigned_cc_id', $user->id)
             ->with(['property' => function ($q) {
                 $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'plot_area', 'city_id', 'location_id', 'property_type_id');
-            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name', 'assignedSE:id,name']);
+            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name', 'assignedSE:id,name', 'zone:id,name,slug']);
 
         if ($request->filled('stage')) {
             $query->where('stage', $request->stage);

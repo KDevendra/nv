@@ -312,25 +312,35 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all Sales Executives for a given division.
+     * Get all Sales Executives for a given division, optionally filtered by zone_id.
      */
-    public static function getSalesExecutivesByDivision(string $division)
+    public static function getSalesExecutivesByDivision(string $division, ?int $zoneId = null)
     {
-        return self::where('role', 'sales_executive')
+        $query = self::where('role', 'sales_executive')
             ->where('division', $division)
-            ->where('is_active', true)
-            ->get();
+            ->where('is_active', true);
+
+        if ($zoneId) {
+            $query->where('zone_id', $zoneId);
+        }
+
+        return $query->get();
     }
 
     /**
-     * Get all Chief Coordinators for a given division, ordered by current load.
+     * Get all Chief Coordinators for a given division, ordered by current load, optionally filtered by zone_id.
      */
-    public static function getChiefCoordinatorsByDivision(string $division)
+    public static function getChiefCoordinatorsByDivision(string $division, ?int $zoneId = null)
     {
-        return self::where('role', 'chief_coordinator')
+        $query = self::where('role', 'chief_coordinator')
             ->where('division', $division)
-            ->where('is_active', true)
-            ->withCount([
+            ->where('is_active', true);
+
+        if ($zoneId) {
+            $query->where('zone_id', $zoneId);
+        }
+
+        return $query->withCount([
                 'assignedLeadsCC as active_cc_lead_count' => function ($q) {
                     $q->whereNotIn('stage', ['deal_closed'])
                         ->where(function ($sq) {

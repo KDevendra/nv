@@ -13,6 +13,7 @@ class Inquiry extends Model
         'name',
         'phone',
         'email',
+        'pincode',
         'property_type',
         'message',
         'status'

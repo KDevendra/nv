@@ -46,6 +46,7 @@ class LeadPipelineTest extends TestCase
             'name'        => 'John Doe',
             'phone'       => $phone,
             'email'       => 'john_' . rand(1000, 9999) . '@example.com',
+            'pincode'     => '492001',
             'message'     => 'Interested in viewing this warehouse property',
         ]);
 
@@ -279,10 +280,67 @@ class LeadPipelineTest extends TestCase
         // Handover & escalate to CC
         $lead21->handover_note = 'Detailed handover notes provided here.';
         $lead21->handover_completed_at = now();
-        $lead21->transitionTo('escalated_to_cc');
+        $lead21->save();
 
-        // Should land in holding queue (assigned_cc_id is null)
+        $assignedCC = $lead21->assignBestCC();
+
+        // Must remain in holding queue (null) because CC is at 20 cap
+        $this->assertNull($assignedCC);
         $this->assertNull($lead21->fresh()->assigned_cc_id);
+    }
+
+    /**
+     * Test Zone-Wise CC routing (matches zone_id first before falling back).
+     */
+    public function test_zone_wise_cc_routing()
+    {
+        $uniq = rand(1000, 9999);
+        $zone1Id = \Illuminate\Support\Facades\DB::table('zones')->insertGetId(['name' => 'Zone 1 Test ' . $uniq, 'slug' => 'zone-1-' . $uniq, 'created_at' => now(), 'updated_at' => now()]);
+        $zone2Id = \Illuminate\Support\Facades\DB::table('zones')->insertGetId(['name' => 'Zone 2 Test ' . $uniq, 'slug' => 'zone-2-' . $uniq, 'created_at' => now(), 'updated_at' => now()]);
+
+        // Zone 1 CC
+        $ccZone1 = User::create([
+            'name'      => 'CC Zone 1',
+            'email'     => "cc_z1_{$uniq}@example.com",
+            'phone'     => '661' . rand(1000000, 9999999),
+            'password'  => bcrypt('password'),
+            'role'      => 'chief_coordinator',
+            'division'  => 'residential',
+            'zone_id'   => $zone1Id,
+            'is_active' => true,
+        ]);
+
+        // Zone 2 CC (has 0 leads, lower load than Zone 1 CC if Zone 1 CC had leads)
+        $ccZone2 = User::create([
+            'name'      => 'CC Zone 2',
+            'email'     => "cc_z2_{$uniq}@example.com",
+            'phone'     => '662' . rand(1000000, 9999999),
+            'password'  => bcrypt('password'),
+            'role'      => 'chief_coordinator',
+            'division'  => 'residential',
+            'zone_id'   => $zone2Id,
+            'is_active' => true,
+        ]);
+
+        // Lead tagged with Zone 1
+        $leadZone1 = Lead::create([
+            'division' => 'residential',
+            'name'     => 'Zone 1 Client',
+            'phone'    => '663' . rand(1000000, 9999999),
+            'stage'    => 'interest_confirmed',
+            'zone_id'  => $zone1Id,
+        ]);
+
+        $leadZone1->handover_note = 'Detailed handover for zone 1 client.';
+        $leadZone1->handover_completed_at = now();
+        $leadZone1->save();
+
+        $assignedCC = $leadZone1->assignBestCC();
+
+        // Must assign to CC Zone 1 because zone_id matches
+        $this->assertNotNull($assignedCC);
+        $this->assertEquals($ccZone1->id, $assignedCC->id);
+        $this->assertEquals($ccZone1->id, $leadZone1->fresh()->assigned_cc_id);
     }
 
     /**
