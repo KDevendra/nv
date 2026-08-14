@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AboutPageSection;
+use App\Models\AdvisoryPageSection;
 use App\Models\AboutUs;
 use App\Models\Amenity;
 use App\Models\Bhk;
@@ -279,6 +280,12 @@ class HomeController extends Controller
             ->limit(3)->get();
 
         return view('pages.property-detail', compact('property', 'similarProperties', 'isInWishlist'));
+    }
+
+    public function advisoryServices()
+    {
+        $advisoryPage = AdvisoryPageSection::getActive();
+        return view('pages.advisory-services', compact('advisoryPage'));
     }
 
     public function about()

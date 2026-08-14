@@ -149,6 +149,11 @@ class Lead extends Model
         return $this->belongsTo(Zone::class);
     }
 
+    public function feasibilitySH(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'feasibility_sh_id');
+    }
+
     public function getPropertyZoneId(): ?int
     {
         if ($this->property && !empty($this->property->zone_id)) {

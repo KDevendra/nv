@@ -76,15 +76,6 @@
                     placeholder="Search name / phone / email…"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
             </div>
-            <div>
-                <label class="text-xs text-gray-500 block mb-1">Division</label>
-                <select name="division" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
-                    <option value="">All Divisions</option>
-                    @foreach(['warehousing','residential','commercial'] as $d)
-                        <option value="{{ $d }}" {{ request('division')===$d ? 'selected' : '' }}>{{ ucfirst($d) }}</option>
-                    @endforeach
-                </select>
-            </div>
             @if(isset($zones) && $zones->isNotEmpty())
             <div>
                 <label class="text-xs text-gray-500 block mb-1">Zone</label>
@@ -96,6 +87,15 @@
                 </select>
             </div>
             @endif
+            <div>
+                <label class="text-xs text-gray-500 block mb-1">Division</label>
+                <select name="division" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
+                    <option value="">All Divisions</option>
+                    @foreach(['warehousing','residential','commercial'] as $d)
+                        <option value="{{ $d }}" {{ request('division')===$d ? 'selected' : '' }}>{{ ucfirst($d) }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div>
                 <label class="text-xs text-gray-500 block mb-1">Stage</label>
                 <select name="stage" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">

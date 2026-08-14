@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             ContactPageSeeder::class,
             TermsConditionSeeder::class,
             PropertyPageSectionSeeder::class,
+            AdvisoryPageSeeder::class,
         ]);
     }
 }

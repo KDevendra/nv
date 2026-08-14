@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ZENDO Advisory Services - Warehouse Decisions Made Smarter | ZendoIndia')
+@section('title', $advisoryPage->page_title ?? 'ZENDO Advisory Services - Warehouse Decisions Made Smarter | ZendoIndia')
 
 @section('content')
 
@@ -477,26 +477,31 @@
     <!-- ================= HERO ================= -->
     <section class="zadv-hero">
       <div class="zadv-container">
-        <span class="zadv-eyebrow">ZENDO Advisory Services</span>
-        <h1>Enter Any Market. <span>Expand With Confidence.</span></h1>
-        <p>ZENDO advises businesses entering or expanding across Indian markets — delivering the right space, logistics,
-          feasibility, and a fully costed plan through one dedicated team.</p>
-        <p class="zadv-hero-note">&mdash; Advisory across India's key industrial markets.</p>
+        <span class="zadv-eyebrow">{{ $advisoryPage->hero_eyebrow ?? 'ZENDO Advisory Services' }}</span>
+        <h1>{!! $advisoryPage->hero_title ?? 'Enter Any Market. <span>Expand With Confidence.</span>' !!}</h1>
+        <p>{{ $advisoryPage->hero_description ?? 'ZENDO advises businesses entering or expanding across Indian markets — delivering the right space, logistics, feasibility, and a fully costed plan through one dedicated team.' }}</p>
+        @if (!empty($advisoryPage->hero_note))
+          <p class="zadv-hero-note">{{ $advisoryPage->hero_note }}</p>
+        @endif
         <div class="zadv-hero-actions">
-          <a href="#services" class="zadv-btn zadv-btn-gold">
-            Explore Our Services
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-          <a href="#contact" class="zadv-btn zadv-btn-outline">
-            Speak to an Advisor
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
+          @if (!empty($advisoryPage->hero_btn1_text))
+            <a href="{{ $advisoryPage->hero_btn1_link ?? '#services' }}" class="zadv-btn zadv-btn-gold">
+              {{ $advisoryPage->hero_btn1_text }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          @endif
+          @if (!empty($advisoryPage->hero_btn2_text))
+            <a href="{{ $advisoryPage->hero_btn2_link ?? '#contact' }}" class="zadv-btn zadv-btn-outline">
+              {{ $advisoryPage->hero_btn2_text }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          @endif
         </div>
       </div>
     </section>
@@ -505,10 +510,9 @@
     <section class="zadv-services" id="services">
       <div class="zadv-container">
         <div class="zadv-section-head">
-          <span class="zadv-eyebrow">What We Offer</span>
-          <h2>Two Advisory Tracks. One Growth Partner.</h2>
-          <p>Whether you're setting up in a new market or optimising an existing operation, ZENDO has an advisory built
-            for you.</p>
+          <span class="zadv-eyebrow">{{ $advisoryPage->services_eyebrow ?? 'What We Offer' }}</span>
+          <h2>{{ $advisoryPage->services_title ?? 'Two Advisory Tracks. One Growth Partner.' }}</h2>
+          <p>{{ $advisoryPage->services_description ?? 'Whether you\'re setting up in a new market or optimising an existing operation, ZENDO has an advisory built for you.' }}</p>
         </div>
 
         <div class="zadv-cards">
@@ -522,31 +526,33 @@
                 <path d="M10 28V16h12v12M13 20h6" />
               </svg>
             </div>
-            <h3>ZENDO Select</h3>
-            <div class="zadv-tagline">Plan Right. Enter Right.</div>
-            <p>For businesses entering new markets or expanding into new locations.</p>
-            <ul class="zadv-benefits">
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Market &amp; location selection guidance</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Space sourcing across warehousing, commercial &amp; industrial</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> In-house vs 3PL logistics modelling with break-even analysis</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Feasibility read + fully costed setup and monthly plan</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> State incentives &amp; compliance guidance</li>
-            </ul>
+            <h3>{{ $advisoryPage->track1_title ?? 'ZENDO Select' }}</h3>
+            @if (!empty($advisoryPage->track1_tagline))
+              <div class="zadv-tagline">{{ $advisoryPage->track1_tagline }}</div>
+            @endif
+            <p>{{ $advisoryPage->track1_description ?? 'For businesses entering new markets or expanding into new locations.' }}</p>
+            @php
+              $track1Benefits = $advisoryPage->track1_benefits ?? [
+                'Market & location selection guidance',
+                'Space sourcing across warehousing, commercial & industrial',
+                'In-house vs 3PL logistics modelling with break-even analysis',
+                'Feasibility read + fully costed setup and monthly plan',
+                'State incentives & compliance guidance',
+              ];
+            @endphp
+            @if (!empty($track1Benefits))
+              <ul class="zadv-benefits">
+                @foreach ($track1Benefits as $benefit)
+                  <li>
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#B39359" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 10.5 8.5 15 16 6" />
+                    </svg>
+                    {!! $benefit !!}
+                  </li>
+                @endforeach
+              </ul>
+            @endif
           </article>
 
           <!-- ZENDO Upgrade -->
@@ -558,27 +564,32 @@
                 <path d="M7 12 14 6l4 3 7-6M21 3h4v4" />
               </svg>
             </div>
-            <h3>ZENDO Upgrade</h3>
-            <div class="zadv-tagline">Optimise Space. Enhance Performance.</div>
-            <p>For businesses with existing operations looking to improve performance and cost.</p>
-            <ul class="zadv-benefits">
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3E8E41" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Space utilisation &amp; layout efficiency review</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3E8E41" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Measurable leasing cost reduction</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3E8E41" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Rent benchmarking against live market data</li>
-              <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3E8E41" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 10.5 8.5 15 16 6" />
-                </svg> Renewal &amp; renegotiation advisory</li>
-            </ul>
+            <h3>{{ $advisoryPage->track2_title ?? 'ZENDO Upgrade' }}</h3>
+            @if (!empty($advisoryPage->track2_tagline))
+              <div class="zadv-tagline">{{ $advisoryPage->track2_tagline }}</div>
+            @endif
+            <p>{{ $advisoryPage->track2_description ?? 'For businesses with existing operations looking to improve performance and cost.' }}</p>
+            @php
+              $track2Benefits = $advisoryPage->track2_benefits ?? [
+                'Space utilisation & layout efficiency review',
+                'Measurable leasing cost reduction',
+                'Rent benchmarking against live market data',
+                'Renewal & renegotiation advisory',
+              ];
+            @endphp
+            @if (!empty($track2Benefits))
+              <ul class="zadv-benefits">
+                @foreach ($track2Benefits as $benefit)
+                  <li>
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3E8E41" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 10.5 8.5 15 16 6" />
+                    </svg>
+                    {!! $benefit !!}
+                  </li>
+                @endforeach
+              </ul>
+            @endif
           </article>
 
         </div>
@@ -589,100 +600,98 @@
     <section class="zadv-why">
       <div class="zadv-container">
         <div class="zadv-section-head">
-          <span class="zadv-eyebrow">Why Choose ZENDO?</span>
-          <h2>Advisory You Can Rely On</h2>
+          <span class="zadv-eyebrow">{{ $advisoryPage->why_eyebrow ?? 'Why Choose ZENDO?' }}</span>
+          <h2>{{ $advisoryPage->why_title ?? 'Advisory You Can Rely On' }}</h2>
         </div>
 
-        <div class="zadv-why-grid">
-          <div class="zadv-why-item">
-            <div class="zadv-why-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8"
-                stroke-linecap="round">
-                <circle cx="14" cy="18" r="9" />
-                <circle cx="14" cy="18" r="4" />
-                <path d="M14 18 26 6M26 6h-5M26 6v5" />
-              </svg>
-            </div>
-            <h3>Independent Advice</h3>
-            <p>Unbiased guidance that puts your business first, never the landlord's.</p>
-          </div>
+        @php
+          $whyItems = $advisoryPage->why_items ?? [
+            [
+              'title' => 'Independent Advice',
+              'description' => 'Unbiased guidance that puts your business first, never the landlord\'s.',
+            ],
+            [
+              'title' => 'One Dedicated Team',
+              'description' => 'A single point of contact directs every resource behind the scenes, private-client style.',
+            ],
+            [
+              'title' => 'Practical Industry Experience',
+              'description' => 'Real, on-ground warehousing expertise across India\'s key markets.',
+            ],
+            [
+              'title' => 'Faster Decision-Making',
+              'description' => 'Clear, data-backed recommendations so you move quickly and confidently.',
+            ],
+          ];
+          $defaultIcons = [
+            '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8" stroke-linecap="round"><circle cx="14" cy="18" r="9" /><circle cx="14" cy="18" r="4" /><path d="M14 18 26 6M26 6h-5M26 6v5" /></svg>',
+            '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="11" r="5" /><path d="M6 27c0-6 4.5-10 10-10s10 4 10 10" /></svg>',
+            '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26h24M6 26V14l6-4v16M12 26V10l8-5v21M20 26V12l6 4v10" /></svg>',
+            '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="17" r="11" /><path d="M16 10v7l5 3M12 3h8" /></svg>',
+          ];
+        @endphp
 
-          <div class="zadv-why-item">
-            <div class="zadv-why-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="16" cy="11" r="5" />
-                <path d="M6 27c0-6 4.5-10 10-10s10 4 10 10" />
-              </svg>
-            </div>
-            <h3>One Dedicated Team</h3>
-            <p>A single point of contact directs every resource behind the scenes, private-client style.</p>
+        @if (!empty($whyItems))
+          <div class="zadv-why-grid">
+            @foreach ($whyItems as $item)
+              <div class="zadv-why-item">
+                <div class="zadv-why-icon" aria-hidden="true">
+                  {!! $defaultIcons[$loop->index % count($defaultIcons)] !!}
+                </div>
+                <h3>{{ $item['title'] ?? '' }}</h3>
+                <p>{{ $item['description'] ?? '' }}</p>
+              </div>
+            @endforeach
           </div>
-
-          <div class="zadv-why-item">
-            <div class="zadv-why-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 26h24M6 26V14l6-4v16M12 26V10l8-5v21M20 26V12l6 4v10" />
-              </svg>
-            </div>
-            <h3>Practical Industry Experience</h3>
-            <p>Real, on-ground warehousing expertise across India's key markets.</p>
-          </div>
-
-          <div class="zadv-why-item">
-            <div class="zadv-why-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="#B39359" stroke-width="1.8"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="16" cy="17" r="11" />
-                <path d="M16 10v7l5 3M12 3h8" />
-              </svg>
-            </div>
-            <h3>Faster Decision-Making</h3>
-            <p>Clear, data-backed recommendations so you move quickly and confidently.</p>
-          </div>
-        </div>
+        @endif
       </div>
     </section>
 
     <!-- ================= FINAL CTA ================= -->
     <section class="zadv-cta" id="contact">
       <div class="zadv-container">
-        <span class="zadv-eyebrow">Get Started</span>
-        <h2>Speak to a ZENDO Advisor</h2>
-        <a class="zadv-phone" href="tel:+917494010101" aria-label="Call 7494 01 01 01">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path
-              d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 2Z" />
-          </svg>
-          Call: 7494-01-01-01
-        </a>
-        <p class="zadv-small">Our advisors are available Monday to Saturday, 9 AM – 7 PM.</p>
-        <div class="zadv-cta-actions">
-          <a href="tel:+917494010101" class="zadv-btn zadv-btn-gold">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        <span class="zadv-eyebrow">{{ $advisoryPage->cta_eyebrow ?? 'Get Started' }}</span>
+        <h2>{{ $advisoryPage->cta_title ?? 'Speak to a ZENDO Advisor' }}</h2>
+        @if (!empty($advisoryPage->cta_phone_text))
+          <a class="zadv-phone" href="{{ $advisoryPage->cta_phone_link ?? 'tel:+917494010101' }}" aria-label="{{ $advisoryPage->cta_phone_text }}">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
               stroke-linecap="round" stroke-linejoin="round">
               <path
                 d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 2Z" />
             </svg>
-            Call Now
+            {{ $advisoryPage->cta_phone_text }}
           </a>
-          <a href="mailto:info@zendoindia.com" target="_blank" rel="noopener" class="zadv-btn zadv-btn-whatsapp">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.1.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.1-.7l.5-.6c.1-.2.1-.3 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.2s1 2.6 1.1 2.8c.1.2 2 3.1 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.3Z" />
-            </svg>
-            Email Us
-          </a>
+        @endif
+        @if (!empty($advisoryPage->cta_note))
+          <p class="zadv-small">{{ $advisoryPage->cta_note }}</p>
+        @endif
+        <div class="zadv-cta-actions">
+          @if (!empty($advisoryPage->cta_btn1_text))
+            <a href="{{ $advisoryPage->cta_btn1_link ?? 'tel:+917494010101' }}" class="zadv-btn zadv-btn-gold">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 2Z" />
+              </svg>
+              {{ $advisoryPage->cta_btn1_text }}
+            </a>
+          @endif
+          @if (!empty($advisoryPage->cta_btn2_text))
+            <a href="{{ $advisoryPage->cta_btn2_link ?? 'mailto:info@zendoindia.com' }}" target="_blank" rel="noopener" class="zadv-btn zadv-btn-whatsapp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.1.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4 0-.5.1-.7l.5-.6c.1-.2.1-.3 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.2s1 2.6 1.1 2.8c.1.2 2 3.1 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.3Z" />
+              </svg>
+              {{ $advisoryPage->cta_btn2_text }}
+            </a>
+          @endif
         </div>
       </div>
     </section>
 
     <!-- ================= FOOT NOTE ================= -->
     <div class="zadv-footnote">
-      A premium advisory service by <a href="https://zendoindia.com">ZendoIndia</a> · Independent Advice · Market
-      Intelligence · End-to-End Support
+      {!! $advisoryPage->footnote_text ?? 'A premium advisory service by <a href="https://zendoindia.com">ZendoIndia</a> · Independent Advice · Market Intelligence · End-to-End Support' !!}
     </div>
 
   </div><!-- /.zadv -->

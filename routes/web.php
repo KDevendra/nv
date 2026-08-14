@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\InquiryController as AdminInquiryController;
 use App\Http\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Http\Controllers\Admin\WorkProcessController;
 use App\Http\Controllers\Admin\AboutPageController;
+use App\Http\Controllers\Admin\AdvisoryPageController;
 use App\Http\Controllers\Admin\OurClientController;
 use App\Http\Controllers\Admin\TeamMemberController;
 use App\Http\Controllers\Admin\ContactPageController;
@@ -69,7 +70,7 @@ Route::get('/optimize', function () {
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::view('/advisory-services', 'pages.advisory-services')->name('advisory.services');
+Route::get('/advisory-services', [HomeController::class, 'advisoryServices'])->name('advisory.services');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/blogs', [HomeController::class, 'blogs'])->name('blogs.index');
@@ -208,6 +209,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('work-processes/{workProcess}/toggle-status', [WorkProcessController::class, 'toggleStatus'])->name('work-processes.toggle-status');
         Route::get('about-page', [AboutPageController::class, 'edit'])->name('about-page.edit');
         Route::put('about-page', [AboutPageController::class, 'update'])->name('about-page.update');
+        Route::get('advisory-page', [AdvisoryPageController::class, 'edit'])->name('advisory-page.edit');
+        Route::put('advisory-page', [AdvisoryPageController::class, 'update'])->name('advisory-page.update');
         Route::resource('our-clients', OurClientController::class);
         Route::resource('team-members', TeamMemberController::class);
         Route::get('contact-page', [ContactPageController::class, 'edit'])->name('contact-page.edit');
