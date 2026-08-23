@@ -29,8 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Scoped to the logout path only — CSRF protection is left fully
         // intact for every other route, including normal logout requests
         // that do carry a valid token.
-        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
-            if (! $request->is('logout')) {
+        // Type-hinted on HttpException, not TokenMismatchException: Laravel's
+        // Handler::render() calls prepareException() BEFORE renderViaCallbacks(),
+        // which has already converted the TokenMismatchException into an
+        // HttpException(419) by the time this closure is matched.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() !== 419 || ! $request->is('logout')) {
                 return null; // fall through to the standard 419 response
             }
 
