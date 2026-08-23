@@ -405,115 +405,325 @@ class PropertyEntryController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * Human-readable labels used to build friendly validation messages
+     * (e.g. "The Owner E-mail field is required." instead of the raw
+     * snake_case attribute name "owner_email"). Mirrors
+     * FieldOfficer\PropertyEntryController::FIELD_LABELS.
+     */
+    private const FIELD_LABELS = [
+        'facility_type' => 'Facility Type',
+        'property_name' => 'Name of Property',
+        'name_full_address' => 'Address',
+        'postal_address_pin' => 'PIN Code',
+        'village' => 'Village',
+        'tehsil' => 'Tehsil',
+        'district' => 'District',
+        'state' => 'State',
+        'country' => 'Country',
+        'nearest_highway' => 'Nearest Highway',
+        'nearest_city' => 'Nearest City',
+        'nearest_railway_station' => 'Nearest Railway Station',
+        'nearest_airport' => 'Nearest Airport',
+        'owner_contact_name' => 'Owner Name',
+        'owner_contact_phone' => 'Owner Contact Number',
+        'owner_email' => 'Owner E-mail',
+        'tenure' => 'Tenure',
+        'approved_land_use' => 'Approved Land Use',
+        'fire_noc' => 'Fire NOC Availability',
+        'clu_conversion_status' => 'CLU / Conversion Status',
+        'occupancy_certificate' => 'Occupancy Certificate',
+        'pollution_noc' => 'Pollution NOC',
+        'pollution_category' => 'Pollution Category',
+        'area_unit' => 'Area Unit',
+        'plot_area' => 'Plot Area',
+        'built_up_area' => 'Built-up Area',
+        'carpet_area' => 'Carpet Area',
+        'available_area' => 'Available Area',
+        'clear_height_highest' => 'Clear Height — Highest',
+        'clear_height_side' => 'Clear Height — Side Wall',
+        'shed_width' => 'Shed Width',
+        'shed_length' => 'Shed Length',
+        'number_of_floors' => 'Number of Floors',
+        'fsi_far' => 'FSI / FAR',
+        'dock_door_count' => 'Total Dock Doors',
+        'dock_front' => 'Dock Doors — Front',
+        'dock_left' => 'Dock Doors — Left',
+        'dock_right' => 'Dock Doors — Right',
+        'dock_back' => 'Dock Doors — Back',
+        'dock_leveller_front' => 'Dock Leveller — Front',
+        'dock_leveller_left' => 'Dock Leveller — Left',
+        'dock_leveller_right' => 'Dock Leveller — Right',
+        'dock_leveller_back' => 'Dock Leveller — Back',
+        'fire_exit_front' => 'Fire Exit — Front',
+        'fire_exit_left' => 'Fire Exit — Left',
+        'fire_exit_right' => 'Fire Exit — Right',
+        'fire_exit_back' => 'Fire Exit — Back',
+        'canopy_width_front' => 'Canopy Width — Front',
+        'canopy_width_left' => 'Canopy Width — Left',
+        'canopy_width_right' => 'Canopy Width — Right',
+        'canopy_width_back' => 'Canopy Width — Back',
+        'road_width_front' => 'Road Width — Front',
+        'road_width_left' => 'Road Width — Left',
+        'road_width_right' => 'Road Width — Right',
+        'road_width_back' => 'Road Width — Back',
+        'no_of_offices' => 'No. of Offices',
+        'canteen' => 'Canteen',
+        'canteen_size' => 'Canteen Size',
+        'stp_plant' => 'STP Plant',
+        'stp_capacity' => 'STP Capacity',
+        'washrooms' => 'No. of Washrooms',
+        'no_of_urinals' => 'No. of Urinals',
+        'no_of_closets' => 'No. of Closets',
+        'female_washroom' => 'Female Washroom',
+        'driver_rest_room' => 'Driver Rest Room',
+        'mezzanine' => 'Mezzanine',
+        'mezzanine_size' => 'Mezzanine Size',
+        'structure_type' => 'Structure Type',
+        'flooring_type' => 'Flooring Type',
+        'ventilation_lighting' => 'Ventilation & Lighting',
+        'insulation_roof' => 'Insulation — Roof',
+        'insulation_side' => 'Insulation — Side',
+        'fire_sprinkler' => 'Fire Sprinkler',
+        'scrap_yard' => 'Scrap Yard',
+        'no_of_companies_same_premise' => 'No. of Companies on Same Premise',
+        'extension_possible' => 'Extension Possible',
+        'dock_type' => 'Dock Type',
+        'dock_height' => 'Dock Height',
+        'truck_movement' => 'Truck Movement',
+        'office_cabin_area' => 'Office / Cabin Area',
+        'power_sanctioned_kva' => 'Power Sanctioned (KVA)',
+        'discom_name' => 'DISCOM Name',
+        'water_source' => 'Water Source',
+        'water_tank_capacity' => 'Water Tank Capacity',
+        'fire_fighting_system' => 'Fire Fighting System',
+        'solar' => 'Solar',
+        'deal_type' => 'Lease / Sale Status',
+        'expected_rent' => 'Expected Rent',
+        'expected_sale_price' => 'Expected Sale Price',
+        'security_deposit_months' => 'Security Deposit (months)',
+        'lock_in_years' => 'Lock-in Period (years)',
+        'available_from' => 'Available From Date',
+        'approach_road_width' => 'Approach Road Width',
+        'top_neighbouring_companies' => 'Top Neighbouring Companies',
+        'flood_risk' => 'Flood / Water-Logging Risk',
+        'nearest_hospital_km' => 'Nearest Hospital (km)',
+        'nearest_fire_station_km' => 'Nearest Fire Station (km)',
+        'nearest_police_station_km' => 'Nearest Police Station (km)',
+        'remarks' => 'Remarks / Observations',
+        'form_submited_location' => 'Submitted Location',
+    ];
+
+    /**
+     * Mirrors FieldOfficer\PropertyEntryController::validateEntry() —
+     * required/nullable is driven by PropertyFieldConfig::mandatory_field
+     * (or the field's own required_if trigger) rather than hardcoded,
+     * so an owner's full submission is held to the same "every mandatory
+     * field must actually be present" rule the field-officer wizard
+     * already enforces. Drafts stay fully optional regardless of config.
+     */
     private function validateEntry(Request $request, bool $isDraft): array
     {
-        $rules = [
-            'facility_type' => 'nullable|string|max:255',
-            'property_name' => 'nullable|string|max:255',
-            'name_full_address' => 'nullable|string',
-            'village' => 'nullable|string|max:255',
-            'tehsil' => 'nullable|string|max:255',
-            'district' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'postal_address_pin' => 'nullable|string|max:20',
-            'nearest_city' => 'nullable|string|max:255',
-            'nearest_highway' => 'nullable|string|max:255',
-            'nearest_railway_station' => 'nullable|string|max:255',
-            'nearest_airport' => 'nullable|string|max:255',
-            'owner_contact_name' => 'nullable|string|max:255',
-            'owner_contact_phone' => 'nullable|string|max:50',
-            'owner_email' => 'nullable|email|max:255',
-            'tenure' => 'nullable|string|max:255',
-            'approved_land_use' => 'nullable|string|max:255',
-            'fire_noc' => 'nullable|string|max:255',
-            'clu_conversion_status' => 'nullable|string|max:255',
-            'pollution_noc' => 'nullable|string|max:255',
-            'pollution_category' => 'nullable|string|max:255',
-            'occupancy_certificate' => 'nullable|string|max:255',
-            'plot_area' => 'nullable|numeric|min:0',
-            'built_up_area' => 'nullable|numeric|min:0',
-            'carpet_area' => 'nullable|numeric|min:0',
-            'available_area' => 'nullable|numeric|min:0',
-            'clear_height_highest' => 'nullable|numeric|min:0',
-            'clear_height_side' => 'nullable|numeric|min:0',
-            'shed_width' => 'nullable|numeric|min:0',
-            'shed_length' => 'nullable|numeric|min:0',
-            'number_of_floors' => 'nullable|integer|min:0',
-            'fsi_far' => 'nullable|string|max:255',
-            'dock_door_count' => 'nullable|integer|min:0',
-            'dock_front' => 'nullable|integer|min:0',
-            'dock_left' => 'nullable|integer|min:0',
-            'dock_right' => 'nullable|integer|min:0',
-            'dock_back' => 'nullable|integer|min:0',
-            'has_dock_leveller' => 'nullable|boolean',
-            'dock_leveller_front' => 'nullable|integer|min:0',
-            'dock_leveller_left' => 'nullable|integer|min:0',
-            'dock_leveller_right' => 'nullable|integer|min:0',
-            'dock_leveller_back' => 'nullable|integer|min:0',
-            'fire_exit_front' => 'nullable|integer|min:0',
-            'fire_exit_left' => 'nullable|integer|min:0',
-            'fire_exit_right' => 'nullable|integer|min:0',
-            'fire_exit_back' => 'nullable|integer|min:0',
-            'canopy_width_front' => 'nullable|numeric|min:0',
-            'canopy_width_left' => 'nullable|numeric|min:0',
-            'canopy_width_right' => 'nullable|numeric|min:0',
-            'canopy_width_back' => 'nullable|numeric|min:0',
-            'road_width_front' => 'nullable|numeric|min:0',
-            'road_width_left' => 'nullable|numeric|min:0',
-            'road_width_right' => 'nullable|numeric|min:0',
-            'road_width_back' => 'nullable|numeric|min:0',
-            'no_of_offices' => 'nullable|integer|min:0',
-            'office_sizes' => 'nullable',
-            'canteen' => 'nullable|string|max:255',
-            'canteen_size' => 'nullable|string|max:255',
-            'stp_plant' => 'nullable|string|max:255',
-            'stp_capacity' => 'nullable|string|max:255',
-            'washrooms' => 'nullable|integer|min:0',
-            'no_of_urinals' => 'nullable|integer|min:0',
-            'no_of_closets' => 'nullable|integer|min:0',
-            'female_washroom' => 'nullable|string|max:255',
-            'driver_rest_room' => 'nullable|string|max:255',
-            'mezzanine' => 'nullable|string|max:255',
-            'mezzanine_size' => 'nullable|string|max:255',
-            'structure_type' => 'nullable|string|max:255',
-            'flooring_type' => 'nullable|string|max:255',
-            'ventilation_lighting' => 'nullable|string|max:255',
-            'insulation_roof' => 'nullable|string|max:255',
-            'insulation_side' => 'nullable|string|max:255',
-            'fire_sprinkler' => 'nullable|string|max:255',
-            'scrap_yard' => 'nullable|string|max:255',
-            'no_of_companies_same_premise' => 'nullable|integer|min:0',
-            'extension_possible' => 'nullable|string|max:255',
-            'dock_type' => 'nullable|string|max:255',
-            'dock_height' => 'nullable|numeric|min:0',
-            'truck_movement' => 'nullable|string|max:255',
-            'office_cabin_area' => 'nullable|numeric|min:0',
-            'power_sanctioned_kva' => 'nullable|numeric|min:0',
-            'discom_name' => 'nullable|string|max:255',
-            'water_source' => 'nullable|string|max:255',
-            'water_tank_capacity' => 'nullable|string|max:255',
-            'fire_fighting_system' => 'nullable|string|max:255',
-            'solar' => 'nullable|string|max:255',
-            'deal_type' => 'nullable|string|max:255',
-            'expected_rent' => 'nullable|numeric|min:0',
-            'expected_sale_price' => 'nullable|numeric|min:0',
-            'security_deposit_months' => 'nullable|integer|min:0',
-            'lock_in_years' => 'nullable|integer|min:0',
-            'available_from' => 'nullable|date',
-            'approach_road_width' => 'nullable|numeric|min:0',
-            'top_neighbouring_companies' => 'nullable|string',
-            'flood_risk' => 'nullable|string|max:255',
-            'nearest_hospital_km' => 'nullable|numeric|min:0',
-            'nearest_fire_station_km' => 'nullable|numeric|min:0',
-            'nearest_police_station_km' => 'nullable|numeric|min:0',
-            'remarks' => 'nullable|string',
+        $configs = PropertyFieldConfig::allKeyed();
+
+        // Base type constraints per field — independent of required/nullable
+        $typeRules = [
+            'facility_type' => 'string',
+            'property_name' => 'string|max:255',
+            'name_full_address' => 'string',
+            'village' => 'string|max:255',
+            'tehsil' => 'string|max:255',
+            'district' => 'string|max:255',
+            'state' => 'string|max:255',
+            'country' => 'string|max:255',
+            'postal_address_pin' => ['string', 'max:6', 'regex:/^[0-9]{6}$/'],
+            'nearest_highway' => 'string|max:255',
+            'nearest_city' => 'string|max:255',
+            'nearest_railway_station' => 'string|max:255',
+            'nearest_airport' => 'string|max:255',
+            'owner_contact_name' => 'string|max:255',
+            'owner_contact_phone' => ['string', 'max:10', 'regex:/^[6-9][0-9]{9}$/'],
+            'owner_email' => 'email|max:255',
+            'tenure' => 'string|max:50',
+            'approved_land_use' => 'string|max:100',
+            'fire_noc' => 'string|max:50',
+            'clu_conversion_status' => 'string|max:255',
+            'occupancy_certificate' => 'string|max:50',
+            'pollution_noc' => 'string|max:50',
+            'pollution_category' => 'string|max:100',
+            'area_unit' => 'string|in:sq_ft,sq_mt,sq_yd',
+            'plot_area' => 'numeric|min:0',
+            'built_up_area' => 'numeric|min:0',
+            'carpet_area' => 'numeric|min:0',
+            'available_area' => 'numeric|min:0',
+            'clear_height_highest' => 'numeric|min:0',
+            'clear_height_side' => 'numeric|min:0',
+            'shed_width' => 'numeric|min:0',
+            'shed_length' => 'numeric|min:0',
+            'number_of_floors' => 'integer|min:0',
+            'fsi_far' => 'string|max:50',
+            'dock_door_count' => 'integer|min:0',
+            'dock_front' => 'integer|min:0',
+            'dock_left' => 'integer|min:0',
+            'dock_right' => 'integer|min:0',
+            'dock_back' => 'integer|min:0',
+            'dock_leveller_front' => 'integer|min:0',
+            'dock_leveller_left' => 'integer|min:0',
+            'dock_leveller_right' => 'integer|min:0',
+            'dock_leveller_back' => 'integer|min:0',
+            'fire_exit_front' => 'integer|min:0',
+            'fire_exit_left' => 'integer|min:0',
+            'fire_exit_right' => 'integer|min:0',
+            'fire_exit_back' => 'integer|min:0',
+            'canopy_width_front' => 'numeric|min:0',
+            'canopy_width_left' => 'numeric|min:0',
+            'canopy_width_right' => 'numeric|min:0',
+            'canopy_width_back' => 'numeric|min:0',
+            'has_dock_leveller' => 'boolean',
+            'road_width_front' => 'numeric|min:0',
+            'road_width_left' => 'numeric|min:0',
+            'road_width_right' => 'numeric|min:0',
+            'road_width_back' => 'numeric|min:0',
+            'no_of_offices' => 'integer|min:0',
+            'office_sizes' => 'nullable|string',
+            'canteen' => 'boolean',
+            'canteen_size' => 'string|max:255',
+            'stp_plant' => 'boolean',
+            'stp_capacity' => 'string|max:255',
+            'no_of_urinals' => 'integer|min:0',
+            'no_of_closets' => 'integer|min:0',
+            'female_washroom' => 'boolean',
+            'driver_rest_room' => 'boolean',
+            'mezzanine' => 'boolean',
+            'mezzanine_size' => 'string|max:255',
+            'structure_type' => 'string|max:100',
+            'insulation_roof' => 'string|max:100',
+            'insulation_side' => 'string|max:100',
+            'fire_sprinkler' => 'string|max:50',
+            'scrap_yard' => 'boolean',
+            'no_of_companies_same_premise' => 'integer|min:0',
+            'extension_possible' => 'boolean',
+            'dock_type' => 'string|max:100',
+            'dock_height' => 'numeric|min:0',
+            'truck_movement' => 'string|max:100',
+            'flooring_type' => 'string|max:100',
+            'office_cabin_area' => 'numeric|min:0',
+            'washrooms' => 'integer|min:0',
+            'ventilation_lighting' => 'string|max:50',
+            'power_sanctioned_kva' => 'numeric|min:0',
+            'discom_name' => 'string|max:255',
+            'water_source' => 'string|max:100',
+            'water_tank_capacity' => 'string|max:100',
+            'fire_fighting_system' => 'string|max:100',
+            'solar' => 'boolean',
+            'deal_type' => 'string|max:50',
+            'expected_rent' => 'numeric|min:0',
+            'expected_sale_price' => 'numeric|min:0',
+            'security_deposit_months' => 'numeric|min:0|max:60',
+            'lock_in_years' => 'numeric|min:0|max:99',
+            'available_from' => 'date',
+            'approach_road_width' => 'numeric|min:0',
+            'top_neighbouring_companies' => 'string',
+            'flood_risk' => 'string|max:50',
+            'nearest_hospital_km' => 'numeric|min:0',
+            'nearest_fire_station_km' => 'numeric|min:0',
+            'nearest_police_station_km' => 'numeric|min:0',
+            'remarks' => 'string',
+            // Metadata — captured client-side via the browser's Geolocation API, not driven by PropertyFieldConfig
             'form_submited_location' => 'nullable|string|max:1000',
             'form_submited_address'  => 'nullable|string',
             'form_submited_maps_url' => 'nullable|string|max:500',
         ];
 
-        return $request->validate($rules);
+        $rules = [];
+
+        foreach ($typeRules as $field => $typeConstraint) {
+            $cfg = $configs->get($field);
+
+            // If config says keep_field = false, skip validation entirely
+            if ($cfg && $cfg->keep_field === false) {
+                continue;
+            }
+
+            if ($isDraft) {
+                $presence = 'nullable';
+            } else {
+                $isMandatory = $cfg && $cfg->mandatory_field;
+                if (!$isMandatory) {
+                    $presence = 'nullable';
+                } else {
+                    if ($field === 'canteen_size') {
+                        $presence = ((string) $request->input('canteen') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'stp_capacity') {
+                        $presence = ((string) $request->input('stp_plant') === '1') ? 'required' : 'nullable';
+                    } elseif ($field === 'mezzanine_size') {
+                        $presence = ((string) $request->input('mezzanine') === '1') ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['expected_rent', 'security_deposit_months', 'lock_in_years'])) {
+                        $presence = in_array($request->input('deal_type'), ['Lease', 'Both']) ? 'required' : 'nullable';
+                    } elseif ($field === 'expected_sale_price') {
+                        $presence = in_array($request->input('deal_type'), ['Sale', 'Both']) ? 'required' : 'nullable';
+                    } elseif (in_array($field, ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'])) {
+                        $presence = 'nullable';
+                    } else {
+                        $presence = 'required';
+                    }
+                }
+            }
+
+            if (is_array($typeConstraint)) {
+                $rules[$field] = array_merge([$presence], $typeConstraint);
+            } else {
+                $rules[$field] = $presence . '|' . $typeConstraint;
+            }
+        }
+
+        // Photos are always optional — not driven by field config
+        for ($i = 0; $i < 8; $i++) {
+            $rules["photo_{$i}"] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
+        }
+
+        $data = $request->validate($rules, [
+            'postal_address_pin.regex' => 'PIN code must be exactly 6 digits.',
+            'owner_contact_phone.regex' => 'Contact number must be a valid 10-digit Indian mobile number.',
+        ], self::FIELD_LABELS);
+
+        // Auto-clear conditional fields if parent answer is No / deal_type doesn't match
+        if (isset($data['canteen']) && (string) $data['canteen'] === '0') {
+            $data['canteen_size'] = null;
+        }
+        if (isset($data['stp_plant']) && (string) $data['stp_plant'] === '0') {
+            $data['stp_capacity'] = null;
+        }
+        if (isset($data['mezzanine']) && (string) $data['mezzanine'] === '0') {
+            $data['mezzanine_size'] = null;
+        }
+        if (isset($data['deal_type'])) {
+            if ($data['deal_type'] === 'Sale') {
+                $data['expected_rent'] = null;
+                $data['security_deposit_months'] = null;
+                $data['lock_in_years'] = null;
+            } elseif ($data['deal_type'] === 'Lease') {
+                $data['expected_sale_price'] = null;
+            }
+        }
+
+        // Dock levellers: answering "Yes" is only meaningful with a real
+        // count somewhere — mirrors FieldOfficer's group check.
+        if (!$isDraft && (string) $request->input('has_dock_leveller') === '1') {
+            $levellerFields = ['dock_leveller_front', 'dock_leveller_left', 'dock_leveller_right', 'dock_leveller_back'];
+            $anyMandatory = collect($levellerFields)->contains(fn ($f) => (bool) optional($configs->get($f))->mandatory_field);
+
+            if ($anyMandatory) {
+                $sum = collect($levellerFields)->sum(fn ($f) => (int) $request->input($f, 0));
+                if ($sum <= 0) {
+                    throw ValidationException::withMessages([
+                        'dock_leveller_front' => 'Enter at least one dock leveller count (front/left/right/back) since levellers are marked as available.',
+                    ]);
+                }
+            }
+        }
+
+        return $data;
     }
 
     private function handlePhotos(PropertyEntry $entry, Request $request): void

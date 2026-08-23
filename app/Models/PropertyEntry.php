@@ -29,6 +29,7 @@ class PropertyEntry extends Model
         'reviewed_by',
         'supply_head_viewed_at',
         'property_type',
+        'custom_fields',
         // A
         'facility_type',
         'property_name',

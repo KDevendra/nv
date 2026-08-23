@@ -917,6 +917,7 @@
     };
 
     window.wizardNext = function() {
+        if (typeof window.wizardValidateStep === 'function' && !window.wizardValidateStep(window.wizCurrent)) return;
         window.wizardGoTo(window.wizCurrent + 1);
     };
 

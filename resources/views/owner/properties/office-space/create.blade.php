@@ -858,7 +858,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    window.wizardNext = function() { window.wizardGoTo(window.wizCurrent + 1); };
+    window.wizardNext = function() { if (typeof window.wizardValidateStep === 'function' && !window.wizardValidateStep(window.wizCurrent)) return; window.wizardGoTo(window.wizCurrent + 1); };
     window.wizardPrev = function() { window.wizardGoTo(window.wizCurrent - 1); };
 
     $(document).ready(function() {

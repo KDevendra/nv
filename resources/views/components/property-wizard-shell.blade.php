@@ -131,6 +131,47 @@
 </div>
 
 <script>
+    // Shared across all 13 dedicated property-type wizards. Only ever defined
+    // once — the apartment-flat-studio view (and possibly others) ships its
+    // own copy of wizardGoTo/wizardNext/wizardPrev ahead of this include, in
+    // which case that copy wins and this block is skipped entirely.
+    if (typeof window.wizardValidateStep === 'undefined') {
+        // A required field counts as "in play" only while actually visible —
+        // Alpine's x-show (e.g. canteen_size only required when canteen=1)
+        // sets display:none rather than removing the node, and offsetParent
+        // is null for anything display:none, on the field itself or an
+        // ancestor (including a not-yet-active wizard-step-content panel).
+        window.wizardValidateStep = function(stepIndex) {
+            const steps = document.querySelectorAll('.wizard-step-content');
+            const panel = steps[stepIndex];
+            if (!panel) return true;
+
+            const fields = panel.querySelectorAll('[required]');
+            for (const field of fields) {
+                if (field.disabled || field.offsetParent === null) continue;
+                if (!field.checkValidity()) {
+                    field.reportValidity();
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        // Walks every step from the start, stopping (and leaving the wizard
+        // parked on) the first one that fails — used to gate the final
+        // submit, since a hidden step's required fields never take part in
+        // the browser's own form-level constraint validation.
+        window.wizardValidateAll = function() {
+            const total = document.querySelectorAll('.wizard-step-content').length;
+            for (let i = 0; i < total; i++) {
+                window.wizardGoTo(i);
+                if (!window.wizardValidateStep(i)) return false;
+            }
+            return true;
+        };
+    }
+
     if (typeof window.wizardGoTo === 'undefined') {
         window.wizCurrent = 0;
         window.wizardGoTo = function(s) {
@@ -183,11 +224,29 @@
         };
 
         window.wizardNext = function() {
-            window.wizardGoTo((window.wizCurrent || 0) + 1);
+            const cur = window.wizCurrent || 0;
+            if (!window.wizardValidateStep(cur)) return;
+            window.wizardGoTo(cur + 1);
         };
 
         window.wizardPrev = function() {
             window.wizardGoTo((window.wizCurrent || 0) - 1);
         };
     }
+
+    // Submit is a real <button type="submit">, so this has to run on click
+    // (before the browser starts submitting) rather than on a form "submit"
+    // listener — by the time "submit" fires it's too late to swap the
+    // visible step without the in-flight submission going through anyway.
+    document.addEventListener('DOMContentLoaded', function () {
+        const submitBtn = document.getElementById('wiz-submit-btn');
+        if (submitBtn && !submitBtn.dataset.wizGuarded) {
+            submitBtn.dataset.wizGuarded = '1';
+            submitBtn.addEventListener('click', function (e) {
+                if (typeof window.wizardValidateAll === 'function' && !window.wizardValidateAll()) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
 </script>

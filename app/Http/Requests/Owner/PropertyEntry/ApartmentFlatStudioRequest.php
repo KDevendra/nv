@@ -129,7 +129,7 @@ class ApartmentFlatStudioRequest extends FormRequest
                 'remarks'                        => 'nullable|string|max:2000',
                 'property_description'           => 'nullable|string|max:2000',
                 'inspection_submission_date'     => 'nullable|date',
-            ];
+            ] + $this->photoRules();
         }
 
         return [
@@ -272,6 +272,22 @@ class ApartmentFlatStudioRequest extends FormRequest
             'remarks'                        => 'required|string|max:2000',
             'property_description'           => 'nullable|string|max:2000',
             'inspection_submission_date'     => 'nullable|date',
-        ];
+        ] + $this->photoRules();
+    }
+
+    /**
+     * photo_0..photo_7 are fixed named slots (not a `photos[]` array like
+     * the warehouse wizard), so each needs its own key. Always optional —
+     * Section J's "min 5 photos" spec requirement isn't enforceable per-slot
+     * since slots are independently optional; existing photos on edit mean
+     * a re-submit shouldn't force a fresh upload either.
+     */
+    private function photoRules(): array
+    {
+        $rules = [];
+        for ($i = 0; $i < 8; $i++) {
+            $rules["photo_{$i}"] = 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240';
+        }
+        return $rules;
     }
 }
