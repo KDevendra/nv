@@ -111,13 +111,37 @@ class PropertyEntryController extends Controller
             }
         }
 
+        // Base query for status cards (filtered by active type or group)
+        $counterQuery = PropertyEntry::where('field_officer_id', $userId);
+        if ($request->filled('type')) {
+            $type = $request->string('type');
+            if ($type === 'warehouse') {
+                $counterQuery->where(function ($q) {
+                    $q->where('property_type', 'warehouse')->orWhereNull('property_type');
+                });
+            } else {
+                $counterQuery->where('property_type', $type);
+            }
+        } elseif ($request->filled('group')) {
+            $group = $request->string('group');
+            $typesInGroup = collect($propertyTypesConfig)->where('group', $group)->pluck('property_type')->all();
+            if ($group === 'warehousing') {
+                $typesInGroup[] = 'warehouse';
+                $counterQuery->where(function ($q) use ($typesInGroup) {
+                    $q->whereIn('property_type', $typesInGroup)->orWhereNull('property_type');
+                });
+            } else {
+                $counterQuery->whereIn('property_type', $typesInGroup);
+            }
+        }
+
         $counters = [
-            'total'     => PropertyEntry::where('field_officer_id', $userId)->count(),
-            'draft'     => PropertyEntry::where('field_officer_id', $userId)->where('status', 'draft')->count(),
-            'submitted' => PropertyEntry::where('field_officer_id', $userId)->where('status', 'submitted')->count(),
-            'verified'  => PropertyEntry::where('field_officer_id', $userId)->where('status', 'verified')->count(),
-            'recheck'   => PropertyEntry::where('field_officer_id', $userId)->where('status', 'recheck')->count(),
-            'rejected'  => PropertyEntry::where('field_officer_id', $userId)->where('status', 'rejected')->count(),
+            'total'     => (clone $counterQuery)->count(),
+            'draft'     => (clone $counterQuery)->where('status', 'draft')->count(),
+            'submitted' => (clone $counterQuery)->where('status', 'submitted')->count(),
+            'verified'  => (clone $counterQuery)->where('status', 'verified')->count(),
+            'recheck'   => (clone $counterQuery)->where('status', 'recheck')->count(),
+            'rejected'  => (clone $counterQuery)->where('status', 'rejected')->count(),
         ];
 
         return view('owner.properties.index', compact('entries', 'counters', 'typeCounts', 'groupCounts', 'propertyTypesConfig'));
@@ -252,6 +276,14 @@ class PropertyEntryController extends Controller
     {
         abort_if(auth()->user()->role !== 'owner', 403);
         abort_if($property->field_officer_id !== auth()->id(), 403);
+
+        if (!empty($property->property_type) && $property->property_type !== 'warehouse') {
+            $slug = str_replace('_', '-', $property->property_type);
+            $routeName = "owner.properties.{$slug}.edit";
+            if (\Illuminate\Support\Facades\Route::has($routeName)) {
+                return redirect()->route($routeName, $property);
+            }
+        }
 
         if (!$property->isEditable()) {
             return redirect()->route('owner.properties.show', $property)

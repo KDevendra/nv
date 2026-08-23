@@ -568,6 +568,19 @@ class PropertyEntry extends Model
         };
     }
 
+    public function getOwnerEditUrlAttribute(): string
+    {
+        if (!empty($this->property_type) && $this->property_type !== 'warehouse') {
+            $slug = str_replace('_', '-', $this->property_type);
+            $routeName = "owner.properties.{$slug}.edit";
+            if (\Illuminate\Support\Facades\Route::has($routeName)) {
+                return route($routeName, $this);
+            }
+        }
+
+        return route('owner.properties.edit', $this);
+    }
+
     public function adminActioner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_actioned_by');

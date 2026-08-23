@@ -27,6 +27,7 @@ return [
             'group'         => 'warehousing',
             'route'         => 'owner.properties.create',
             'description'   => 'Warehousing facilities, logistics parks, cold storage & industrial plots',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V10l-6-4-6 4v11m12 0H5m14 0h2M5 21H3m2 0v-6a2 2 0 012-2h2a2 2 0 012 2v6m0 0h2"/></svg>',
         ],
 
         // Residential
@@ -37,6 +38,7 @@ return [
             'code_prefix'   => 'ZI-RA-',
             'group'         => 'residential',
             'description'   => 'High-rise apartments, flats, studio units & penthouses',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V5"/></svg>',
         ],
         'house_villa_farmhouse' => [
             'label'         => 'House / Villa / Farmhouse',
@@ -45,6 +47,7 @@ return [
             'code_prefix'   => 'ZI-RH-',
             'group'         => 'residential',
             'description'   => 'Independent houses, luxury villas, bungalows & farmhouses',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>',
         ],
         'builder_floor' => [
             'label'         => 'Builder Floor',
@@ -53,6 +56,7 @@ return [
             'code_prefix'   => 'ZI-RB-',
             'group'         => 'residential',
             'description'   => 'Independent builder floor units & low-rise floors',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>',
         ],
         'residential_plot_land' => [
             'label'         => 'Plot / Land',
@@ -61,6 +65,7 @@ return [
             'code_prefix'   => 'ZI-RP-',
             'group'         => 'residential',
             'description'   => 'Residential plots, sub-divided land & development plots',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>',
         ],
         'service_apartment_pg' => [
             'label'         => 'Service Apartment / Co-living / PG',
@@ -69,6 +74,7 @@ return [
             'code_prefix'   => 'ZI-RS-',
             'group'         => 'residential',
             'description'   => 'Serviced residences, co-living spaces & Paying Guest accommodations',
+            'icon_svg'      => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>',
         ],
 
         // Commercial
@@ -79,6 +85,7 @@ return [
             'code_prefix'   => 'ZI-CO-',
             'group'         => 'commercial',
             'description'   => 'Bare shell, warm shell & fully fitted office spaces',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
         ],
         'retail_shop_showroom' => [
             'label'         => 'Shop / Showroom / Retail-Mall / Food Court',
@@ -87,6 +94,7 @@ return [
             'code_prefix'   => 'ZI-CR-',
             'group'         => 'commercial',
             'description'   => 'Retail shops, high-street showrooms, mall units & food court spaces',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>',
         ],
         'sez_eou_stpi_unit' => [
             'label'         => 'SEZ / EOU / STPI Unit',
@@ -95,6 +103,7 @@ return [
             'code_prefix'   => 'ZI-CS-',
             'group'         => 'commercial',
             'description'   => 'Special Economic Zone, EOU & STPI IT park units',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>',
         ],
         'factory_manufacturing_industrial' => [
             'label'         => 'Factory / Manufacturing / Industrial Building',
@@ -103,6 +112,7 @@ return [
             'code_prefix'   => 'ZI-CF-',
             'group'         => 'commercial',
             'description'   => 'Manufacturing plants, industrial sheds, factories & processing units',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>',
         ],
         'commercial_institutional_land' => [
             'label'         => 'Commercial / Institutional Land',
@@ -111,6 +121,7 @@ return [
             'code_prefix'   => 'ZI-CL-',
             'group'         => 'commercial',
             'description'   => 'Commercial land, institutional plots & hospital/school land',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
         ],
         'agricultural_farm_land' => [
             'label'         => 'Agricultural / Farm Land',
@@ -119,6 +130,7 @@ return [
             'code_prefix'   => 'ZI-CA-',
             'group'         => 'commercial',
             'description'   => 'Agricultural land, farm plots, orchards & rural holdings',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V7a2 2 0 00-2-2h-2c-.6 0-1.12-.22-1.5-.59L13.3 2.7A2.4 2.4 0 0011.6 2H9.5a2.5 2.5 0 00-2.5 2.5v.512z"/></svg>',
         ],
         'multi_tenant_building' => [
             'label'         => 'Building / Multi-tenant',
@@ -127,6 +139,7 @@ return [
             'code_prefix'   => 'ZI-CB-',
             'group'         => 'commercial',
             'description'   => 'Standalone commercial buildings & multi-tenant complexes',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V5"/></svg>',
         ],
         'hotel_resort_guesthouse_banquet' => [
             'label'         => 'Hotel / Resort / Guest House / Banquet',
@@ -135,6 +148,7 @@ return [
             'code_prefix'   => 'ZI-CH-',
             'group'         => 'commercial',
             'description'   => 'Hotels, resorts, guest houses, wedding banquets & event venues',
+            'icon_svg'      => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>',
         ],
     ],
 ];

@@ -43,7 +43,7 @@
                     <p class="text-sm text-red-700">{{ $property->supply_head_note }}</p>
                 </div>
                 @if($property->allow_resubmit)
-                    <a href="{{ route('owner.properties.edit', $property) }}"
+                    <a href="{{ $property->owner_edit_url }}"
                         class="flex-shrink-0 inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-all shadow whitespace-nowrap">
                         Re-edit &amp; Resubmit
                     </a>

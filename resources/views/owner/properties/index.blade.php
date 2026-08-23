@@ -18,41 +18,6 @@
         </div>
     </div>
 
-    {{-- Stat Cards --}}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        @php
-            $stats = [
-                ['label' => 'Total', 'value' => $counters['total'], 'cls' => 'bg-gray-100 text-gray-700', 'b' => 'border-gray-200', 'status' => ''],
-                ['label' => 'Draft', 'value' => $counters['draft'] ?? 0, 'cls' => 'bg-gray-50 text-gray-500', 'b' => 'border-gray-200', 'status' => 'draft'],
-                ['label' => 'Under Review', 'value' => $counters['submitted'], 'cls' => 'bg-blue-50 text-blue-700', 'b' => 'border-blue-100', 'status' => 'submitted'],
-                ['label' => 'Verified', 'value' => $counters['verified'], 'cls' => 'bg-green-50 text-green-700', 'b' => 'border-green-100', 'status' => 'verified'],
-                ['label' => 'Recheck', 'value' => $counters['recheck'], 'cls' => 'bg-orange-50 text-orange-700', 'b' => 'border-orange-200', 'status' => 'recheck'],
-                ['label' => 'Rejected', 'value' => $counters['rejected'], 'cls' => 'bg-red-50 text-red-700', 'b' => 'border-red-100', 'status' => 'rejected'],
-            ];
-        @endphp
-
-        @foreach($stats as $stat)
-            @php
-                $params = request()->except(['status', 'page']);
-                if ($stat['status']) {
-                    $params['status'] = $stat['status'];
-                }
-                $isActive = $stat['status']
-                    ? request('status') === $stat['status']
-                    : !request('status');
-            @endphp
-            <a href="{{ route('owner.properties.index', $params) }}"
-                class="bg-white rounded-xl border {{ $stat['b'] }} p-4 text-center shadow-sm hover:shadow transition-shadow block {{ $isActive ? 'ring-2 ring-offset-1 ring-zendo-gold' : '' }}">
-                <div class="text-2xl font-heading font-bold {{ $stat['cls'] }} rounded-lg py-1">
-                    {{ $stat['value'] }}
-                </div>
-                <div class="text-xs text-gray-500 mt-1 font-medium">
-                    {{ $stat['label'] }}
-                </div>
-            </a>
-        @endforeach
-    </div>
-
     {{-- Listing Type Pill Tabs --}}
     <style>
         .no-scrollbar::-webkit-scrollbar {
@@ -158,6 +123,41 @@
         </div>
     </div>
 
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        @php
+            $stats = [
+                ['label' => 'Total', 'value' => $counters['total'], 'cls' => 'bg-gray-100 text-gray-700', 'b' => 'border-gray-200', 'status' => ''],
+                ['label' => 'Draft', 'value' => $counters['draft'] ?? 0, 'cls' => 'bg-gray-50 text-gray-500', 'b' => 'border-gray-200', 'status' => 'draft'],
+                ['label' => 'Under Review', 'value' => $counters['submitted'], 'cls' => 'bg-blue-50 text-blue-700', 'b' => 'border-blue-100', 'status' => 'submitted'],
+                ['label' => 'Verified', 'value' => $counters['verified'], 'cls' => 'bg-green-50 text-green-700', 'b' => 'border-green-100', 'status' => 'verified'],
+                ['label' => 'Recheck', 'value' => $counters['recheck'], 'cls' => 'bg-orange-50 text-orange-700', 'b' => 'border-orange-200', 'status' => 'recheck'],
+                ['label' => 'Rejected', 'value' => $counters['rejected'], 'cls' => 'bg-red-50 text-red-700', 'b' => 'border-red-100', 'status' => 'rejected'],
+            ];
+        @endphp
+
+        @foreach($stats as $stat)
+            @php
+                $params = request()->except(['status', 'page']);
+                if ($stat['status']) {
+                    $params['status'] = $stat['status'];
+                }
+                $isActive = $stat['status']
+                    ? request('status') === $stat['status']
+                    : !request('status');
+            @endphp
+            <a href="{{ route('owner.properties.index', $params) }}"
+                class="bg-white rounded-xl border {{ $stat['b'] }} p-4 text-center shadow-sm hover:shadow transition-shadow block {{ $isActive ? 'ring-2 ring-offset-1 ring-zendo-gold' : '' }}">
+                <div class="text-2xl font-heading font-bold {{ $stat['cls'] }} rounded-lg py-1">
+                    {{ $stat['value'] }}
+                </div>
+                <div class="text-xs text-gray-500 mt-1 font-medium">
+                    {{ $stat['label'] }}
+                </div>
+            </a>
+        @endforeach
+    </div>
+
     {{-- Flash Messages --}}
     @if(session('success'))
         <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
@@ -217,7 +217,7 @@
                                 <td class="px-5 py-3 text-sm text-gray-500">{{ $entry->updated_at->format('d M Y') }}</td>
                                 <td class="px-5 py-3 text-right space-x-3">
                                     @if($entry->isEditable())
-                                        <a href="{{ route('owner.properties.edit', $entry) }}"
+                                        <a href="{{ $entry->owner_edit_url }}"
                                             class="text-sm font-medium {{ $entry->status === 'draft' ? 'text-gray-600 hover:text-gray-800' : ($entry->status === 'rejected' ? 'text-orange-600 hover:text-orange-800' : 'text-blue-600 hover:text-blue-800') }}">
                                             {{ $entry->status === 'draft' ? 'Continue' : ($entry->status === 'rejected' ? 'Re-edit' : 'Edit') }}
                                         </a>
@@ -251,7 +251,7 @@
                             <span class="text-xs text-gray-400">{{ $entry->updated_at->format('d M Y') }}</span>
                             <div class="flex gap-3">
                                 @if($entry->isEditable())
-                                    <a href="{{ route('owner.properties.edit', $entry) }}"
+                                    <a href="{{ $entry->owner_edit_url }}"
                                         class="text-sm font-medium {{ $entry->status === 'draft' ? 'text-gray-600' : ($entry->status === 'rejected' ? 'text-orange-600' : 'text-blue-600') }}">
                                         {{ $entry->status === 'draft' ? 'Continue' : ($entry->status === 'rejected' ? 'Re-edit' : 'Edit') }}
                                     </a>
