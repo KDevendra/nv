@@ -63,6 +63,11 @@
             <p id="wiz-title" class="text-xs font-semibold text-zendo-navy">
                 {{ $title }}
             </p>
+            {{-- Shown briefly when a locked step tab is clicked; the offending
+                 fields get their own inline messages at the same time. --}}
+            <p id="wiz-lock-msg" class="hidden mt-1 text-xs text-red-600 font-medium">
+                Complete this step before continuing.
+            </p>
         </div>
     </div>
 
@@ -130,6 +135,11 @@
 
 </div>
 
+{{-- Per-field format/required validation with inline messages — shared by all
+     13 dedicated wizards through this shell, and by the warehouse form
+     through field/properties/_form.blade.php. --}}
+<x-wizard-field-validation />
+
 <script>
     // Shared across all 13 dedicated property-type wizards. Only ever defined
     // once — the apartment-flat-studio view (and possibly others) ships its
@@ -146,6 +156,18 @@
             const panel = steps[stepIndex];
             if (!panel) return true;
 
+            // Shared per-field rules (format + required) render their own
+            // inline messages below each input — see the
+            // components/wizard-field-validation.blade.php component. Runs
+            // first so the user sees every problem on the step at once,
+            // not just the first one.
+            if (window.ZendoFieldValidation
+                && !window.ZendoFieldValidation.validateContainer(panel, true)) {
+                return false;
+            }
+
+            // Native constraint check as a backstop for anything the shared
+            // rules don't model (pattern attributes, custom validity, etc.).
             const fields = panel.querySelectorAll('[required]');
             for (const field of fields) {
                 if (field.disabled || field.offsetParent === null) continue;
@@ -234,19 +256,141 @@
         };
     }
 
-    // Submit is a real <button type="submit">, so this has to run on click
-    // (before the browser starts submitting) rather than on a form "submit"
-    // listener — by the time "submit" fires it's too late to swap the
-    // visible step without the in-flight submission going through anyway.
-    document.addEventListener('DOMContentLoaded', function () {
-        const submitBtn = document.getElementById('wiz-submit-btn');
-        if (submitBtn && !submitBtn.dataset.wizGuarded) {
-            submitBtn.dataset.wizGuarded = '1';
-            submitBtn.addEventListener('click', function (e) {
-                if (typeof window.wizardValidateAll === 'function' && !window.wizardValidateAll()) {
-                    e.preventDefault();
+    // ── Step-tab gating ─────────────────────────────────────────────────────
+    // The A/B/C/D dots call wizardGoTo() from an inline onclick, which would
+    // otherwise let someone jump from A straight to D and skip every check
+    // "Save & Next" enforces. This intercepts the click in the CAPTURE phase
+    // on document, so a blocked click never reaches the button's own inline
+    // handler at all — which also means it keeps working regardless of which
+    // per-type view has overridden window.wizardGoTo.
+    //
+    // Validity comes from window.wizardValidateStep — the exact same function
+    // wizardNext() uses — so a tab and "Save & Next" can never disagree.
+    //
+    // wizFrontier = furthest step legitimately reached. Anything at or below
+    // it is revisitable (backward navigation is never blocked); going beyond
+    // it is only allowed one step at a time, and only when the current step
+    // passes validation.
+    (function () {
+        if (window.__wizTabGateInstalled) return;
+        window.__wizTabGateInstalled = true;
+
+        function totalSteps() {
+            return document.querySelectorAll('.wizard-step-content').length;
+        }
+
+        function current() {
+            return window.wizCurrent || 0;
+        }
+
+        function frontier() {
+            if (typeof window.wizFrontier !== 'number') window.wizFrontier = current();
+            return window.wizFrontier;
+        }
+
+        function bumpFrontier() {
+            if (current() > frontier()) window.wizFrontier = current();
+        }
+
+        function flashLockMessage() {
+            var msg = document.getElementById('wiz-lock-msg');
+            if (!msg) return;
+            msg.classList.remove('hidden');
+            clearTimeout(window.__wizLockMsgTimer);
+            window.__wizLockMsgTimer = setTimeout(function () {
+                msg.classList.add('hidden');
+            }, 4000);
+        }
+
+        // A tab is reachable if it's already been visited, or it's the very
+        // next step. Whether that next step may actually be *entered* still
+        // depends on the current step validating — checked at click time.
+        function isReachable(target) {
+            return target <= frontier() || target === current() + 1;
+        }
+
+        window.wizardRefreshTabLocks = function () {
+            document.querySelectorAll('.wiz-dot').forEach(function (dot) {
+                var target = parseInt(dot.getAttribute('data-step'), 10);
+                if (isNaN(target)) return;
+                var locked = !isReachable(target) && target !== current();
+                dot.classList.toggle('cursor-not-allowed', locked);
+                dot.classList.toggle('opacity-50', locked);
+                dot.setAttribute('aria-disabled', locked ? 'true' : 'false');
+                if (locked) {
+                    dot.setAttribute('title', 'Complete the earlier steps first');
                 }
             });
-        }
-    });
+        };
+
+        document.addEventListener('click', function (e) {
+            var dot = e.target.closest ? e.target.closest('.wiz-dot') : null;
+            if (!dot) return;
+
+            var target = parseInt(dot.getAttribute('data-step'), 10);
+            if (isNaN(target)) return;
+
+            var cur = current();
+            if (target === cur) return;                 // no-op
+            if (target <= frontier()) return;           // already reached — allow, incl. backward
+
+            var blocked = false;
+            if (target > cur + 1) {
+                blocked = true;                          // must advance one step at a time
+            } else if (typeof window.wizardValidateStep === 'function'
+                       && !window.wizardValidateStep(cur)) {
+                blocked = true;                          // next step, but this one isn't valid
+            }
+
+            if (blocked) {
+                e.preventDefault();
+                e.stopPropagation();                     // inline onclick never fires
+                flashLockMessage();
+                // wizardValidateStep already rendered the inline field errors
+                // when it ran above; for the "too far ahead" case run it now so
+                // the user still sees what is actually holding them back.
+                if (target > cur + 1 && typeof window.wizardValidateStep === 'function') {
+                    window.wizardValidateStep(cur);
+                }
+            }
+        }, true);
+
+        // Submit is a real <button type="submit">, so this has to run on click
+        // (before the browser starts submitting) rather than on a form "submit"
+        // listener — by the time "submit" fires it's too late to swap the
+        // visible step without the in-flight submission going through anyway.
+        document.addEventListener('DOMContentLoaded', function () {
+            const submitBtn = document.getElementById('wiz-submit-btn');
+            if (submitBtn && !submitBtn.dataset.wizGuarded) {
+                submitBtn.dataset.wizGuarded = '1';
+                submitBtn.addEventListener('click', function (e) {
+                    if (typeof window.wizardValidateAll === 'function' && !window.wizardValidateAll()) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Each per-type view defines its own window.wizardGoTo inline in
+            // its own scripts section, which the layout renders after this
+            // block — so by DOMContentLoaded that override is final and safe
+            // to wrap. (Do not write Blade directive names in these comments;
+            // Blade compiles them even inside JS comments.)
+            // Wrapping (rather than redefining) keeps each view's own dot/
+            // select2/scroll behaviour intact while tracking the frontier.
+            var inner = window.wizardGoTo;
+            if (typeof inner === 'function' && !inner.__wizWrapped) {
+                var wrapped = function (s) {
+                    var r = inner.apply(this, arguments);
+                    bumpFrontier();
+                    window.wizardRefreshTabLocks();
+                    return r;
+                };
+                wrapped.__wizWrapped = true;
+                window.wizardGoTo = wrapped;
+            }
+
+            bumpFrontier();
+            window.wizardRefreshTabLocks();
+        });
+    })();
 </script>
