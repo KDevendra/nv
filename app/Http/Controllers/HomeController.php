@@ -67,133 +67,108 @@ class HomeController extends Controller
 
     public function properties(Request $request)
     {
-        $query = Property::with(['propertyType', 'bhk', 'city', 'location', 'projectStatus', 'builder', 'mainImage'])->active()->published();
-        
-        $selectedPropertyType = null;
-        
-        if ($request->filled('city_id')) {
-            $query->filterByCity($request->city_id);
-        }
-        if ($request->filled('location_id')) {
-            $query->filterByLocation($request->location_id);
-        }
-        if ($request->filled('property_type_id')) {
-            $query->filterByPropertyType($request->property_type_id);
-            $selectedPropertyType = PropertyType::find($request->property_type_id);
-        }
-        if ($request->filled('property_type_slug')) {
-            $propertyType = PropertyType::where('slug', $request->property_type_slug)->first();
-            if ($propertyType) {
-                $query->filterByPropertyType($propertyType->id);
-                $selectedPropertyType = $propertyType;
-            }
-        }
-        if ($request->filled('bhk_id')) {
-            $query->filterByBhk($request->bhk_id);
-        }
-        if ($request->filled('project_status_id')) {
-            $query->filterByProjectStatus($request->project_status_id);
-        }
-        if ($request->filled('builder_id')) {
-            $query->filterByBuilder($request->builder_id);
-        }
-        $selectedBuilder = null;
-        if ($request->filled('builder_id')) {
-            $selectedBuilder = Builder::find($request->builder_id);
-            if ($selectedBuilder) {
-                try {
-                    $selectedBuilder->load(['amenities', 'projectStatuses']);
-                } catch (\Exception $e) {
-                    // Silently fail if relationship not available
-                }
-            }
-        }        if ($request->filled('min_price') || $request->filled('max_price')) {
-            $query->filterByPriceRange($request->min_price, $request->max_price);
-        }
-        if ($request->filled('search')) {
-            $query->search($request->search);
-        }
-        $sortBy = $request->input('sort_by', 'latest');
-        switch ($sortBy) {
-            case 'price_low':
-                $query->orderBy('price', 'asc');
-                break;
-            case 'price_high':
-                $query->orderBy('price', 'desc');
-                break;
-            case 'popular':
-                $query->orderBy('views_count', 'desc');
-                break;
-            case 'latest':
-            default:
-                $query->orderBy('published_at', 'desc');
-                break;
-        }
-        $properties = $query->paginate(12)->withQueryString();
+        // property_entries is the sole source for this page — no legacy
+        // `properties` table involved. Publicly visible = admin-approved
+        // AND toggled on for the website (scopePubliclyVisible), which is
+        // deliberately independent of the wizard's internal review status.
+        $query = \App\Models\PropertyEntry::with(['photos'])->publiclyVisible();
 
-        // ── Merge approved PropertyEntry records (admin approved + show on website) ──
-        $entryQuery = \App\Models\PropertyEntry::with(['photos'])
-            ->where('admin_status', 'approved')
-            ->where('show_on_website', true);
-
-        // Filter by facility_type when a property type slug is active
-        if ($selectedPropertyType) {
-            $entryQuery->where('facility_type', 'like', '%' . $selectedPropertyType->name . '%');
+        $selectedPropertyTypeKey = $request->filled('property_type_slug') ? $request->property_type_slug : null;
+        if ($selectedPropertyTypeKey) {
+            $query->where('property_type', $selectedPropertyTypeKey);
         }
-        // Search filter
-        if ($request->filled('search')) {
-            $s = $request->search;
-            $entryQuery->where(function ($q) use ($s) {
-                $q->where('name_full_address', 'like', "%{$s}%")
-                  ->orWhere('nearest_city', 'like', "%{$s}%")
-                  ->orWhere('facility_type', 'like', "%{$s}%")
-                  ->orWhere('code', 'like', "%{$s}%");
+
+        if ($request->filled('city')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('city', $request->city)->orWhere('nearest_city', $request->city);
             });
         }
-        // City filter (by name match since entries don't have city_id FK)
-        if ($request->filled('city_id')) {
-            $cityName = \App\Models\City::find($request->city_id)?->name;
-            if ($cityName) {
-                $entryQuery->where('nearest_city', 'like', "%{$cityName}%");
-            }
-        }
-        $propertyEntries = $entryQuery->latest()->get();
 
-        $cities = City::active()->ordered()->get();
-        $locations = Location::active()->ordered()->get();
-        $propertyTypes = PropertyType::active()->ordered()->get();
-        
-        // Filter BHKs based on selected property type
-        if ($selectedPropertyType) {
-            $bhks = $selectedPropertyType->bhks()->active()->ordered()->get();
-        } else {
-            $bhks = Bhk::active()->ordered()->get();
+        if ($request->filled('locality')) {
+            $query->where('locality_broad_area', $request->locality);
         }
-        
-        $projectStatuses = ProjectStatus::active()->ordered()->get();
-        $builders = Builder::active()->verified()->ordered()->get();
-        $workProcesses = WorkProcess::active()->ordered()->get();
-        
-        // Get property page sections based on selected property type
+
+        if ($request->filled('construction_status')) {
+            $query->where('construction_listing_status', $request->construction_status);
+        }
+
+        if ($request->filled('builder')) {
+            $query->where('builder_developer_name', $request->builder);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('property_name', 'like', "%{$s}%")
+                    ->orWhere('city', 'like', "%{$s}%")
+                    ->orWhere('nearest_city', 'like', "%{$s}%")
+                    ->orWhere('locality_broad_area', 'like', "%{$s}%")
+                    ->orWhere('facility_type', 'like', "%{$s}%")
+                    ->orWhere('code', 'like', "%{$s}%");
+            });
+        }
+
+        // property_entries has no views_count column (that was legacy-only),
+        // so "popular" isn't offered — newest-submitted is the only sort.
+        $query->orderByDesc('submitted_at');
+
+        $properties = $query->paginate(12)->withQueryString();
+
+        // Every filter's option list is scoped to the same publiclyVisible
+        // gate, so a dropdown can never offer a value with zero live rows —
+        // it also respects whichever other filters are already active, so
+        // City doesn't offer a city with no results for the selected type.
+        $filterBase = fn () => \App\Models\PropertyEntry::query()->publiclyVisible();
+
+        $cities = $filterBase()
+            ->selectRaw('COALESCE(city, nearest_city) as label')
+            ->whereRaw('COALESCE(city, nearest_city) is not null')
+            ->distinct()->orderBy('label')->pluck('label');
+
+        $localities = $filterBase()
+            ->whereNotNull('locality_broad_area')
+            ->when($request->filled('city'), fn ($q) => $q->where(function ($q2) use ($request) {
+                $q2->where('city', $request->city)->orWhere('nearest_city', $request->city);
+            }))
+            ->distinct()->orderBy('locality_broad_area')->pluck('locality_broad_area');
+
+        $propertyTypeOptions = $filterBase()
+            ->whereNotNull('property_type')
+            ->distinct()->pluck('property_type')
+            ->map(fn ($key) => ['key' => $key, 'label' => config("property_types.types.{$key}.label", $key)])
+            ->sortBy('label')->values();
+
+        $constructionStatuses = $filterBase()
+            ->whereNotNull('construction_listing_status')
+            ->distinct()->orderBy('construction_listing_status')->pluck('construction_listing_status');
+
+        $builders = $filterBase()
+            ->whereNotNull('builder_developer_name')
+            ->distinct()->orderBy('builder_developer_name')->pluck('builder_developer_name');
+
+        $selectedPropertyType = $selectedPropertyTypeKey
+            ? ['key' => $selectedPropertyTypeKey, 'label' => config("property_types.types.{$selectedPropertyTypeKey}.label", $selectedPropertyTypeKey)]
+            : null;
+
+        // Property page sections (carousel/perspective/intro) still key off
+        // the old PropertyType model — unrelated to the listing data source,
+        // left as-is per the "don't touch what isn't broken" scope of this fix.
         $carouselSection = null;
         $perspectiveSection = null;
         $introSection = null;
-        
-        if ($selectedPropertyType) {
-            // Load sections for the specific property type
-            $carouselSection = $selectedPropertyType->carouselSection()->active()->first();
-            $perspectiveSection = $selectedPropertyType->perspectiveSection()->active()->first();
-            $introSection = $selectedPropertyType->introSection()->active()->first();
+
+        $legacyType = $selectedPropertyTypeKey ? PropertyType::where('slug', str_replace('_', '-', $selectedPropertyTypeKey))->first() : null;
+        if ($legacyType) {
+            $carouselSection = $legacyType->carouselSection()->active()->first();
+            $perspectiveSection = $legacyType->perspectiveSection()->active()->first();
+            $introSection = $legacyType->introSection()->active()->first();
         } else {
-            // Default: try to load residential sections first, then any available
             $residentialType = PropertyType::where('category', 'residential')->active()->first();
             if ($residentialType) {
                 $carouselSection = $residentialType->carouselSection()->active()->first();
                 $perspectiveSection = $residentialType->perspectiveSection()->active()->first();
                 $introSection = $residentialType->introSection()->active()->first();
             }
-            
-            // Fallback to any available sections if residential not found
             if (!$carouselSection) {
                 $carouselSection = PropertyPageSection::where('section_key', 'carousel_section')->active()->first();
             }
@@ -204,8 +179,13 @@ class HomeController extends Controller
                 $introSection = PropertyPageSection::where('section_key', 'intro_section')->active()->first();
             }
         }
-        
-        return view('pages.properties', compact('properties', 'propertyEntries', 'cities', 'locations', 'propertyTypes', 'bhks', 'projectStatuses', 'builders', 'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedBuilder', 'selectedPropertyType'));
+
+        $workProcesses = WorkProcess::active()->ordered()->get();
+
+        return view('pages.properties', compact(
+            'properties', 'cities', 'localities', 'propertyTypeOptions', 'constructionStatuses', 'builders',
+            'workProcesses', 'carouselSection', 'perspectiveSection', 'introSection', 'selectedPropertyType'
+        ));
     }
 
     public function showEntry(\App\Models\PropertyEntry $entry)

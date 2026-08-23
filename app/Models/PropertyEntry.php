@@ -467,6 +467,18 @@ class PropertyEntry extends Model
         return $query->where('property_type', $type);
     }
 
+    /**
+     * The sole gate for public visibility on the /properties listing —
+     * a deliberate two-stage gate (internal review status is a separate
+     * concern), matching what the admin report's Approve/Reject/toggle-
+     * website actions already control. Never join or union another table
+     * here; property_entries is the only source for that page.
+     */
+    public function scopePubliclyVisible($query)
+    {
+        return $query->where('admin_status', 'approved')->where('show_on_website', true);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     public function isEditable(): bool
@@ -585,5 +597,112 @@ class PropertyEntry extends Model
     public function adminActioner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_actioned_by');
+    }
+
+    // ── Public-listing presentation (WEBSITE-tier fields only) ───────────────
+    //
+    // These back the /properties listing and its cards. They intentionally
+    // read only fields the Excel spec marks WEBSITE-tier (never VERIFIED or
+    // INTERNAL), and only real columns — most of the 12 dedicated wizard
+    // forms besides warehouse/apartment-flat-studio don't yet map their
+    // type-specific fields onto shared columns (they fall into custom_fields
+    // instead, a separate known gap), so those types render a leaner but
+    // honest card rather than fabricating detail that isn't reliably there.
+
+    /**
+     * Warehouse stores its city in `nearest_city`; every dedicated wizard
+     * form (including apartment-flat-studio) stores it in `city`. This is
+     * the single place that difference should be reconciled.
+     */
+    public function getPublicCityAttribute(): ?string
+    {
+        return $this->city ?: $this->nearest_city;
+    }
+
+    /**
+     * WEBSITE-tier title: property name first, falling back to the
+     * INTERNAL-tier `name_full_address` truncated for teaser use (per the
+     * apartment spec sheet, full address is INTERNAL — never publish the
+     * whole thing, just enough to identify the listing), then facility
+     * type as a last resort for warehouse rows with no name at all.
+     */
+    public function getPublicTitleAttribute(): ?string
+    {
+        if ($this->property_name) {
+            return $this->property_name;
+        }
+
+        if ($this->locality_broad_area || $this->public_city) {
+            return collect([$this->locality_broad_area, $this->public_city])->filter()->implode(', ');
+        }
+
+        return $this->facility_type;
+    }
+
+    /**
+     * The type-appropriate "middle line" detail — never a residential field
+     * on a non-residential card. Falls back to the property_type's own
+     * label from config('property_types') when the type has no dedicated
+     * detail field populated.
+     */
+    public function getPublicDetailLineAttribute(): ?string
+    {
+        $typeLabel = config("property_types.types.{$this->property_type}.label", $this->property_type);
+
+        $detail = match ($this->property_type) {
+            'apartment_flat_studio' => $this->configuration,
+            'warehouse'             => $this->facility_type,
+            default                 => $this->unit_property_type ?: $this->facility_type,
+        };
+
+        return collect([$this->public_city, $detail, $detail ? null : $typeLabel])->filter()->implode(' • ');
+    }
+
+    /**
+     * WEBSITE-tier price display — always a rounded-down band, never the
+     * exact internal figure. Picks whichever band the row actually has
+     * rather than trusting `deal_type`, since most of the 12 dedicated
+     * forms don't populate that shared column today.
+     */
+    public function getPublicPriceLabelAttribute(): string
+    {
+        if ($this->rent_range_band) {
+            return 'Rent';
+        }
+        if ($this->sale_price_band) {
+            return 'Price';
+        }
+        return 'Price';
+    }
+
+    public function getPublicPriceValueAttribute(): string
+    {
+        return $this->rent_range_band ?: ($this->sale_price_band ?: 'Price on Request');
+    }
+
+    /**
+     * Type-aware amenity tags, capped at 4. Only reads columns that are
+     * genuinely reliable for that type today — apartment-flat-studio's
+     * `amenities_checklist` (a real array-cast column) and warehouse's own
+     * real fillable columns already used for it before this rewrite. Every
+     * other type returns an empty list rather than showing amenities that
+     * weren't actually entered for that row.
+     */
+    public function getPublicAmenitiesAttribute(): array
+    {
+        if ($this->property_type === 'apartment_flat_studio') {
+            return array_slice((array) ($this->amenities_checklist ?? []), 0, 4);
+        }
+
+        if ($this->property_type === 'warehouse') {
+            return collect([
+                $this->dock_door_count ? "{$this->dock_door_count} Dock Doors" : null,
+                $this->clear_height_highest ? "{$this->clear_height_highest}ft Height" : null,
+                $this->power_sanctioned_kva ? "{$this->power_sanctioned_kva} KVA Power" : null,
+                $this->fire_fighting_system ? 'Fire Fighting System' : null,
+            ])->filter()->take(4)->values()->all();
+        }
+
+        return [];
     }
 }

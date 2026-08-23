@@ -1190,178 +1190,6 @@
         </section>
     @endif
 
-    <!-- Builder Video Section -->
-    @if ($selectedBuilder)
-        @php
-            $bYtId = null;
-            if ($selectedBuilder->youtube_url) {
-                preg_match(
-                    '/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/',
-                    $selectedBuilder->youtube_url,
-                    $ym,
-                );
-                $bYtId = $ym[1] ?? null;
-            }
-            $hasVideo = $bYtId || $selectedBuilder->video_path;
-        @endphp
-        @if ($hasVideo)
-            <section class="bvs-section">
-                <div class="bvs-inner">
-                    <div class="bvs-text">
-                        <span class="bvs-badge">{{ $selectedBuilder->name }}</span>
-                        <h2 class="bvs-heading">
-                            {{ $selectedBuilder->description ?: 'Discover the vision behind every project.' }}</h2>
-                        <div class="bvs-meta">
-                            @if ($selectedBuilder->established_year)
-                                <span class="bvs-chip">Est. {{ $selectedBuilder->established_year }}</span>
-                            @endif
-                            @if ($selectedBuilder->is_verified)
-                                <span class="bvs-chip bvs-chip--blue">✓ Verified</span>
-                            @endif
-                        </div>
-                        <div class="bvs-actions">
-                            <a href="#enquiry" class="bvs-btn bvs-btn--gold">Enquire Now</a>
-                        </div>
-                    </div>
-                    <div class="bvs-media">
-                        @if ($bYtId)
-                            <div class="bvs-player">
-                                <iframe src="https://www.youtube.com/embed/{{ $bYtId }}?rel=0" allowfullscreen
-                                    loading="lazy"></iframe>
-                            </div>
-                        @elseif($selectedBuilder->video_path)
-                            <video controls class="bvs-player" style="height:auto;">
-                                <source src="{{ asset('storage/' . $selectedBuilder->video_path) }}" type="video/mp4">
-                            </video>
-                        @endif
-                    </div>
-                </div>
-            </section>
-            <style>
-                .bvs-section {
-                    background: linear-gradient(135deg, #0b2c3d 0%, #0f3d55 100%);
-                    padding: 64px 24px
-                }
-
-                .bvs-inner {
-                    max-width: 1160px;
-                    margin: 0 auto;
-                    display: grid;
-                    grid-template-columns: 1fr 1.4fr;
-                    gap: 48px;
-                    align-items: center
-                }
-
-                .bvs-badge {
-                    display: inline-block;
-                    background: rgba(179, 147, 89, .2);
-                    border: 1px solid rgba(179, 147, 89, .45);
-                    color: #d4aa6a;
-                    font-size: 11px;
-                    font-weight: 700;
-                    letter-spacing: .08em;
-                    text-transform: uppercase;
-                    padding: 5px 14px;
-                    border-radius: 999px;
-                    margin-bottom: 16px
-                }
-
-                .bvs-heading {
-                    font-size: clamp(20px, 2.4vw, 30px);
-                    font-weight: 800;
-                    color: #fff;
-                    line-height: 1.35;
-                    margin: 0 0 20px
-                }
-
-                .bvs-meta {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 8px;
-                    margin-bottom: 28px
-                }
-
-                .bvs-chip {
-                    font-size: 12px;
-                    font-weight: 600;
-                    padding: 4px 14px;
-                    border-radius: 999px;
-                    background: rgba(255, 255, 255, .1);
-                    color: rgba(255, 255, 255, .8);
-                    border: 1px solid rgba(255, 255, 255, .15)
-                }
-
-                .bvs-chip--blue {
-                    background: rgba(59, 130, 246, .15);
-                    color: #93c5fd;
-                    border-color: rgba(59, 130, 246, .3)
-                }
-
-                .bvs-actions {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 12px
-                }
-
-                .bvs-btn {
-                    text-decoration: none;
-                    padding: 12px 24px;
-                    border-radius: 999px;
-                    font-size: 14px;
-                    font-weight: 700;
-                    transition: transform .15s, box-shadow .15s
-                }
-
-                .bvs-btn:hover {
-                    transform: translateY(-2px)
-                }
-
-                .bvs-btn--gold {
-                    background: #b39359;
-                    color: #fff;
-                    box-shadow: 0 8px 24px rgba(179, 147, 89, .35)
-                }
-
-                .bvs-btn--outline {
-                    background: transparent;
-                    color: #fff;
-                    border: 1.5px solid rgba(255, 255, 255, .35)
-                }
-
-                .bvs-media {
-                    width: 100%
-                }
-
-                .bvs-player {
-                    width: 100%;
-                    aspect-ratio: 16/9;
-                    border-radius: 18px;
-                    overflow: hidden;
-                    box-shadow: 0 20px 50px rgba(0, 0, 0, .4);
-                    display: block;
-                    border: none
-                }
-
-                .bvs-player iframe {
-                    width: 100%;
-                    height: 100%;
-                    border: none;
-                    display: block
-                }
-
-                @media(max-width:860px) {
-                    .bvs-inner {
-                        grid-template-columns: 1fr;
-                        gap: 32px
-                    }
-
-                    .bvs-media {
-                        order: -1
-                    }
-                }
-            </style>
-        @endif
-    @endif
 
     <!-- Property Listing Section -->
     <section id="apw-resiPage" class="apw-resiPage">
@@ -1435,21 +1263,23 @@
                     </div>
 
                     <form method="GET" action="{{ route('properties.index') }}" id="apw-resiFilterForm">
-                        <!-- Preserve property_type_slug if present -->
-                        @if (request('property_type_slug'))
-                            <input type="hidden" name="property_type_slug" value="{{ request('property_type_slug') }}">
-                        @endif
+                        {{-- property_type_slug is a real <select> below, so no hidden
+                             mirror here — two inputs of the same name would make the
+                             dropdown's value unrecoverable on submit. --}}
+
+                        {{-- Every option list below comes from distinct values that
+                             actually exist on publicly-visible property_entries rows,
+                             so no dropdown can offer a zero-result combination. --}}
 
                         <!-- City -->
                         <div class="apw-field">
-                            <label class="apw-label" for="city_id">City</label>
+                            <label class="apw-label" for="city">City</label>
                             <div class="apw-selectWrap">
-                                <select id="city_id" name="city_id" class="apw-select">
+                                <select id="city" name="city" class="apw-select">
                                     <option value="">All Cities</option>
                                     @foreach ($cities as $city)
-                                        <option value="{{ $city->id }}"
-                                            {{ request('city_id') == $city->id ? 'selected' : '' }}>
-                                            {{ $city->name }}
+                                        <option value="{{ $city }}" {{ request('city') === $city ? 'selected' : '' }}>
+                                            {{ $city }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -1462,16 +1292,15 @@
                             </div>
                         </div>
 
-                        <!-- Location -->
+                        <!-- Location (locality, scoped to selected city) -->
                         <div class="apw-field">
-                            <label class="apw-label" for="location_id">Location</label>
+                            <label class="apw-label" for="locality">Location</label>
                             <div class="apw-selectWrap">
-                                <select id="location_id" name="location_id" class="apw-select">
+                                <select id="locality" name="locality" class="apw-select">
                                     <option value="">All Locations</option>
-                                    @foreach ($locations as $location)
-                                        <option value="{{ $location->id }}"
-                                            {{ request('location_id') == $location->id ? 'selected' : '' }}>
-                                            {{ $location->name }}
+                                    @foreach ($localities as $locality)
+                                        <option value="{{ $locality }}" {{ request('locality') === $locality ? 'selected' : '' }}>
+                                            {{ $locality }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -1484,16 +1313,16 @@
                             </div>
                         </div>
 
-                        <!-- Property Type -->
+                        <!-- Property Type (the 13 real wizard types) -->
                         <div class="apw-field">
-                            <label class="apw-label" for="property_type_id">Property Type</label>
+                            <label class="apw-label" for="property_type_slug">Property Type</label>
                             <div class="apw-selectWrap">
-                                <select id="property_type_id" name="property_type_id" class="apw-select">
+                                <select id="property_type_slug" name="property_type_slug" class="apw-select">
                                     <option value="">All Types</option>
-                                    @foreach ($propertyTypes as $type)
-                                        <option value="{{ $type->id }}"
-                                            {{ request('property_type_id') == $type->id ? 'selected' : '' }}>
-                                            {{ $type->name }}
+                                    @foreach ($propertyTypeOptions as $type)
+                                        <option value="{{ $type['key'] }}"
+                                            {{ request('property_type_slug') === $type['key'] ? 'selected' : '' }}>
+                                            {{ $type['label'] }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -1506,79 +1335,52 @@
                             </div>
                         </div>
 
-                        <!-- BHK -->
-                      <div class="apw-field" id="bhk-section" style="{{ $bhks->count() > 0 ? '' : 'display:none;' }}">
-
-    <label class="apw-label">BHK</label>
-
-    <div class="apw-chipRow" role="group" aria-label="BHK filter">
-
-        <button type="button"
-            class="apw-chip {{ !request('bhk_id') ? 'is-active' : '' }}"
-            data-bhk="">
-            All
-        </button>
-
-        @foreach($bhks as $bhk)
-            <button type="button"
-                class="apw-chip {{ request('bhk_id') == $bhk->id ? 'is-active' : '' }}"
-                data-bhk="{{ $bhk->id }}">
-                {{ $bhk->name }}
-            </button>
-        @endforeach
-
-    </div>
-
-    <input type="hidden"
-        name="bhk_id"
-        id="apw-bhkHidden"
-        value="{{ request('bhk_id') }}">
-
-</div>
-
-                        <!-- Project Status -->
-                        <div class="apw-field">
-                            <label class="apw-label" for="project_status_id">Status</label>
-                            <div class="apw-selectWrap">
-                                <select id="project_status_id" name="project_status_id" class="apw-select">
-                                    <option value="">Any Status</option>
-                                    @foreach ($projectStatuses as $status)
-                                        <option value="{{ $status->id }}"
-                                            {{ request('project_status_id') == $status->id ? 'selected' : '' }}>
-                                            {{ $status->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <span class="apw-selectSvg" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                        <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
+                        <!-- Availability (public-facing construction/listing status, NOT internal workflow status) -->
+                        @if ($constructionStatuses->isNotEmpty())
+                            <div class="apw-field">
+                                <label class="apw-label" for="construction_status">Availability</label>
+                                <div class="apw-selectWrap">
+                                    <select id="construction_status" name="construction_status" class="apw-select">
+                                        <option value="">Any Availability</option>
+                                        @foreach ($constructionStatuses as $status)
+                                            <option value="{{ $status }}"
+                                                {{ request('construction_status') === $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <span class="apw-selectSvg" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                                            <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         <!-- Builder -->
-                        <div class="apw-field">
-                            <label class="apw-label" for="builder_id">Builder</label>
-                            <div class="apw-selectWrap">
-                                <select id="builder_id" name="builder_id" class="apw-select">
-                                    <option value="">All Builders</option>
-                                    @foreach ($builders as $builder)
-                                        <option value="{{ $builder->id }}"
-                                            {{ request('builder_id') == $builder->id ? 'selected' : '' }}>
-                                            {{ $builder->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <span class="apw-selectSvg" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                        <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
+                        @if ($builders->isNotEmpty())
+                            <div class="apw-field">
+                                <label class="apw-label" for="builder">Builder</label>
+                                <div class="apw-selectWrap">
+                                    <select id="builder" name="builder" class="apw-select">
+                                        <option value="">All Builders</option>
+                                        @foreach ($builders as $builder)
+                                            <option value="{{ $builder }}" {{ request('builder') === $builder ? 'selected' : '' }}>
+                                                {{ $builder }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <span class="apw-selectSvg" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                                            <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         <button type="submit" class="apw-filterApply">
                             Apply Filters
@@ -1624,84 +1426,26 @@
                         </div>
                     </div>
 
-                    <!-- Property Cards -->
-                    @php $totalCount = $properties->total() + $propertyEntries->count(); @endphp
-                    <p class="apw-listSub" style="margin-bottom:12px">Showing {{ $properties->count() + $propertyEntries->count() }} of {{ $totalCount }} properties</p>
+                    <!-- Property Cards — property_entries only, type-aware -->
+                    <p class="apw-listSub" style="margin-bottom:12px">Showing {{ $properties->count() }} of {{ $properties->total() }} properties</p>
 
-                    @if ($properties->count() > 0 || $propertyEntries->count() > 0)
+                    @if ($properties->count() > 0)
                         <div class="apw-cardGrid">
-
-                            {{-- ── Regular Property cards ── --}}
-                            @foreach ($properties as $property)
-                                <article class="apw-card">
-                                    <div class="apw-cardMedia"
-                                        style="background-image:url('{{ $property->main_image_url ?? 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=70' }}');">
-                                        @if ($property->projectStatus)
-                                            <span class="apw-tag"
-                                                style="background: {{ $property->projectStatus->tag_color ?? 'rgba(11,44,61,0.78)' }};">
-                                                {{ $property->projectStatus->name }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <div class="apw-cardBody">
-                                        <h3 class="apw-cardTitle">{{ $property->title }}</h3>
-                                        <p class="apw-cardMeta">
-                                            <span class="apw-miniSvg" aria-hidden="true">
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                                                    <path d="M12 21s7-5.2 7-11A7 7 0 1 0 5 10c0 5.8 7 11 7 11z"
-                                                        stroke="#b39359" stroke-width="1.7" />
-                                                    <circle cx="12" cy="10" r="2.3" stroke="#b39359"
-                                                        stroke-width="1.7" />
-                                                </svg>
-                                            </span>
-                                            {{ $property->city->name ?? '' }} • {{ $property->bhk->name ?? '' }} •
-                                            {{ $property->propertyType->name ?? '' }}
-                                        </p>
-                                        <div class="apw-cardRow">
-                                            <div class="apw-price">
-                                                <span class="apw-priceLabel">Starting</span>
-                                                <span class="apw-priceVal">{{ $property->formatted_price }}</span>
-                                            </div>
-                                            <div class="apw-ctaRow">
-                                                <a class="apw-btnOutline"
-                                                    href="{{ route('properties.show', $property->slug) }}">View
-                                                    Details</a>
-                                            </div>
-                                        </div>
-                                        @if ($property->amenities->count() > 0)
-                                            <div class="apw-amenities">
-                                                @foreach ($property->amenities->take(3) as $amenity)
-                                                    <span>{{ $amenity->name }}</span>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                </article>
-                            @endforeach
-
-                            {{-- ── PropertyEntry cards (admin-approved, show_on_website) ── --}}
-                            @foreach ($propertyEntries as $entry)
+                            @foreach ($properties as $entry)
                                 @php
                                     $entryPhoto = $entry->photos->first();
-                                    $entryImg   = $entryPhoto
+                                    $entryImg = $entryPhoto
                                         ? asset('images/property_photos/' . basename($entryPhoto->file_path))
                                         : 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=70';
-                                    $entryPrice = $entry->expected_rent
-                                        ? '₹' . number_format($entry->expected_rent, 2) . ' /sq ft/mo'
-                                        : ($entry->expected_sale_price
-                                            ? '₹' . number_format($entry->expected_sale_price / 100000, 2) . ' Lac'
-                                            : 'Price on Request');
-                                    $entryArea  = $entry->available_area
-                                        ? number_format($entry->available_area, 0) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft')
-                                        : ($entry->built_up_area ? number_format($entry->built_up_area, 0) . ' ' . str_replace('_', ' ', $entry->area_unit ?? 'sq ft') : null);
                                 @endphp
                                 <article class="apw-card">
-                                    <div class="apw-cardMedia"
-                                        style="background-image:url('{{ $entryImg }}');">
-                                        <span class="apw-tag apw-tagAlt">{{ $entry->deal_type ?? 'Available' }}</span>
+                                    <div class="apw-cardMedia" style="background-image:url('{{ $entryImg }}');">
+                                        @if ($entry->construction_listing_status)
+                                            <span class="apw-tag apw-tagAlt">{{ $entry->construction_listing_status }}</span>
+                                        @endif
                                     </div>
                                     <div class="apw-cardBody">
-                                        <h3 class="apw-cardTitle">{{ $entry->property_name ?? Str::limit($entry->name_full_address ?? $entry->facility_type, 55) }}</h3>
+                                        <h3 class="apw-cardTitle">{{ $entry->public_title }}</h3>
                                         <p class="apw-cardMeta">
                                             <span class="apw-miniSvg" aria-hidden="true">
                                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
@@ -1711,33 +1455,31 @@
                                                         stroke-width="1.7" />
                                                 </svg>
                                             </span>
-                                            {{ $entry->nearest_city ?? $entry->district ?? '' }}
-                                            @if($entry->facility_type) • {{ $entry->facility_type }} @endif
-                                            @if($entryArea) • {{ $entryArea }} @endif
+                                            {{ $entry->public_detail_line }}
                                         </p>
                                         <div class="apw-cardRow">
                                             <div class="apw-price">
-                                                <span class="apw-priceLabel">{{ $entry->expected_rent ? 'Rent' : 'Price' }}</span>
-                                                <span class="apw-priceVal">{{ $entryPrice }}</span>
+                                                <span class="apw-priceLabel">{{ $entry->public_price_label }}</span>
+                                                <span class="apw-priceVal">{{ $entry->public_price_value }}</span>
                                             </div>
                                             <div class="apw-ctaRow">
                                                 <a class="apw-btnOutline"
                                                     href="{{ route('property-entries.show', $entry->code) }}">View Details</a>
                                             </div>
                                         </div>
-                                        <div class="apw-amenities">
-                                            @if($entry->dock_door_count) <span>{{ $entry->dock_door_count }} Dock Doors</span> @endif
-                                            @if($entry->clear_height_highest) <span>{{ $entry->clear_height_highest }}ft Height</span> @endif
-                                            @if($entry->power_sanctioned_kva) <span>{{ $entry->power_sanctioned_kva }} KVA Power</span> @endif
-                                            @if($entry->fire_noc === 'Yes') <span>Fire NOC</span> @endif
-                                        </div>
+                                        @if (count($entry->public_amenities))
+                                            <div class="apw-amenities">
+                                                @foreach ($entry->public_amenities as $amenity)
+                                                    <span>{{ $amenity }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                 </article>
                             @endforeach
-
                         </div>
 
-                        <!-- Pagination (regular properties only) -->
+                        <!-- Pagination -->
                         @if($properties->hasPages())
                         <div class="mt-8">
                             {{ $properties->links() }}
@@ -1969,117 +1711,30 @@
         startAutoplay();
     })();
 
-    // ─── BHK Filter ──────────────────────────────────────────────────────────────
+    // ─── Filters ─────────────────────────────────────────────────────────────────
+    // BHK chips and the legacy property_type_id → BHK fetch are gone: BHK is an
+    // apartment-only concept and this listing now spans all 13 property types,
+    // so a shared BHK filter can't apply. Per-type detail lives on the card.
 
-    // Single source of truth — pre-populate from current request value (server-rendered)
-    let selectedBhkId = '{{ request('bhk_id') }}';
-
-    const bhkHiddenInput = document.getElementById('apw-bhkHidden');
-    const bhkSection     = document.getElementById('bhk-section');
-
-    /**
-     * Wire click listeners onto every .apw-chip currently in the DOM.
-     * Called once on page load (for server-rendered chips) and again
-     * after renderBhkChips() rebuilds them via fetch.
-     */
-    function wireChipListeners() {
-        document.querySelectorAll('.apw-chip').forEach(chip => {
-            // Remove any existing listener first (clone-replace trick)
-            const fresh = chip.cloneNode(true);
-            chip.parentNode.replaceChild(fresh, chip);
-
-            fresh.addEventListener('click', function () {
-                document.querySelectorAll('.apw-chip').forEach(c => c.classList.remove('is-active'));
-                this.classList.add('is-active');
-                selectedBhkId        = this.getAttribute('data-bhk') ?? '';
-                bhkHiddenInput.value = selectedBhkId;
-            });
+    // Changing City re-submits so the Location list re-scopes to that city.
+    const cityFilter = document.getElementById('city');
+    if (cityFilter) {
+        cityFilter.addEventListener('change', function () {
+            const localitySelect = document.getElementById('locality');
+            if (localitySelect) localitySelect.value = '';
+            document.getElementById('apw-resiFilterForm').submit();
         });
     }
-
-    /**
-     * Rebuild the chip row from a fresh BHK array (after property-type change).
-     * Resets the BHK selection to "All".
-     */
-    function renderBhkChips(bhks) {
-        const chipRow = document.querySelector('.apw-chipRow');
-        chipRow.innerHTML = '';
-
-        if (!bhks || bhks.length === 0) {
-            bhkSection.style.display = 'none';
-            selectedBhkId        = '';
-            bhkHiddenInput.value = '';
-            return;
-        }
-
-        bhkSection.style.display = 'block';
-
-        // ALL button
-        const allBtn = document.createElement('button');
-        allBtn.type      = 'button';
-        allBtn.className = 'apw-chip is-active';   // always "All" after a type change
-        allBtn.setAttribute('data-bhk', '');
-        allBtn.textContent = 'All';
-        chipRow.appendChild(allBtn);
-
-        // Dynamic BHK buttons
-        bhks.forEach(bhk => {
-            const btn = document.createElement('button');
-            btn.type      = 'button';
-            btn.className = 'apw-chip';
-            btn.setAttribute('data-bhk', String(bhk.id));
-            btn.textContent = bhk.name;
-            chipRow.appendChild(btn);
-        });
-
-        // Reset selection to "All" when property type changes
-        selectedBhkId        = '';
-        bhkHiddenInput.value = '';
-
-        // Wire up the freshly created chips
-        wireChipListeners();
-    }
-
-    // Wire server-rendered chips immediately on page load
-    wireChipListeners();
-
-    // ─── Property Type → fetch fresh BHK list ────────────────────────────────────
-    document.getElementById('property_type_id').addEventListener('change', function () {
-        const propertyTypeId = this.value;
-        const chipRow        = document.querySelector('.apw-chipRow');
-
-        // Show loading state
-        selectedBhkId        = '';
-        bhkHiddenInput.value = '';
-        chipRow.innerHTML    = '<span style="color:#b39359;font-size:13px;">Loading…</span>';
-
-        fetch('{{ route("api.bhks-by-property-type") }}?property_type_id=' + propertyTypeId)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.success || !data.bhks || data.bhks.length === 0) {
-                    bhkSection.style.display = 'none';
-                    chipRow.innerHTML        = '';
-                    return;
-                }
-                renderBhkChips(data.bhks);
-            })
-            .catch(err => {
-                console.error('BHK fetch error:', err);
-                bhkSection.style.display = 'none';
-                chipRow.innerHTML = '<span style="color:#dc2626;font-size:13px;">Error loading BHKs</span>';
-            });
-    });
 
     // ─── Apply Filters button ─────────────────────────────────────────────────────
     // Use the one INSIDE the form only (not the empty-state reset button)
     const applyBtn = document.querySelector('#apw-resiFilterForm .apw-filterApply');
-    applyBtn.type = 'button'; // prevent native form submit; we control it here
-
-    applyBtn.addEventListener('click', function () {
-        // Always sync hidden input right before submit
-        bhkHiddenInput.value = selectedBhkId;
-        document.getElementById('apw-resiFilterForm').submit();
-    });
+    if (applyBtn) {
+        applyBtn.type = 'button'; // prevent native form submit; we control it here
+        applyBtn.addEventListener('click', function () {
+            document.getElementById('apw-resiFilterForm').submit();
+        });
+    }
 
 </script>
 @endsection
