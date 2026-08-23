@@ -5,134 +5,56 @@
 
 @section('content')
 @php
-    $dl   = fn($label, $value) => '<div><dt class="text-xs text-gray-400 uppercase tracking-wide font-medium">' . e($label) . '</dt><dd class="text-sm font-medium text-gray-900 mt-0.5">' . (e($value) ?: '—') . '</dd></div>';
     $card = 'bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4';
-    
-    // Section definitions matching the supply head view (all 98 data fields)
-    $sections = [
-        'A. Location & Identification' => [
-            'facility_type' => 'Facility Type',
-            'property_name' => 'Name of Property',
-            'name_full_address' => 'Address',
-            'postal_address_pin' => 'PIN Code',
-            'village' => 'Village',
-            'tehsil' => 'Tehsil',
-            'district' => 'District',
-            'state' => 'State',
-            'country' => 'Country',
-            'nearest_city' => 'Nearest City',
-            'nearest_highway' => 'Road Connectivity / Nearest Highway',
-            'nearest_railway_station' => 'Nearest Railway Station',
-            'nearest_airport' => 'Nearest Airport',
-            'owner_contact_name' => 'Owner Name',
-            'owner_contact_phone' => 'Owner Contact Number',
-            'owner_email' => 'Owner E-mail',
-        ],
-        'B. Legal & Statutory Compliance' => [
-            'tenure' => 'Tenure',
-            'approved_land_use' => 'Approved Land Use',
-            'fire_noc' => 'Fire NOC Availability',
-            'clu_conversion_status' => 'CLU / Conversion Status',
-            'pollution_noc' => 'Pollution NOC',
-            'pollution_category' => 'Pollution Category',
-            'occupancy_certificate' => 'Occupancy Certificate',
-        ],
-        'C. Property Dimensions' => [
-            'plot_area' => 'Plot Area — as per CLU (sq ft)',
-            'built_up_area' => 'Built-up Area (sq ft)',
-            'carpet_area' => 'Carpet Area (sq ft)',
-            'available_area' => 'Available Area (sq ft)',
-            'clear_height_highest' => 'Clear Height — Highest (ft)',
-            'clear_height_side' => 'Clear Height — Side Wall (ft)',
-            'shed_width' => 'Shed Width (ft)',
-            'shed_length' => 'Shed Length (ft)',
-            'number_of_floors' => 'Number of Floors',
-            'fsi_far' => 'FSI / FAR',
-        ],
-        'C. Dock, Exit & Width Details' => [
-            'dock_door_count' => 'Total Dock Doors',
-            'dock_front' => 'Dock Front',
-            'dock_left' => 'Dock Left',
-            'dock_right' => 'Dock Right',
-            'dock_back' => 'Dock Back',
-            'has_dock_leveller' => 'Dock Levellers Available?',
-            'dock_leveller_front' => 'Dock Leveller Front',
-            'dock_leveller_left' => 'Dock Leveller Left',
-            'dock_leveller_right' => 'Dock Leveller Right',
-            'dock_leveller_back' => 'Dock Leveller Back',
-            'fire_exit_front' => 'Fire Exit Front',
-            'fire_exit_left' => 'Fire Exit Left',
-            'fire_exit_right' => 'Fire Exit Right',
-            'fire_exit_back' => 'Fire Exit Back',
-            'canopy_width_front' => 'Canopy Width Front (ft)',
-            'canopy_width_left' => 'Canopy Width Left (ft)',
-            'canopy_width_right' => 'Canopy Width Right (ft)',
-            'canopy_width_back' => 'Canopy Width Back (ft)',
-            'road_width_front' => 'Road Width Front (ft)',
-            'road_width_left' => 'Road Width Left (ft)',
-            'road_width_right' => 'Road Width Right (ft)',
-            'road_width_back' => 'Road Width Back (ft)',
-        ],
-        'C. Facility Details' => [
-            'no_of_offices' => 'No. of Offices',
-            'office_sizes' => 'Office Sizes',
-            'canteen' => 'Canteen',
-            'canteen_size' => 'Canteen Size',
-            'stp_plant' => 'STP Plant',
-            'stp_capacity' => 'STP Capacity',
-            'washrooms' => 'No. of Washrooms',
-            'no_of_urinals' => 'No. of Urinals',
-            'no_of_closets' => 'No. of Closets',
-            'female_washroom' => 'Female Washroom',
-            'driver_rest_room' => 'Driver Rest Room',
-            'mezzanine' => 'Mezzanine',
-            'mezzanine_size' => 'Mezzanine Size',
-            'structure_type' => 'Structure Type',
-            'flooring_type' => 'Flooring Type',
-            'ventilation_lighting' => 'Ventilation & Lighting',
-            'insulation_roof' => 'Roof Insulation',
-            'insulation_side' => 'Side Insulation',
-            'fire_sprinkler' => 'Fire Sprinkler',
-            'scrap_yard' => 'Scrap Yard',
-            'no_of_companies_same_premise' => 'No. of Companies in Same Premise',
-            'extension_possible' => 'Extension Possible?',
-        ],
-        'D. Loading & Docking Facilities' => [
-            'dock_type' => 'Dock Type',
-            'dock_height' => 'Dock Height (ft)',
-            'truck_movement' => 'Truck Movement',
-            'office_cabin_area' => 'Office / Cabin Area (sq ft)',
-        ],
-        'F. Utilities & Infrastructure' => [
-            'power_sanctioned_kva' => 'Power Sanctioned (KVA)',
-            'discom_name' => 'DISCOM Name',
-            'water_source' => 'Water Source',
-            'water_tank_capacity' => 'Water Tank Capacity',
-            'fire_fighting_system' => 'Fire Fighting System',
-            'solar' => 'Solar',
-        ],
-        'G. Financial & Lease Terms' => [
-            'deal_type' => 'Lease / Sale Status',
-            'expected_rent' => 'Expected Rent (₹/sq ft/month)',
-            'expected_sale_price' => 'Expected Sale Price (₹)',
-            'security_deposit_months' => 'Security Deposit (months)',
-            'lock_in_years' => 'Lock-in Period (years)',
-            'available_from' => 'Available From Date',
-        ],
-        'H. Surroundings & Environment' => [
-            'approach_road_width' => 'Approach Road Width (ft)',
-            'top_neighbouring_companies' => 'Top Neighbouring Companies',
-            'flood_risk' => 'Flood / Water-Logging Risk',
-        ],
-        'I. Health & Emergency Facilities Nearby' => [
-            'nearest_hospital_km' => 'Nearest Hospital (km)',
-            'nearest_fire_station_km' => 'Nearest Fire Station (km)',
-            'nearest_police_station_km' => 'Nearest Police Station (km)',
-        ],
-        'K. General Remarks & Field Observations' => [
-            'remarks' => 'Remarks / Observations',
-        ],
+
+    // Section/field layout for THIS row's property_type — see
+    // config/property_entry_sections.php. Legacy rows with a NULL
+    // property_type resolve to warehouse.
+    $sections = $entry->sectionMap();
+    $otherData = $entry->unmappedData();
+
+    $tierBadge = [
+        'INTERNAL' => 'bg-gray-100 text-gray-600 border-gray-200',
+        'VERIFIED' => 'bg-amber-50 text-amber-700 border-amber-200',
+        'WEBSITE'  => 'bg-emerald-50 text-emerald-700 border-emerald-200',
     ];
+
+    // Renders one field's stored value per its declared type. Booleans are
+    // compared loosely against the cast value (the model casts these columns
+    // to real booleans, so a strict === 1 check silently rendered every
+    // "Yes" answer as "—" before this was config-driven).
+    $renderValue = function ($value, string $type) {
+        if ($type === 'bool') {
+            if ($value === null || $value === '') return null;
+            return filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Yes' : 'No';
+        }
+
+        if ($type === 'date') {
+            if (!$value) return null;
+            return $value instanceof \Carbon\Carbon ? $value->format('d M Y') : $value;
+        }
+
+        if ($type === 'office_sizes') {
+            if (!is_array($value)) return $value ?: null;
+            $sizes = array_filter($value, fn($o) => !empty($o['l']) || !empty($o['w']));
+            return implode(', ', array_map(
+                fn($o) => ($o['l'] ?? 0) . ' × ' . ($o['w'] ?? 0) . ' ft (' . (($o['l'] ?? 0) * ($o['w'] ?? 0)) . ' sq ft)',
+                $sizes
+            )) ?: null;
+        }
+
+        return $value;
+    };
+
+    // Multi-value fields render as tag pills rather than a raw JSON blob.
+    $asTags = function ($value) {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) $value = $decoded;
+        }
+        return is_array($value) ? array_filter(array_map(fn($v) => is_scalar($v) ? (string) $v : json_encode($v), $value), fn($v) => $v !== '') : null;
+    };
+
 @endphp
 
 <div class="max-w-5xl mx-auto space-y-6">
@@ -511,43 +433,74 @@
         </div>
     @endif
 
-    {{-- All Data Fields by Section --}}
+    {{-- All Data Fields by Section — driven by this row's property_type --}}
     @foreach($sections as $sectionTitle => $fields)
         <div class="{{ $card }}">
             <h3 class="text-sm font-semibold text-zendo-navy mb-4 pb-2 border-b border-gray-100">{{ $sectionTitle }}</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($fields as $fieldName => $fieldLabel)
+                @foreach($fields as $fieldName => $field)
                     @php
-                        $value = $entry->$fieldName;
-                        // Format dates
-                        if ($fieldName === 'available_from' && $value instanceof \Carbon\Carbon) {
-                            $value = $value->format('d M Y');
-                        }
-                        // Format booleans
-                        if (in_array($fieldName, ['has_dock_leveller', 'canteen', 'stp_plant', 'female_washroom', 'driver_rest_room', 'mezzanine', 'scrap_yard', 'extension_possible', 'solar'])) {
-                            $value = $value === 1 ? 'Yes' : ($value === 0 ? 'No' : '—');
-                        }
-                        // Format office_sizes array
-                        if ($fieldName === 'office_sizes' && is_array($value)) {
-                            $value = implode(', ', array_map(
-                                fn($o) => ($o['l'] ?? 0) . ' × ' . ($o['w'] ?? 0) . ' ft (' . (($o['l'] ?? 0) * ($o['w'] ?? 0)) . ' sq ft)', 
-                                array_filter($value, fn($o) => !empty($o['l']) || !empty($o['w']))
-                            )) ?: '—';
-                        }
+                        $raw = $entry->fieldValue($fieldName);
+                        $tags = $field['type'] === 'json' ? $asTags($raw) : null;
+                        $value = $field['type'] === 'json' ? null : $renderValue($raw, $field['type']);
                     @endphp
-                    @if(in_array($fieldName, ['name_full_address', 'top_neighbouring_companies', 'remarks']))
-                        {{-- Wide fields spanning full width --}}
-                        <div class="sm:col-span-2 lg:col-span-3">
-                            <dt class="text-xs text-gray-400 uppercase tracking-wide font-medium">{{ $fieldLabel }}</dt>
-                            <dd class="text-sm font-medium text-gray-900 mt-0.5 whitespace-pre-wrap">{{ $value ?: '—' }}</dd>
-                        </div>
-                    @else
-                        {!! $dl($fieldLabel, $value) !!}
-                    @endif
+                    <div @class(['sm:col-span-2 lg:col-span-3' => $field['wide']])>
+                        <dt class="text-xs text-gray-400 uppercase tracking-wide font-medium flex items-center gap-1.5">
+                            <span>{{ $field['label'] }}</span>
+                            @if($field['tier'])
+                                <span class="inline-flex items-center px-1.5 py-px rounded border text-[9px] font-semibold tracking-normal {{ $tierBadge[$field['tier']] ?? 'bg-gray-100 text-gray-600 border-gray-200' }}"
+                                    title="{{ $field['tier'] === 'WEBSITE' ? 'Visible to public visitors' : ($field['tier'] === 'VERIFIED' ? 'Visible to verified/logged-in users only' : 'Internal only — never published') }}">
+                                    {{ $field['tier'] }}
+                                </span>
+                            @endif
+                        </dt>
+                        @if($field['type'] === 'json')
+                            <dd class="mt-1">
+                                @if($tags && count($tags))
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($tags as $tag)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">{{ $tag }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-sm font-medium text-gray-900">—</span>
+                                @endif
+                            </dd>
+                        @else
+                            <dd @class(['text-sm font-medium text-gray-900 mt-0.5', 'whitespace-pre-wrap' => $field['wide']])>{{ ($value === null || $value === '') ? '—' : $value }}</dd>
+                        @endif
+                    </div>
                 @endforeach
             </dl>
         </div>
     @endforeach
+
+    {{-- Other Data — submitted values this type's section map doesn't cover
+         (legacy columns, or custom_fields from the dedicated wizard forms).
+         Shown rather than dropped so nothing an officer entered disappears. --}}
+    @if(count($otherData))
+        <div class="{{ $card }}">
+            <h3 class="text-sm font-semibold text-zendo-navy mb-1 pb-2 border-b border-gray-100">Other Data</h3>
+            <p class="text-xs text-gray-400 mb-4">Submitted values not covered by this property type's standard sections.</p>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($otherData as $fieldName => $rawValue)
+                    @php $tags = $asTags($rawValue); @endphp
+                    <div>
+                        <dt class="text-xs text-gray-400 uppercase tracking-wide font-medium">{{ Str::headline($fieldName) }}</dt>
+                        @if($tags !== null && count($tags))
+                            <dd class="mt-1 flex flex-wrap gap-1">
+                                @foreach($tags as $tag)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">{{ $tag }}</span>
+                                @endforeach
+                            </dd>
+                        @else
+                            <dd class="text-sm font-medium text-gray-900 mt-0.5 whitespace-pre-wrap">{{ is_scalar($rawValue) ? $rawValue : json_encode($rawValue) }}</dd>
+                        @endif
+                    </div>
+                @endforeach
+            </dl>
+        </div>
+    @endif
 
     {{-- J. Photographs (8 slots) --}}
     <div class="{{ $card }}">

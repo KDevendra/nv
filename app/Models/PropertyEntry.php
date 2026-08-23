@@ -599,6 +599,129 @@ class PropertyEntry extends Model
         return $this->belongsTo(User::class, 'admin_actioned_by');
     }
 
+    // ── Admin detail view — type-aware section/field map ─────────────────────
+
+    /**
+     * Columns that are workflow/system plumbing rather than submitted data.
+     * Excluded from the admin detail view's "Other Data" catch-all, since
+     * they're already surfaced by the page's own header/status/log blocks.
+     */
+    private const NON_DATA_COLUMNS = [
+        'id', 'code', 'created_at', 'updated_at', 'deleted_at',
+        'field_officer_id', 'supply_head_id', 'zone_id', 'reviewed_by', 'admin_actioned_by',
+        'status', 'admin_status', 'admin_note', 'supply_head_note',
+        'submitted_at', 'reviewed_at', 'verified_at', 'admin_actioned_at', 'supply_head_viewed_at',
+        'allow_resubmit', 'show_on_website', 'property_type', 'custom_fields',
+        'form_submited_location', 'form_submited_address', 'form_submited_maps_url',
+    ];
+
+    /**
+     * The property_type this row should be *rendered* as. Legacy rows
+     * predate the property_type column and store NULL — they're all
+     * warehouse entries, matching how $codePrefixes and getOwnerEditUrl
+     * already treat an absent type.
+     */
+    public function getResolvedPropertyTypeAttribute(): string
+    {
+        return $this->property_type ?: 'warehouse';
+    }
+
+    /**
+     * Ordered section => [column => normalised field definition] map for
+     * this row's type, with every field definition expanded to the full
+     * array form so the view never has to branch on shape.
+     */
+    public function sectionMap(): array
+    {
+        $raw = config('property_entry_sections.' . $this->resolved_property_type)
+            ?? config('property_entry_sections.warehouse', []);
+
+        $out = [];
+        foreach ($raw as $section => $fields) {
+            foreach ($fields as $column => $definition) {
+                $out[$section][$column] = is_array($definition)
+                    ? $definition + ['label' => $column, 'type' => 'text', 'tier' => null, 'wide' => false]
+                    : ['label' => $definition, 'type' => 'text', 'tier' => null, 'wide' => false];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Decoded custom_fields payload. The 12 dedicated wizard forms route
+     * every submitted key without a matching real column into here, so for
+     * those types it holds the majority of the submission.
+     */
+    public function customFieldsArray(): array
+    {
+        $custom = $this->custom_fields;
+        if (is_string($custom)) {
+            $custom = json_decode($custom, true);
+        }
+
+        return is_array($custom) ? $custom : [];
+    }
+
+    /**
+     * Value for a mapped field, wherever it actually lives. Real columns
+     * win; otherwise fall back to the custom_fields blob, since most of the
+     * 12 dedicated types' fields have no dedicated column and would
+     * otherwise render as "—" on the admin detail view despite having been
+     * filled in.
+     */
+    public function fieldValue(string $column): mixed
+    {
+        if (array_key_exists($column, $this->getAttributes()) || $this->hasCast($column)) {
+            return $this->$column;
+        }
+
+        return $this->customFieldsArray()[$column] ?? null;
+    }
+
+    /**
+     * Submitted values present on the row (or in custom_fields) that this
+     * type's section map doesn't account for — legacy or orphaned data.
+     * Surfaced under an "Other Data" section rather than silently dropped,
+     * so nothing a field officer entered can disappear from admin review.
+     * Only non-empty values are included: every mapped field already renders
+     * as "—" when empty, and listing every unmapped empty column here would
+     * bury the real leftovers under a wall of blanks.
+     */
+    public function unmappedData(): array
+    {
+        $mapped = collect($this->sectionMap())->flatMap(fn ($fields) => array_keys($fields))->all();
+        $skip = array_merge($mapped, self::NON_DATA_COLUMNS);
+
+        $out = [];
+        foreach ($this->getAttributes() as $column => $value) {
+            if (in_array($column, $skip, true)) {
+                continue;
+            }
+            $cast = $this->$column;
+            if ($cast === null || $cast === '' || (is_array($cast) && $cast === [])) {
+                continue;
+            }
+            $out[$column] = $cast;
+        }
+
+        // custom_fields holds whatever the 12 dedicated wizard forms couldn't
+        // map onto a real column — genuinely submitted data, so anything the
+        // section map doesn't already render belongs here.
+        foreach ($this->customFieldsArray() as $key => $value) {
+            if (in_array($key, $skip, true)) {
+                continue;
+            }
+            if ($value !== null && $value !== '' && $value !== []) {
+                $out[$key] = $value;
+            }
+        }
+
+        ksort($out);
+
+        return $out;
+    }
+
     // ── Public-listing presentation (WEBSITE-tier fields only) ───────────────
     //
     // These back the /properties listing and its cards. They intentionally

@@ -51,6 +51,19 @@ class CommercialInstitutionalLandController extends Controller
             }
         }
 
+        // The wizard's own "Property Type" dropdown collects a SUB-type
+        // (e.g. Service Apartment / Co-living / PG) but shares its name with
+        // the property_type column that records which of the 13 forms this
+        // row belongs to. Left alone the submitted value overwrites the
+        // canonical key, which breaks the code prefix (a PG listing was
+        // getting a ZI-WH- warehouse code), ofType() filtering and the
+        // type-aware admin detail view. Keep the officer's choice as a
+        // custom field and re-assert the canonical type.
+        if (isset($data['property_type']) && $data['property_type'] !== 'commercial_institutional_land') {
+            $customFields['property_sub_type'] = $data['property_type'];
+        }
+        $data['property_type'] = 'commercial_institutional_land';
+
         if (!empty($customFields)) {
             $data['custom_fields'] = json_encode($customFields);
         }
@@ -105,6 +118,19 @@ class CommercialInstitutionalLandController extends Controller
                 $customFields[$key] = $val;
             }
         }
+
+        // The wizard's own "Property Type" dropdown collects a SUB-type
+        // (e.g. Service Apartment / Co-living / PG) but shares its name with
+        // the property_type column that records which of the 13 forms this
+        // row belongs to. Left alone the submitted value overwrites the
+        // canonical key, which breaks the code prefix (a PG listing was
+        // getting a ZI-WH- warehouse code), ofType() filtering and the
+        // type-aware admin detail view. Keep the officer's choice as a
+        // custom field and re-assert the canonical type.
+        if (isset($data['property_type']) && $data['property_type'] !== 'commercial_institutional_land') {
+            $customFields['property_sub_type'] = $data['property_type'];
+        }
+        $data['property_type'] = 'commercial_institutional_land';
 
         if (!empty($customFields)) {
             $data['custom_fields'] = json_encode($customFields);
