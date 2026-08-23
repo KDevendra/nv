@@ -13,10 +13,24 @@
     </div>
 @endif
 
-{{-- ── Summary Stat Cards (unfiltered, always full dataset) ─────────────── --}}
+@php
+    // Every stat card and chart segment links back to this same page with
+    // its dimension swapped in — start from the current filters (minus the
+    // dimension the link itself controls) so clicking one never discards
+    // other active filters.
+    $urlWithStatus = fn (?string $status) => route('admin.property-entry-report.index', array_merge(
+        request()->except(['status', 'page']), $status ? ['status' => $status] : []
+    ));
+    $urlWithType = fn (?string $type) => route('admin.property-entry-report.index', array_merge(
+        request()->except(['property_type', 'page']), $type ? ['property_type' => $type] : []
+    ));
+@endphp
+
+{{-- ── Summary Stat Cards (unfiltered, always full dataset — click to filter table below) ─────────────── --}}
 <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
     {{-- Total --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <a href="{{ $urlWithStatus(null) }}"
+        class="bg-white rounded-xl shadow-sm p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 {{ !request('status') ? 'border-zendo-navy ring-1 ring-zendo-navy' : 'border-gray-100' }}">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Total Entries</p>
@@ -29,10 +43,11 @@
                 </svg>
             </div>
         </div>
-    </div>
+    </a>
 
     {{-- Submitted / Pending --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <a href="{{ $urlWithStatus('submitted') }}"
+        class="bg-white rounded-xl shadow-sm p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 {{ request('status') === 'submitted' ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-100' }}">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Under Review</p>
@@ -45,10 +60,11 @@
                 </svg>
             </div>
         </div>
-    </div>
+    </a>
 
     {{-- Verified --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <a href="{{ $urlWithStatus('verified') }}"
+        class="bg-white rounded-xl shadow-sm p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 {{ request('status') === 'verified' ? 'border-green-500 ring-1 ring-green-500' : 'border-gray-100' }}">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Verified</p>
@@ -61,10 +77,11 @@
                 </svg>
             </div>
         </div>
-    </div>
+    </a>
 
     {{-- Recheck --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <a href="{{ $urlWithStatus('recheck') }}"
+        class="bg-white rounded-xl shadow-sm p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 {{ request('status') === 'recheck' ? 'border-orange-500 ring-1 ring-orange-500' : 'border-gray-100' }}">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Needs Recheck</p>
@@ -77,10 +94,11 @@
                 </svg>
             </div>
         </div>
-    </div>
+    </a>
 
     {{-- Rejected --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <a href="{{ $urlWithStatus('rejected') }}"
+        class="bg-white rounded-xl shadow-sm p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 {{ request('status') === 'rejected' ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-100' }}">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Rejected</p>
@@ -93,7 +111,131 @@
                 </svg>
             </div>
         </div>
+    </a>
+</div>
+
+{{-- ── Draft vs Submitted+ ratio ─────────────────────────────────────────── --}}
+@php
+    $dvs = $analytics['draft_vs_submitted'];
+    $dvsTotal = $dvs['draft'] + $dvs['beyond_draft'];
+@endphp
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+        <div>
+            <h3 class="text-sm font-semibold text-zendo-navy">Draft vs Submitted+</h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+                @if($dvsTotal > 0)
+                    <span class="font-semibold text-gray-700">{{ $dvs['draft'] }} drafts</span>,
+                    <span class="font-semibold text-gray-700">{{ $dvs['beyond_draft'] }} submitted or further</span>
+                    — {{ $dvs['draft_percent'] }}% of entries never left draft
+                @else
+                    No entries match the current filters.
+                @endif
+            </p>
+        </div>
+        @if($dvs['draft_percent'] >= 50 && $dvsTotal > 0)
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 w-fit">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                Majority stuck in draft
+            </span>
+        @endif
     </div>
+    <div class="w-full h-3 rounded-full bg-gray-100 overflow-hidden flex">
+        @if($dvsTotal > 0)
+            <a href="{{ $urlWithStatus('draft') }}" title="{{ $dvs['draft'] }} drafts — click to filter"
+                class="h-full bg-gray-400 hover:bg-gray-500 transition-colors" style="width: {{ $dvs['draft_percent'] }}%"></a>
+            {{-- Not a single status value, so not a filter link — "beyond draft" spans submitted/verified/recheck/rejected --}}
+            <div title="{{ $dvs['beyond_draft'] }} submitted or further"
+                class="h-full bg-zendo-gold flex-1"></div>
+        @endif
+    </div>
+</div>
+
+{{-- ── By Property Type + Submissions Over Time ───────────────────────────── --}}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    {{-- By Property Type --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-zendo-navy">By Property Type</h3>
+            @if(request('property_type'))
+                <a href="{{ $urlWithType(null) }}" class="text-xs text-zendo-gold hover:underline">Clear</a>
+            @endif
+        </div>
+        <div class="relative" style="height: 340px;">
+            <canvas id="chart-by-type"></canvas>
+        </div>
+    </div>
+
+    {{-- Submissions Over Time --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-zendo-navy">Submissions Over Time</h3>
+            <div class="flex gap-1 bg-gray-100 rounded-lg p-0.5" id="time-range-toggle">
+                <button type="button" data-range="7" class="time-range-btn px-2.5 py-1 text-xs font-medium rounded-md transition-colors">7d</button>
+                <button type="button" data-range="30" class="time-range-btn px-2.5 py-1 text-xs font-medium rounded-md transition-colors">30d</button>
+                <button type="button" data-range="90" class="time-range-btn px-2.5 py-1 text-xs font-medium rounded-md transition-colors">90d</button>
+                <button type="button" data-range="all" class="time-range-btn px-2.5 py-1 text-xs font-medium rounded-md transition-colors">All</button>
+            </div>
+        </div>
+        <div class="relative" style="height: 340px;">
+            <canvas id="chart-submissions"></canvas>
+        </div>
+    </div>
+</div>
+
+{{-- ── By City + By Field Officer leaderboards ────────────────────────────── --}}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    @foreach([['title' => 'By City', 'data' => $analytics['by_city']], ['title' => 'By Field Officer', 'data' => $analytics['by_officer']]] as $board)
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5" x-data="{ expanded: false }">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-zendo-navy">{{ $board['title'] }}</h3>
+                <span class="text-xs text-gray-400">{{ $board['data']['total_count'] }} total</span>
+            </div>
+
+            @if(empty($board['data']['top']))
+                <p class="text-xs text-gray-400 italic py-4 text-center">No data for the current filters.</p>
+            @else
+                @php $maxCount = max(array_column($board['data']['top'], 'count')) ?: 1; @endphp
+                <ul class="space-y-2.5" x-show="!expanded">
+                    @foreach($board['data']['top'] as $row)
+                        <li>
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="text-gray-700 truncate pr-2">{{ $row['label'] }}</span>
+                                <span class="font-semibold text-gray-500 flex-shrink-0">{{ $row['count'] }}</span>
+                            </div>
+                            <div class="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                <div class="h-full bg-zendo-navy rounded-full" style="width: {{ round($row['count'] / $maxCount * 100) }}%"></div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+
+                @if($board['data']['total_count'] > 5)
+                    <ul class="space-y-2.5" x-show="expanded" x-cloak>
+                        @foreach($board['data']['all'] as $row)
+                            <li>
+                                <div class="flex items-center justify-between text-xs mb-1">
+                                    <span class="text-gray-700 truncate pr-2">{{ $row['label'] }}</span>
+                                    <span class="font-semibold text-gray-500 flex-shrink-0">{{ $row['count'] }}</span>
+                                </div>
+                                <div class="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                                    <div class="h-full bg-zendo-navy rounded-full" style="width: {{ round($row['count'] / $maxCount * 100) }}%"></div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <button type="button" @click="expanded = !expanded"
+                        class="mt-3 text-xs font-medium text-zendo-gold hover:underline">
+                        <span x-show="!expanded">Show all {{ $board['data']['total_count'] }}</span>
+                        <span x-show="expanded" x-cloak>Show top 5 only</span>
+                    </button>
+                @endif
+            @endif
+        </div>
+    @endforeach
 </div>
 
 {{-- ── Filter Bar ────────────────────────────────────────────────────────── --}}
@@ -425,5 +567,122 @@
             });
         }
     });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // ── By Property Type ────────────────────────────────────────────────────
+    @php
+        $byTypeJs = collect($analytics['by_property_type'])->map(fn ($r) => [
+            'key'   => $r['key'],
+            'label' => $r['label'],
+            'count' => $r['count'],
+            'url'   => $urlWithType(request('property_type') === $r['key'] ? null : $r['key']),
+        ]);
+    @endphp
+    var byTypeData = @json($byTypeJs);
+
+    // Stable per-type colour, cycling a categorical palette rather than
+    // hardcoding 13 colours by hand — order matches config('property_types').
+    var typePalette = ['#0B2C3D', '#B39359', '#2563EB', '#059669', '#DC2626', '#7C3AED',
+        '#EA580C', '#0891B2', '#DB2777', '#65A30D', '#4F46E5', '#CA8A04', '#0D9488', '#9333EA'];
+
+    (function () {
+        var ctx = document.getElementById('chart-by-type');
+        if (!ctx || !byTypeData.length) return;
+
+        var activeType = {{ request('property_type') ? json_encode(request('property_type')) : 'null' }};
+
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: byTypeData.map(function (r) { return r.label; }),
+                datasets: [{
+                    data: byTypeData.map(function (r) { return r.count; }),
+                    backgroundColor: byTypeData.map(function (r, i) {
+                        var base = typePalette[i % typePalette.length];
+                        return (activeType && r.key !== activeType) ? base + '55' : base;
+                    }),
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0 } },
+                    y: { ticks: { autoSkip: false, font: { size: 11 } } },
+                },
+                onClick: function (evt, elements) {
+                    if (!elements.length) return;
+                    window.location.href = byTypeData[elements[0].index].url;
+                },
+                onHover: function (evt, elements) {
+                    evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                },
+            }
+        });
+    })();
+
+    // ── Submissions Over Time (7d / 30d / 90d / all toggle) ────────────────
+    var submissionsDaily = @json(collect($analytics['submissions_daily'])->map(fn ($r) => ['label' => \Carbon\Carbon::parse($r['date'])->format('d M'), 'count' => $r['count']]));
+    var submissionsMonthly = @json(collect($analytics['submissions_monthly'])->map(fn ($r) => ['label' => \Carbon\Carbon::createFromFormat('Y-m', $r['month'])->format('M Y'), 'count' => $r['count']]));
+
+    (function () {
+        var ctx = document.getElementById('chart-submissions');
+        if (!ctx) return;
+
+        function sliceRange(range) {
+            if (range === 'all') return submissionsMonthly;
+            var n = parseInt(range, 10);
+            return submissionsDaily.slice(Math.max(0, submissionsDaily.length - n));
+        }
+
+        var initial = sliceRange('30');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: initial.map(function (r) { return r.label; }),
+                datasets: [{
+                    data: initial.map(function (r) { return r.count; }),
+                    borderColor: '#B39359',
+                    backgroundColor: 'rgba(179, 147, 89, 0.12)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { ticks: { maxTicksLimit: 12, font: { size: 10 } } },
+                },
+            }
+        });
+
+        var buttons = document.querySelectorAll('.time-range-btn');
+        function setActiveRange(range) {
+            buttons.forEach(function (b) {
+                var isActive = b.dataset.range === range;
+                b.classList.toggle('bg-white', isActive);
+                b.classList.toggle('shadow-sm', isActive);
+                b.classList.toggle('text-zendo-navy', isActive);
+                b.classList.toggle('text-gray-500', !isActive);
+            });
+            var rows = sliceRange(range);
+            chart.data.labels = rows.map(function (r) { return r.label; });
+            chart.data.datasets[0].data = rows.map(function (r) { return r.count; });
+            chart.update();
+        }
+
+        buttons.forEach(function (b) {
+            b.addEventListener('click', function () { setActiveRange(b.dataset.range); });
+        });
+        setActiveRange('30');
+    })();
 </script>
 @endsection
