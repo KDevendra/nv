@@ -351,4 +351,20 @@ class User extends Authenticatable
             ->orderBy('active_cc_lead_count')
             ->get();
     }
+
+    /**
+     * Get the role-appropriate dashboard URL for this user.
+     */
+    public function getDashboardUrl(): string
+    {
+        return match ($this->role) {
+            'supply_head', 'field_officer' => route('field.dashboard'),
+            'sales_executive'            => route('se.leads.index'),
+            'chief_coordinator'          => route('cc.leads.index'),
+            'owner'                      => route('owner.dashboard'),
+            'channel_partner'            => route('channel_partner.dashboard'),
+            'user'                       => route('user.dashboard'),
+            default                      => route('dashboard'),
+        };
+    }
 }

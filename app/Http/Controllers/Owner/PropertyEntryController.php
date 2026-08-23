@@ -44,9 +44,72 @@ class PropertyEntryController extends Controller
             $query->where('status', $request->string('status'));
         }
 
+        if ($request->filled('type')) {
+            $type = $request->string('type');
+            if ($type === 'warehouse') {
+                $query->where(function ($q) {
+                    $q->where('property_type', 'warehouse')->orWhereNull('property_type');
+                });
+            } else {
+                $query->where('property_type', $type);
+            }
+        } elseif ($request->filled('group')) {
+            $group = $request->string('group');
+            $propertyTypesConfig = config('property_types.types', []);
+            $typesInGroup = collect($propertyTypesConfig)->where('group', $group)->pluck('property_type')->all();
+            if ($group === 'warehousing') {
+                $typesInGroup[] = 'warehouse';
+                $query->where(function ($q) use ($typesInGroup) {
+                    $q->whereIn('property_type', $typesInGroup)->orWhereNull('property_type');
+                });
+            } else {
+                $query->whereIn('property_type', $typesInGroup);
+            }
+        }
+
         $query->latest();
 
         $entries = $query->paginate(15)->appends($request->query());
+
+        // Base query for type counts
+        $baseCountQuery = PropertyEntry::where('field_officer_id', $userId);
+        if ($request->filled('status')) {
+            $baseCountQuery->where('status', $request->string('status'));
+        }
+
+        $rawCounts = (clone $baseCountQuery)
+            ->select('property_type', \DB::raw('count(*) as count'))
+            ->groupBy('property_type')
+            ->pluck('count', 'property_type')
+            ->toArray();
+
+        $typeCounts = [];
+        $warehouseCount = 0;
+        foreach ($rawCounts as $typeKey => $cnt) {
+            if (empty($typeKey) || $typeKey === 'warehouse') {
+                $warehouseCount += $cnt;
+            } else {
+                $typeCounts[$typeKey] = $cnt;
+            }
+        }
+        $typeCounts['warehouse'] = $warehouseCount;
+
+        $propertyTypesConfig = config('property_types.types', []);
+
+        $groupCounts = [
+            'all'         => array_sum($rawCounts),
+            'warehousing' => $warehouseCount,
+            'residential' => 0,
+            'commercial'  => 0,
+        ];
+
+        foreach ($propertyTypesConfig as $key => $cfg) {
+            $grp = $cfg['group'] ?? 'commercial';
+            $pType = $cfg['property_type'] ?? $key;
+            if (isset($typeCounts[$pType])) {
+                $groupCounts[$grp] = ($groupCounts[$grp] ?? 0) + $typeCounts[$pType];
+            }
+        }
 
         $counters = [
             'total'     => PropertyEntry::where('field_officer_id', $userId)->count(),
@@ -57,7 +120,7 @@ class PropertyEntryController extends Controller
             'rejected'  => PropertyEntry::where('field_officer_id', $userId)->where('status', 'rejected')->count(),
         ];
 
-        return view('owner.properties.index', compact('entries', 'counters'));
+        return view('owner.properties.index', compact('entries', 'counters', 'typeCounts', 'groupCounts', 'propertyTypesConfig'));
     }
 
     // ── Select Property Type ──────────────────────────────────────────────────

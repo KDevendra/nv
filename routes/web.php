@@ -103,6 +103,9 @@ Route::get('/calculators/ft-to-mm', [HomeController::class, 'ftToMm'])->name('ca
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect(auth()->user()->getDashboardUrl());
+    });
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
     Route::prefix('user')->name('user.')->middleware('verified')->group(function () {
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');

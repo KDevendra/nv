@@ -125,4 +125,38 @@ class AllPropertyTypesFormsTest extends TestCase
         $this->assertEquals('ZI-RH-001', $villa->code);
         $this->assertEquals('ZI-CO-001', $office->code);
     }
+
+    /** @test */
+    public function owner_can_filter_properties_by_pill_tab_groups_and_types(): void
+    {
+        PropertyEntry::create([
+            'property_type'       => 'house_villa_farmhouse',
+            'field_officer_id'    => $this->owner->id,
+            'submitter_full_name' => 'Villa Owner',
+            'city'                => 'Jaipur',
+            'nearest_city'        => 'Jaipur',
+            'status'              => 'submitted',
+        ]);
+
+        PropertyEntry::create([
+            'property_type'       => 'office_space',
+            'field_officer_id'    => $this->owner->id,
+            'submitter_full_name' => 'Office Owner',
+            'city'                => 'Mumbai',
+            'nearest_city'        => 'Mumbai',
+            'status'              => 'submitted',
+        ]);
+
+        // Filter by Residential Group Pill
+        $responseGroup = $this->actingAs($this->owner)->get(route('owner.properties.index', ['group' => 'residential']));
+        $responseGroup->assertStatus(200);
+        $responseGroup->assertSee('Jaipur');
+        $responseGroup->assertDontSee('Mumbai');
+
+        // Filter by Specific Type Pill
+        $responseType = $this->actingAs($this->owner)->get(route('owner.properties.index', ['type' => 'office_space']));
+        $responseType->assertStatus(200);
+        $responseType->assertSee('Mumbai');
+        $responseType->assertDontSee('Jaipur');
+    }
 }

@@ -30,23 +30,13 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        // Redirect based on user role
-        if (in_array($user->role, ['supply_head', 'field_officer'])) {
-            return redirect()->intended(route('field.dashboard', absolute: false));
-        } elseif ($user->role === 'sales_executive') {
-            return redirect()->intended(route('se.leads.index', absolute: false));
-        } elseif ($user->role === 'chief_coordinator') {
-            return redirect()->intended(route('cc.leads.index', absolute: false));
-        } elseif ($user->role === 'owner') {
-            return redirect()->intended(route('owner.dashboard', absolute: false));
-        } elseif ($user->role === 'channel_partner') {
-            return redirect()->intended(route('channel_partner.dashboard', absolute: false));
-        } elseif ($user->role === 'user') {
-            return redirect()->intended(route('user.dashboard', absolute: false));
+        // Clear generic /dashboard or /login intended URLs so non-admins are never sent to 404/403 pages
+        $intended = session('url.intended');
+        if ($intended && (str_contains($intended, '/dashboard') || str_contains($intended, '/login'))) {
+            session()->forget('url.intended');
         }
 
-        // Admin, super_admin → main dashboard
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended($user->getDashboardUrl());
     }
 
     /**
