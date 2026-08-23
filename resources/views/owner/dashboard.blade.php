@@ -18,6 +18,12 @@
                     Manage your commercial and warehousing property listings and inquiries.
                 </p>
             </div>
+            <div>
+                <a href="{{ route('owner.properties.select-type') }}"
+                    class="inline-flex items-center px-5 py-2.5 bg-zendo-gold text-white text-sm font-semibold rounded-xl hover:bg-amber-600 transition-all shadow-md">
+                    + List New Property
+                </a>
+            </div>
         </div>
     </div>
 

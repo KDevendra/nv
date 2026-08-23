@@ -28,6 +28,7 @@ class PropertyEntry extends Model
         'verified_at',
         'reviewed_by',
         'supply_head_viewed_at',
+        'property_type',
         // A
         'facility_type',
         'property_name',
@@ -147,6 +148,110 @@ class PropertyEntry extends Model
         // K
         'remarks',
         'form_submited_location',
+        // Apartment / Flat / Studio
+        'submitter_full_name',
+        'submitter_phone',
+        'submitter_email',
+        'submitter_role',
+        'company_entity_name',
+        'owner_email',
+        'city',
+        'locality_broad_area',
+        'sub_locality_society_name',
+        'project_name',
+        'builder_developer_name',
+        'nearby_landmarks_key_distances',
+        'nearby_landmarks',
+        'distance_from_key_locations',
+        'facing_orientation',
+        'overlooking_view',
+        'gps_latitude',
+        'gps_longitude',
+        'part_of_a_project_society',
+        'project_society_name',
+        'project_rera_id',
+        'developer_builder_name',
+        'total_towers_blocks',
+        'total_units_in_project',
+        'configurations_offered',
+        'project_amenities',
+        'approved_loan_banks',
+        'unit_property_type',
+        'configuration',
+        'super_built_up_area',
+        'floor_number',
+        'units_on_this_floor',
+        'no_of_bedrooms',
+        'no_of_bathrooms',
+        'no_of_balconies',
+        'additional_rooms',
+        'furnishing_status',
+        'furnishing_detail',
+        'parking_slots',
+        'covered_parking_slots',
+        'open_parking_slots',
+        'property_status',
+        'construction_listing_status',
+        'possession_by',
+        'age_of_property',
+        'availability',
+        'bank_loan_emi_available',
+        'ownership_type',
+        'title_status',
+        'rera_registered',
+        'rera_registration_id',
+        'completion_certificate',
+        'encumbrance_loan_on_property',
+        'khata_property_tax_status',
+        'lift_elevator',
+        'power_backup',
+        'water_source',
+        'water_availability',
+        'water_supply',
+        'electricity_status',
+        'gated_society',
+        'security_cctv',
+        'amenities_checklist',
+        'pet_friendly',
+        'price_on_request',
+        'rent_range_band',
+        'maintenance_charge',
+        'sale_price_band',
+        'price_per_sqft',
+        'booking_amount',
+        'negotiable_floor_price',
+        'owner_flexibility_notes',
+        'preferred_tenant',
+        'non_veg_allowed',
+        'pets_allowed',
+        'non_veg_pets_allowed',
+        'notice_period',
+        'minimum_lease_agreement_term',
+        'electricity_charges',
+        'water_charges',
+        'maintenance_inclusion',
+        'utilities_who_bears',
+        'currently_rented_tenanted',
+        'current_monthly_rent_received',
+        'rental_income_band',
+        'rental_yield_roi',
+        'tenant_name_profile',
+        'tenant_type',
+        'lease_start_date',
+        'lease_tenure',
+        'lock_in_remaining',
+        'annual_escalation_in_lease',
+        'security_deposit_held',
+        'deposit_adjustment_on_sale',
+        'cam_outgoings_borne_by',
+        'payback_capital_value_note',
+        'video_walkthrough_link',
+        'virtual_tour_360_link',
+        'video_virtual_tour_link',
+        'property_description',
+        'field_officer_name',
+        'field_verified',
+        'inspection_submission_date',
     ];
 
     protected $casts = [
@@ -228,6 +333,60 @@ class PropertyEntry extends Model
         'nearest_hospital_km'          => 'float',
         'nearest_fire_station_km'      => 'float',
         'nearest_police_station_km'    => 'float',
+        // Apartment / Flat / Studio casts
+        'overlooking_view'             => 'array',
+        'gps_latitude'                 => 'float',
+        'gps_longitude'                => 'float',
+        'configurations_offered'       => 'array',
+        'project_amenities'            => 'array',
+        'additional_rooms'             => 'array',
+        'furnishing_detail'            => 'array',
+        'amenities_checklist'          => 'array',
+        'preferred_tenant'             => 'array',
+        'possession_by'                => 'date',
+        'lease_start_date'             => 'date',
+        'inspection_submission_date'   => 'date',
+        'field_verified'               => 'boolean',
+        'total_towers_blocks'          => 'float',
+        'total_units_in_project'       => 'float',
+        'super_built_up_area'          => 'float',
+        'floor_number'                 => 'float',
+        'units_on_this_floor'          => 'float',
+        'no_of_bedrooms'               => 'float',
+        'no_of_bathrooms'              => 'float',
+        'no_of_balconies'              => 'float',
+        'covered_parking_slots'        => 'float',
+        'open_parking_slots'           => 'float',
+        'maintenance_charge'           => 'float',
+        'price_per_sqft'               => 'float',
+        'booking_amount'               => 'float',
+        'negotiable_floor_price'       => 'float',
+        'notice_period'                => 'float',
+        'minimum_lease_agreement_term' => 'float',
+        'current_monthly_rent_received'=> 'float',
+        'rental_yield_roi'             => 'float',
+        'lease_tenure'                 => 'float',
+        'lock_in_remaining'            => 'float',
+        'annual_escalation_in_lease'   => 'float',
+        'lease_tenure'                 => 'float',
+        'lock_in_remaining'            => 'float',
+    ];
+
+    protected static array $codePrefixes = [
+        'warehouse'                         => 'ZI-WH-',
+        'apartment_flat_studio'            => 'ZI-RA-',
+        'house_villa_farmhouse'            => 'ZI-RH-',
+        'builder_floor'                    => 'ZI-RB-',
+        'residential_plot_land'            => 'ZI-RP-',
+        'service_apartment_pg'             => 'ZI-RS-',
+        'office_space'                     => 'ZI-CO-',
+        'retail_shop_showroom'             => 'ZI-CR-',
+        'sez_eou_stpi_unit'                => 'ZI-CS-',
+        'factory_manufacturing_industrial' => 'ZI-CF-',
+        'commercial_institutional_land'    => 'ZI-CL-',
+        'agricultural_farm_land'           => 'ZI-CA-',
+        'multi_tenant_building'            => 'ZI-CB-',
+        'hotel_resort_guesthouse_banquet'  => 'ZI-CH-',
     ];
 
     /**
@@ -236,8 +395,25 @@ class PropertyEntry extends Model
     protected static function booted(): void
     {
         static::creating(function (self $model) {
-            $seq = (static::max('id') ?? 0) + 1;
-            $model->code = 'ZI-WH-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
+            $prefix = static::$codePrefixes[$model->property_type ?? 'warehouse'] ?? 'ZI-WH-';
+
+            $existingCodes = static::withTrashed()
+                ->where('code', 'LIKE', $prefix . '%')
+                ->pluck('code');
+
+            $maxSeq = 0;
+            foreach ($existingCodes as $code) {
+                $suffix = substr($code, strlen($prefix));
+                if (is_numeric($suffix)) {
+                    $num = (int) $suffix;
+                    if ($num > $maxSeq) {
+                        $maxSeq = $num;
+                    }
+                }
+            }
+
+            $seq = $maxSeq + 1;
+            $model->code = $prefix . str_pad((string) $seq, 3, '0', STR_PAD_LEFT);
         });
     }
 
@@ -283,6 +459,11 @@ class PropertyEntry extends Model
     public function scopeActive($query)
     {
         return $query;
+    }
+
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('property_type', $type);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

@@ -11,7 +11,7 @@
             <p class="text-gray-500 text-sm mt-1">Submit and track your commercial & warehousing properties</p>
         </div>
         <div class="flex gap-3">
-            <a href="{{ route('owner.properties.create') }}"
+            <a href="{{ route('owner.properties.select-type') }}"
                 class="inline-flex items-center px-4 py-2 bg-zendo-gold text-white text-sm font-semibold rounded-lg hover:bg-opacity-90 transition-all shadow">
                 + List New Property
             </a>
@@ -72,7 +72,7 @@
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p class="text-gray-500 font-medium mb-2">No property listings found</p>
-                <a href="{{ route('owner.properties.create') }}"
+                <a href="{{ route('owner.properties.select-type') }}"
                     class="inline-flex items-center px-4 py-2 bg-zendo-gold text-white text-sm font-semibold rounded-lg hover:bg-opacity-90 transition-all">
                     + Submit Your First Property
                 </a>

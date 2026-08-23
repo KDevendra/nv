@@ -60,6 +60,45 @@ class PropertyEntryController extends Controller
         return view('owner.properties.index', compact('entries', 'counters'));
     }
 
+    // ── Select Property Type ──────────────────────────────────────────────────
+
+    public function selectType(): View
+    {
+        abort_if(auth()->user()->role !== 'owner', 403);
+
+        $propertyTypes = config('property_types.types', []);
+
+        $residentialTypes = collect($propertyTypes)->where('group', 'residential')->all();
+        $commercialTypes  = collect($propertyTypes)->where('group', 'commercial')->all();
+        $warehouseType    = $propertyTypes['warehouse'] ?? null;
+
+        return view('owner.properties.select_type', compact('residentialTypes', 'commercialTypes', 'warehouseType'));
+    }
+
+    public function createType(string $type): View
+    {
+        abort_if(auth()->user()->role !== 'owner', 403);
+
+        $types = config('property_types.types', []);
+        $matched = collect($types)->first(fn($t) => ($t['slug'] ?? '') === $type || ($t['property_type'] ?? '') === $type);
+
+        if (!$matched) {
+            abort(404, 'Property type not found.');
+        }
+
+        if ($matched['property_type'] === 'warehouse') {
+            return $this->create();
+        }
+
+        $slots = self::PHOTO_SLOTS;
+        $fieldConfigs = PropertyFieldConfig::allKeyed();
+        $fieldRemarks = [];
+        $propertyType = $matched['property_type'];
+        $typeMeta = $matched;
+
+        return view('owner.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks', 'propertyType', 'typeMeta'));
+    }
+
     // ── Create ────────────────────────────────────────────────────────────────
 
     public function create(): View
