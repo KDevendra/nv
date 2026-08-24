@@ -39,6 +39,12 @@
         ERROR_INPUT_CLASSES.forEach(function (c) { input.classList.add(c); });
         var wrap = fieldWrapper(input);
         if (!wrap) return;
+
+        var s2Selection = wrap.querySelector('.select2-selection');
+        if (s2Selection) {
+            ERROR_INPUT_CLASSES.forEach(function (c) { s2Selection.classList.add(c); });
+        }
+
         var msg = wrap.querySelector(':scope > .field-format-err');
         if (!msg) {
             msg = document.createElement('p');
@@ -53,10 +59,32 @@
         ERROR_INPUT_CLASSES.forEach(function (c) { input.classList.remove(c); });
         var wrap = fieldWrapper(input);
         if (wrap) {
+            var s2Selection = wrap.querySelector('.select2-selection');
+            if (s2Selection) {
+                ERROR_INPUT_CLASSES.forEach(function (c) { s2Selection.classList.remove(c); });
+            }
             var msg = wrap.querySelector(':scope > .field-format-err');
             if (msg) msg.remove();
         }
         input.removeAttribute('aria-invalid');
+    }
+
+    function getSelectValues(input) {
+        if (typeof $ !== 'undefined' && $(input).data('select2')) {
+            var s2Val = $(input).val();
+            if (Array.isArray(s2Val)) return s2Val.filter(function (v) { return v !== null && v !== ''; });
+            return s2Val ? [s2Val] : [];
+        }
+        if (input.selectedOptions) {
+            var res = [];
+            for (var i = 0; i < input.selectedOptions.length; i++) {
+                var optVal = input.selectedOptions[i].value;
+                if (optVal !== null && optVal !== '') res.push(optVal);
+            }
+            return res;
+        }
+        var v = (input.value || '').trim();
+        return v ? [v] : [];
     }
 
     // ── Rule inference ──────────────────────────────────────────────────────
@@ -90,19 +118,19 @@
         'surrounding_development': true, 'field_verified': true,
         'plot_dimensions_ft_ft': true, 'construction_permitted_floors': true,
         'canteen_size': true, 'stp_capacity': true, 'water_tank_capacity': true,
-        'water_source_capacity': true, 'water_supply_tank_capacity': true, 'water_source_stp': true
+        'water_source_capacity': true, 'water_supply_tank_capacity': true, 'water_source_stp': true,
+        'facing_orientation': true
     };
 
     var NUMERIC_NAME_RE = /^(.*_)?(area|sq_ft|sq_yd|acres|acreage|floor|floors|towers|blocks|units|bedrooms|bathrooms|balconies|rooms|beds|keys|inventory|workstations|seats|cabins|bays|docks|dock|parking|slots|rent|price|cost|amount|deposit|charges|escalation|yield|roi|maintenance|rate|value|booking|kva|kw|capacity|height|width|length|depth|frontage|dimensions|distance|months|years|tenure|age|bhk|washrooms|pax)(_.*)?$/i;
 
     function inferKind(input) {
-        var explicit = input.dataset.validate;
+        if (input.tagName === 'SELECT') return 'select';
+        var explicit = input.getAttribute('data-field-kind');
         if (explicit) return explicit;
 
         var tagName = (input.tagName || '').toUpperCase();
         if (tagName === 'SELECT') return 'select';
-        if (tagName === 'TEXTAREA') return 'text';
-
         var name = (input.getAttribute('name') || '').toLowerCase();
         var type = (input.getAttribute('type') || '').toLowerCase();
 
@@ -119,9 +147,6 @@
         return 'text';
     }
 
-    // Integers unless the markup says otherwise (step="0.01" / step="any" /
-    // step="0.1"). Most of these fields — floors, bedrooms, bathrooms, dock
-    // counts — are non-negative whole numbers.
     function allowsDecimal(input) {
         var step = (input.getAttribute('step') || '').toLowerCase();
         if (step === 'any' || (step !== '' && parseFloat(step) % 1 !== 0)) return true;
@@ -138,7 +163,6 @@
         return min !== null && parseFloat(min) < 0;
     }
 
-    // ── Input restriction (fires while typing) ──────────────────────────────
     function restrict(input, kind) {
         var before = input.value;
         var v = before;
@@ -163,10 +187,6 @@
         return false;
     }
 
-    // ── Full-rule validation ────────────────────────────────────────────────
-    // `enforceRequired` is false while the user is merely typing/blurring and
-    // true when they try to advance a step or submit, so an untouched empty
-    // field doesn't shout at them but also can't slip past "Save & Next".
     function checkIfRequired(input) {
         var fieldWrap = input.closest('div');
         if (fieldWrap && (fieldWrap.style.display === 'none' || input.offsetParent === null)) {
@@ -186,6 +206,9 @@
     }
 
     function validateField(input, enforceRequired) {
+        if (!input) return true;
+        if (input.classList && input.classList.contains('select2-search__field')) return true;
+
         var fieldWrap = input.closest('div');
         if (input.disabled || input.type === 'hidden' || input.offsetParent === null || (fieldWrap && fieldWrap.style.display === 'none')) {
             clearFieldError(input);
@@ -200,7 +223,17 @@
 
         // ── Dropdown / Select Fields Validation ──
         if (kind === 'select' || input.tagName === 'SELECT') {
-            if (!value) {
+            var isMultiple = input.multiple || input.hasAttribute('multiple') || /\[\]$/.test(input.name || '');
+            var hasValue = false;
+
+            if (isMultiple) {
+                var selectedArr = getSelectValues(input);
+                hasValue = selectedArr.length > 0;
+            } else {
+                hasValue = !!value;
+            }
+
+            if (!hasValue) {
                 if (enforceRequired && isRequired) {
                     showFieldError(input, 'Please select an option.');
                     return false;
@@ -335,7 +368,9 @@
     var touched = new WeakSet();
 
     function isCandidate(el) {
-        return el && (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA')
+        if (!el) return false;
+        if (el.classList && el.classList.contains('select2-search__field')) return false;
+        return (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA')
             && el.type !== 'hidden' && el.type !== 'file'
             && el.type !== 'checkbox' && el.type !== 'radio'
             && el.type !== 'submit' && el.type !== 'button';
@@ -368,6 +403,12 @@
         if (!isCandidate(e.target)) return;
         if (touched.has(e.target)) validateField(e.target, false);
     }, true);
+
+    if (typeof $ !== 'undefined') {
+        $(document).on('change select2:select select2:unselect select2:clear', 'select', function () {
+            validateField(this, false);
+        });
+    }
 
     // ── Postal API PIN Code Auto-Fill (Applies to all 13 forms & warehouse form) ──
     (function () {
