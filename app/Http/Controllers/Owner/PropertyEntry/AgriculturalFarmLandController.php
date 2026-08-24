@@ -100,18 +100,32 @@ class AgriculturalFarmLandController extends Controller
         // this is validation-free for every other field on this form, but a
         // malformed upload can't be allowed through regardless.
         $request->validate([
-            'photo_0' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_3' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_4' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_5' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_0' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_1' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_2' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_3' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_4' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_5' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
 
         // Upload photos
+        // Stored directly under public/ — matching the apartment and warehouse
+        // forms' already-working convention — rather than via the 'public'
+        // Storage disk, whose /storage symlink doesn't exist on this install
+        // (public/storage is a real, unrelated directory: about-page icons,
+        // blog images — not a symlink to storage/app/public), which made
+        // every photo uploaded through the old ->store() call permanently
+        // unreachable regardless of how its URL was computed.
         for ($i = 0; $i <= 5; $i++) {
             if ($request->hasFile("photo_{$i}")) {
-                $path = $request->file("photo_{$i}")->store('property-photos', 'public');
+                $file = $request->file("photo_{$i}");
+                $filename = $entry->id . '_' . $i . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('property-photos');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $path = 'property-photos/' . $filename;
                 PropertyEntryPhoto::create([
                     'property_entry_id' => $entry->id,
                     'slot_label'        => self::PHOTO_SLOTS[$i] ?? "Photo {$i}",
@@ -207,17 +221,24 @@ class AgriculturalFarmLandController extends Controller
         // Mirrors store()'s validation + upload loop, and replaces (not
         // duplicates) an existing slot's photo on re-upload.
         $request->validate([
-            'photo_0' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_3' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_4' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'photo_5' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_0' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_1' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_2' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_3' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_4' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+            'photo_5' => 'nullable|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
 
         for ($i = 0; $i <= 5; $i++) {
             if ($request->hasFile("photo_{$i}")) {
-                $path = $request->file("photo_{$i}")->store('property-photos', 'public');
+                $file = $request->file("photo_{$i}");
+                $filename = $property->id . '_' . $i . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('property-photos');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $path = 'property-photos/' . $filename;
                 PropertyEntryPhoto::updateOrCreate(
                     ['property_entry_id' => $property->id, 'slot_label' => self::PHOTO_SLOTS[$i] ?? "Photo {$i}"],
                     ['file_path' => $path]

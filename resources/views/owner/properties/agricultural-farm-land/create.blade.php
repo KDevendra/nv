@@ -45,18 +45,6 @@
                 
                 <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
-                        <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Distinct legal regime (conversion, irrigation, ceiling laws) · 99acres category </label>
-                            <input type="text" name="distinct_legal_regime_conversion_irrigation_ceiling_laws_99a" value="{{ old('distinct_legal_regime_conversion_irrigation_ceiling_laws_99a', $property?->fieldValue('distinct_legal_regime_conversion_irrigation_ceiling_laws_99a') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                    </div>
-                </div>
-                <div class="border-t pt-4 first:border-t-0 first:pt-0">
-                    <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS  (stored internally · never published)</h4>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

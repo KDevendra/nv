@@ -49,22 +49,6 @@
 
                     <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
-                            <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS</h4>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Office · IT/Business Park ·
-                                    Coworking · Business Centre · 'ready to move' & 'furnished' are FIELDS, not types
-                                </label>
-                                <input type="text" name="office_it_business_park_coworking_business_centre_ready_to_m"
-                                    value="{{ old('office_it_business_park_coworking_business_centre_ready_to_m', $property?->fieldValue('office_it_business_park_coworking_business_centre_ready_to_m') ?? '') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-t pt-4 first:border-t-0 first:pt-0">
-                        <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS (stored
                                 internally · never published)</h4>
                         </div>

@@ -654,7 +654,6 @@ return [
 
     'office_space' => [
         'A. Submitter & Owner Details' => [
-            'office_it_business_park_coworking_business_centre_ready_to_m' => 'Office · IT/Business Park · Coworking · Business Centre · \'ready to move\' & \'furnished\' are FIELDS, not types',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],
@@ -773,7 +772,6 @@ return [
 
     'retail_shop_showroom' => [
         'A. Submitter & Owner Details' => [
-            'commercial_shop_showroom_space_in_retail_mall_sco_99acres_al' => 'Commercial Shop · Showroom · Space in Retail Mall · SCO · 99acres-aligned',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],
@@ -887,7 +885,6 @@ return [
 
     'sez_eou_stpi_unit' => [
         'A. Submitter & Owner Details' => [
-            'bonded_export_oriented_unit_distinct_compliance_loa_nfe_cust' => 'Bonded, export-oriented unit · distinct compliance (LoA, NFE, customs bonding) · not in warehousing spec',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],
@@ -980,7 +977,6 @@ return [
 
     'factory_manufacturing_industrial' => [
         'A. Submitter & Owner Details' => [
-            'running_ready_industrial_unit_with_plant_power_effluent_dist' => 'Running/ready industrial unit with plant, power & effluent · distinct from bare warehouse forms',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],
@@ -1155,7 +1151,6 @@ return [
 
     'agricultural_farm_land' => [
         'A. Submitter & Owner Details' => [
-            'distinct_legal_regime_conversion_irrigation_ceiling_laws_99a' => 'Distinct legal regime (conversion, irrigation, ceiling laws) · 99acres category',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],
@@ -1347,7 +1342,6 @@ return [
 
     'hotel_resort_guesthouse_banquet' => [
         'A. Submitter & Owner Details' => [
-            'hotel_resorts_guest_house_banquet_halls_99acres_aligned' => 'Hotel/Resorts · Guest House/Banquet Halls · 99acres-aligned',
             'submitter_full_name' => ['label' => 'Submitter Full Name', 'tier' => 'INTERNAL'],
             'submitter_phone' => ['label' => 'Submitter Phone', 'tier' => 'INTERNAL'],
             'submitter_email' => ['label' => 'Submitter Email', 'tier' => 'INTERNAL'],

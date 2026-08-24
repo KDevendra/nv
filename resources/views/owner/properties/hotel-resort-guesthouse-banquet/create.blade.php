@@ -45,18 +45,6 @@
                 
                 <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
-                        <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS</h4>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hotel/Resorts · Guest House/Banquet Halls · 99acres-aligned </label>
-                            <input type="text" name="hotel_resorts_guest_house_banquet_halls_99acres_aligned" value="{{ old('hotel_resorts_guest_house_banquet_halls_99acres_aligned', $property?->fieldValue('hotel_resorts_guest_house_banquet_halls_99acres_aligned') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                    </div>
-                </div>
-                <div class="border-t pt-4 first:border-t-0 first:pt-0">
-                    <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS  (stored internally · never published)</h4>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
