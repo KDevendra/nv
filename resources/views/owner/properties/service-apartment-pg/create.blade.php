@@ -30,16 +30,7 @@
         </a>
     </div>
 
-    @if($errors->any())
-        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm">
-            <p class="font-bold mb-1">Please fix validation errors:</p>
-            <ul class="list-disc list-inside space-y-1">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    
 
     <form method="POST" action="{{ isset($property) ? route('owner.properties.service-apartment-pg.update', $property) : route('owner.properties.service-apartment-pg.store') }}" enctype="multipart/form-data">
         @csrf

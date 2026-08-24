@@ -970,3 +970,80 @@
     };
 })();
 </script>
+
+@if(isset($errors) && $errors->any())
+<script>
+    (function () {
+        var serverErrors = @json($errors->getMessages());
+        if (!serverErrors || !Object.keys(serverErrors).length) return;
+
+        function applyServerErrors() {
+            if (!window.ZendoFieldValidation) return;
+
+            var allSteps = document.querySelectorAll('.wizard-step-content');
+            var firstInvalidStep = -1;
+            var firstInvalidInput = null;
+
+            for (var fieldKey in serverErrors) {
+                if (!Object.prototype.hasOwnProperty.call(serverErrors, fieldKey)) continue;
+
+                var msgs = serverErrors[fieldKey];
+                if (!msgs || !msgs.length) continue;
+                var rawMsg = msgs[0];
+
+                var targetName = fieldKey;
+                var displayMsg = rawMsg;
+
+                // Handle file upload fields like photo_0, photo_1, photo.0, etc.
+                if (/^photo[._]\d+$/i.test(fieldKey)) {
+                    var numMatch = fieldKey.match(/\d+/);
+                    if (numMatch) {
+                        var idx = parseInt(numMatch[0], 10);
+                        targetName = 'photo_' + idx;
+                        displayMsg = rawMsg.replace(/photo\s*\d+/gi, 'Photo ' + (idx + 1));
+                    }
+                }
+
+                // Find matching input in the DOM
+                var input = document.querySelector('[name="' + targetName + '"], [name="' + targetName + '[]"], [name="' + fieldKey + '"]');
+
+                if (input) {
+                    window.ZendoFieldValidation.showFieldError(input, displayMsg);
+
+                    // Find which step panel contains this input
+                    var stepPanel = input.closest('.wizard-step-content');
+                    if (stepPanel) {
+                        for (var i = 0; i < allSteps.length; i++) {
+                            if (allSteps[i] === stepPanel) {
+                                if (firstInvalidStep === -1 || i < firstInvalidStep) {
+                                    firstInvalidStep = i;
+                                    firstInvalidInput = input;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Directly move user to that tab/step and scroll/focus first invalid field
+            if (firstInvalidStep !== -1 && typeof window.wizardGoTo === 'function') {
+                window.wizardGoTo(firstInvalidStep);
+
+                if (firstInvalidInput) {
+                    setTimeout(function () {
+                        firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        try { firstInvalidInput.focus({ preventScroll: true }); } catch (e) {}
+                    }, 250);
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyServerErrors);
+        } else {
+            applyServerErrors();
+        }
+    })();
+</script>
+@endif

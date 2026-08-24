@@ -205,4 +205,27 @@ class WizardClientValidationTest extends TestCase
         $this->assertStringContainsString('checkIfRequired', $body);
         $this->assertStringContainsString('if (s > (window.wizCurrent || 0))', $body);
     }
+
+    /** @test */
+    public function server_validation_errors_are_mapped_to_fields_and_activate_correct_step(): void
+    {
+        $user = \App\Models\User::factory()->create(['role' => 'owner']);
+
+        $errors = new \Illuminate\Support\ViewErrorBag();
+        $bag = new \Illuminate\Support\MessageBag([
+            'available_from' => ['The available from field must be a valid date.'],
+            'photo_0' => ['The photo 0 field must be an image.'],
+        ]);
+        $errors->put('default', $bag);
+
+        $response = $this->actingAs($user)
+            ->withSession(['errors' => $errors])
+            ->get(route('owner.properties.apartment-flat-studio.create'));
+
+        $body = $response->getContent();
+
+        $this->assertStringContainsString('applyServerErrors', $body);
+        $this->assertStringContainsString('serverErrors', $body);
+        $this->assertStringContainsString('photo_0', $body);
+    }
 }
