@@ -300,6 +300,8 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="wizard-step-content space-y-6" style="display:none">
                 <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION E — ACCESS, WATER & INFRASTRUCTURE</h4>
@@ -458,7 +460,10 @@
                                 <x-property-photo-card :idx="$idx" :label="$label" :property="$property ?? null" />
                             @endforeach
                         </div>
-                        <div class="border-t pt-4 first:border-t-0 first:pt-0">
+                </div>
+            </div>
+            <div class="wizard-step-content space-y-6" style="display:none">
+                <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION K — TEAM REMARKS</h4>
                     </div>
