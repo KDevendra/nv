@@ -274,15 +274,14 @@ class WizardClientValidationTest extends TestCase
     public function test_property_show_page_displays_all_saved_fields_section_wise(): void
     {
         $property = \App\Models\PropertyEntry::create([
-            'owner_id' => $this->owner->id,
             'field_officer_id' => $this->owner->id,
             'code' => 'ZND-117',
-            'property_type' => 'apartment-flat-studio',
+            'property_type' => 'apartment_flat_studio',
             'unit_property_type' => 'Apartment',
             'status' => 'draft',
-            'submitter_name' => 'John Doe',
+            'submitter_full_name' => 'John Doe',
             'owner_contact_name' => 'Jane Owner',
-            'nearest_city' => 'Gurugram',
+            'city' => 'Gurugram',
             'part_of_a_project_society' => 'Yes',
             'project_society_name' => 'Grand Residency',
             'project_rera_id' => 'RERA-GUR-12345',
@@ -302,16 +301,22 @@ class WizardClientValidationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($property->code);
-        $response->assertSee('SECTION A — SUBMITTER &amp; OWNER DETAILS', false);
-        $response->assertSee('SECTION B — LOCATION &amp; IDENTIFICATION', false);
-        $response->assertSee('SECTION B2 — PROJECT / SOCIETY DETAILS', false);
+        // Section headers now come verbatim from config/property_entry_sections.php,
+        // which mirrors this type's own create.blade.php form exactly — no
+        // longer a generic hardcoded "SECTION A/B/B2" template shared by all 13 types.
+        $response->assertSee('A. Submitter &amp; Owner Details', false);
+        $response->assertSee('B. Location &amp; Identification', false);
+        $response->assertSee('B2. Project / Society', false);
+        $response->assertSee('John Doe');
         $response->assertSee('Grand Residency');
         $response->assertSee('RERA-GUR-12345');
         $response->assertSee('2 BHK');
         $response->assertSee('3 BHK');
         $response->assertSee('Swimming Pool');
         $response->assertSee('Gymnasium');
-        $response->assertSee('1,250.00 sq ft');
+        // The field label already says "Carpet Area (sq ft)" — the value
+        // itself is just the number, comma-formatted generically.
+        $response->assertSee('1,250');
         $response->assertSee('Pooja Room');
         $response->assertSee('Servant Room');
         $response->assertSee('2 months');

@@ -680,6 +680,138 @@ class PropertyEntry extends Model
     }
 
     /**
+     * Conditional-field rules, sourced from the exact trigger phrases the
+     * Excel spec sheets use identically across all 13 types ("If RERA =
+     * Yes", "If Rent" / "If Lease", "If Sale", "If tenanted", "If project",
+     * "If under constr.", "If From date") — plus warehouse's own Alpine
+     * x-show conditions (it predates the spec sheets, so it isn't covered
+     * by them).
+     *
+     * Each rule is [column-name regex => [trigger-field-name regex, values
+     * that satisfy it]]. Deliberately NOT baked into config/property_entry_
+     * sections.php as a static per-field mapping: the trigger *concept* is
+     * universal but its literal field name differs per type (deal_type vs
+     * listing_purpose_transaction_type, construction_listing_status vs
+     * property_status, etc.), so the trigger field is resolved dynamically
+     * against whichever fields this row's own type actually has.
+     */
+    private const CONDITIONAL_FIELD_RULES = [
+        // "If RERA = Yes" — RERA Registration ID
+        '/rera_registration_id/' => ['/^rera_registered$/', ['Yes']],
+
+        // "If Sale" — sale-side commercial fields
+        '/expected_sale_price|sale_price_band|price_per_sqft/' => ['/deal_type|listing_purpose_transaction_type/', ['Sale', 'Both']],
+
+        // "If Rent" / "If Lease" — rent-side commercial fields
+        '/^expected_rent|rent_range_band|security_deposit_months|security_deposit$|preferred_tenant|lock_in_years|lock_in_period_months/'
+            => ['/deal_type|listing_purpose_transaction_type/', ['Rent', 'Lease', 'Both']],
+
+        // "If tenanted" — pre-leased / investment section
+        '/current_monthly_rent_received|rental_income_band|rental_yield_roi|tenant_name_profile|tenant_type|lease_start_date|lease_tenure|lock_in_remaining|annual_escalation_in_lease|security_deposit_held|deposit_adjustment_on_sale|cam_outgoings_borne_by|payback_capital_value_note/'
+            => ['/currently_rented_tenanted|currently_occupied/', ['Yes', 'Partially']],
+
+        // "If project" — project/society RERA id specifically (the rest of
+        // that section is gated as a whole via SECTION_CONDITIONS below)
+        '/^project_rera_id$/' => ['/part_of_a_project_society/', ['Yes']],
+
+        // "If under constr." — possession date
+        '/^possession_by$|possession_by_if_under_constr/' => ['/construction_listing_status|construction_status|property_status/', ['Under Construction']],
+
+        // "If From date" — availability date
+        '/^available_from$|available_from_date/' => ['/^availability$/', ['From date']],
+
+        // Warehouse-only (Alpine x-show in field/properties/_form.blade.php;
+        // no spec sheet of its own to source this from)
+        '/^canteen_size$/' => ['/^canteen$/', ['1', 'Yes', 'yes', true]],
+        '/^stp_capacity$/' => ['/^stp_plant$/', ['1', 'Yes', 'yes', true]],
+        '/^mezzanine_size$/' => ['/^mezzanine$/', ['1', 'Yes', 'yes', true]],
+    ];
+
+    /**
+     * Section header hints preserved verbatim from each spec sheet, e.g.
+     * "B2. Project / Society  (if unit is part of a builder project)" —
+     * gates the WHOLE section on the same trigger fields/values as above,
+     * so a household with no project doesn't show an almost-entirely-empty
+     * "Project / Society" card.
+     */
+    private const SECTION_CONDITIONS = [
+        '/if unit is part of a builder project/i' => ['/part_of_a_project_society/', ['Yes']],
+        '/if listed for rent/i' => ['/deal_type|listing_purpose_transaction_type/', ['Rent', 'Lease', 'Both']],
+        '/if property is tenanted|pre-leased/i' => ['/currently_rented_tenanted|currently_occupied/', ['Yes', 'Partially']],
+    ];
+
+    /**
+     * Whether $column should be displayed for this row right now — false
+     * only for fields with a known trigger whose condition genuinely isn't
+     * met; true for every unconditional field (including ones that are
+     * simply empty, which still render as "—" rather than being hidden).
+     */
+    public function isFieldApplicable(string $column): bool
+    {
+        foreach (self::CONDITIONAL_FIELD_RULES as $fieldPattern => [$triggerPattern, $satisfyingValues]) {
+            if (!preg_match($fieldPattern, $column)) {
+                continue;
+            }
+
+            $triggerColumn = $this->findSiblingColumn($triggerPattern);
+            if ($triggerColumn === null) {
+                return true; // this type has no such trigger field — don't hide blindly
+            }
+
+            $triggerValue = $this->fieldValue($triggerColumn);
+
+            return in_array($triggerValue, $satisfyingValues, false);
+        }
+
+        return true; // no rule matches — unconditional field
+    }
+
+    /**
+     * Whether an entire section (by its header text) should render at all.
+     */
+    public function isSectionApplicable(string $sectionHeader): bool
+    {
+        foreach (self::SECTION_CONDITIONS as $headerPattern => [$triggerPattern, $satisfyingValues]) {
+            if (!preg_match($headerPattern, $sectionHeader)) {
+                continue;
+            }
+
+            $triggerColumn = $this->findSiblingColumn($triggerPattern);
+            if ($triggerColumn === null) {
+                return true;
+            }
+
+            return in_array($this->fieldValue($triggerColumn), $satisfyingValues, false);
+        }
+
+        return true;
+    }
+
+    /**
+     * First column name in this row's own section map that matches the
+     * given regex — i.e. "whatever this type actually calls that concept",
+     * resolved dynamically rather than hardcoded per type.
+     */
+    private function findSiblingColumn(string $pattern): ?string
+    {
+        static $cache = [];
+        $cacheKey = $this->resolved_property_type . '|' . $pattern;
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
+        }
+
+        foreach ($this->sectionMap() as $fields) {
+            foreach (array_keys($fields) as $column) {
+                if (preg_match($pattern, $column)) {
+                    return $cache[$cacheKey] = $column;
+                }
+            }
+        }
+
+        return $cache[$cacheKey] = null;
+    }
+
+    /**
      * Submitted values present on the row (or in custom_fields) that this
      * type's section map doesn't account for — legacy or orphaned data.
      * Surfaced under an "Other Data" section rather than silently dropped,
