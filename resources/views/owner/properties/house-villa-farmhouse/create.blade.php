@@ -4,13 +4,23 @@
 
 @section('content')
     @php
+        // One entry per real section in this type's Excel spec sheet — see
+        // config('property_entry_sections.house_villa_farmhouse'). Letters skip
+        // (no F, H or I here) because the spec sheet itself skips them; each tab
+        // must correspond to exactly one wizard-step-content panel below, in the
+        // same order, since they're matched by position, not by key.
         $steps = [
-            ['key' => 'A', 'title' => 'Submitter & Owner'],
-            ['key' => 'B', 'title' => 'Location & Project'],
-            ['key' => 'C', 'title' => 'Property & Config'],
-            ['key' => 'D', 'title' => 'Legal & Amenities'],
-            ['key' => 'E', 'title' => 'Commercials & Terms'],
-            ['key' => 'F', 'title' => 'Photos & Remarks'],
+            ['key' => 'A', 'title' => 'Submitter & Owner Details'],
+            ['key' => 'B', 'title' => 'Location & Identification'],
+            ['key' => 'B2', 'title' => 'Project / Society'],
+            ['key' => 'C', 'title' => 'Property Configuration'],
+            ['key' => 'C2', 'title' => 'Transaction & Possession'],
+            ['key' => 'D', 'title' => 'Legal & Compliance'],
+            ['key' => 'E', 'title' => 'Utilities & Features'],
+            ['key' => 'G', 'title' => 'Commercial Terms'],
+            ['key' => 'G2', 'title' => 'Tenant Preferences & Rental Terms'],
+            ['key' => 'J', 'title' => 'Photos & Media'],
+            ['key' => 'K', 'title' => 'Team Remarks'],
         ];
     @endphp
 
@@ -217,6 +227,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION B2 — PROJECT / SOCIETY (if unit is part
@@ -429,6 +441,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION C2 — TRANSACTION & POSSESSION</h4>
@@ -589,6 +603,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION E — UTILITIES & FEATURES</h4>
@@ -763,6 +779,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION G2 — TENANT PREFERENCES & RENTAL TERMS
@@ -846,7 +864,10 @@
                                 <x-property-photo-card :idx="$idx" :label="$label" :property="$property ?? null" />
                             @endforeach
                         </div>
-                        <div class="border-t pt-4 first:border-t-0 first:pt-0">
+                    </div>
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
+                    <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION K — TEAM REMARKS</h4>
                         </div>
@@ -886,7 +907,7 @@
         }
 
         window.wizCurrent = 0;
-        window.WIZ_TOTAL = 6;
+        window.WIZ_TOTAL = 11;
 
         function initSelect2() {
             if (typeof $ !== 'undefined' && $.fn.select2) {

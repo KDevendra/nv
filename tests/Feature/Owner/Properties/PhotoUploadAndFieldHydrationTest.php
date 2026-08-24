@@ -7,7 +7,6 @@ use App\Models\PropertyEntryPhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -37,12 +36,29 @@ class PhotoUploadAndFieldHydrationTest extends TestCase
 
     private User $owner;
 
+    /** Uploads written to public/ during a test, removed again in tearDown. */
+    private array $uploadedPaths = [];
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->owner = User::factory()->create(['role' => 'owner', 'is_active' => true]);
-        Storage::fake('public');
+    }
+
+    protected function tearDown(): void
+    {
+        // Photos are stored under public/ (not a Storage disk) so that
+        // PropertyEntryPhoto::getUrlAttribute()'s asset() call resolves —
+        // which means uploads here land in the real public directory and
+        // have to be cleaned up rather than discarded with a fake disk.
+        foreach ($this->uploadedPaths as $path) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+
+        parent::tearDown();
     }
 
     /** @test */
@@ -66,7 +82,10 @@ class PhotoUploadAndFieldHydrationTest extends TestCase
         $this->assertNotNull($photo, 'A PropertyEntryPhoto row must be created.');
         $this->assertNotNull($photo->slot_label, 'slot_label must be populated, not silently dropped.');
         $this->assertNotNull($photo->file_path, 'file_path must be populated, not silently dropped.');
-        Storage::disk('public')->assertExists($photo->file_path);
+
+        $absolute = public_path($photo->file_path);
+        $this->uploadedPaths[] = $absolute;
+        $this->assertFileExists($absolute, 'The upload must land where asset() will look for it.');
     }
 
     /** @test */
@@ -97,6 +116,7 @@ class PhotoUploadAndFieldHydrationTest extends TestCase
         $photos = PropertyEntryPhoto::where('property_entry_id', $entry->id)->get();
         $this->assertCount(1, $photos, 'Re-uploading the same slot must replace it, not add a second row.');
         $this->assertNotSame('property-photos/original.jpg', $photos->first()->file_path);
+        $this->uploadedPaths[] = public_path($photos->first()->file_path);
     }
 
     /**

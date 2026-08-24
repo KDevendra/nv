@@ -4,13 +4,20 @@
 
 @section('content')
 @php
+    // One entry per real section in this type's Excel spec sheet — see
+    // config('property_entry_sections.residential_plot_land'). Letters skip
+    // (no F, H or I here) because the spec sheet itself skips them; each tab
+    // must correspond to exactly one wizard-step-content panel below, in the
+    // same order, since they're matched by position, not by key.
     $steps = [
-        ['key' => 'A', 'title' => 'Submitter & Owner'],
-        ['key' => 'B', 'title' => 'Location & Project'],
-        ['key' => 'C', 'title' => 'Property & Config'],
-        ['key' => 'D', 'title' => 'Legal & Amenities'],
-        ['key' => 'E', 'title' => 'Commercials & Terms'],
-        ['key' => 'F', 'title' => 'Photos & Remarks'],
+        ['key' => 'A', 'title' => 'Submitter & Owner Details'],
+        ['key' => 'B', 'title' => 'Location & Identification'],
+        ['key' => 'C', 'title' => 'Plot Specifications'],
+        ['key' => 'D', 'title' => 'Legal & Compliance'],
+        ['key' => 'E', 'title' => 'Infrastructure Access'],
+        ['key' => 'G', 'title' => 'Commercial Terms'],
+        ['key' => 'J', 'title' => 'Photos & Media'],
+        ['key' => 'K', 'title' => 'Team Remarks'],
     ];
 @endphp
 
@@ -330,6 +337,8 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="wizard-step-content space-y-6" style="display:none">
                 <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION E — INFRASTRUCTURE ACCESS</h4>
@@ -461,7 +470,10 @@
                                 <x-property-photo-card :idx="$idx" :label="$label" :property="$property ?? null" />
                             @endforeach
                         </div>
-                        <div class="border-t pt-4 first:border-t-0 first:pt-0">
+                </div>
+            </div>
+            <div class="wizard-step-content space-y-6" style="display:none">
+                <div class="border-t pt-4 first:border-t-0 first:pt-0">
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION K — TEAM REMARKS</h4>
                     </div>
@@ -494,7 +506,7 @@
     }
 
     window.wizCurrent = 0;
-    window.WIZ_TOTAL = 6;
+    window.WIZ_TOTAL = 8;
 
     function initSelect2() {
         if (typeof $ !== 'undefined' && $.fn.select2) {

@@ -4,13 +4,24 @@
 
 @section('content')
     @php
+        // One entry per real section in this type's Excel spec sheet — see
+        // config('property_entry_sections.apartment_flat_studio'). Letters skip
+        // (no F or I here) because the spec sheet itself skips them; each tab
+        // must correspond to exactly one wizard-step-content panel below, in
+        // the same order, since they're matched by position, not by key.
         $apartmentSteps = [
-            ['key' => 'A', 'title' => 'Submitter & Owner'],
-            ['key' => 'B', 'title' => 'Location & Project'],
-            ['key' => 'C', 'title' => 'Unit & Possession'],
-            ['key' => 'D', 'title' => 'Legal & Amenities'],
-            ['key' => 'E', 'title' => 'Commercials & ROI'],
-            ['key' => 'F', 'title' => 'Photos & Remarks'],
+            ['key' => 'A', 'title' => 'Submitter & Owner Details'],
+            ['key' => 'B', 'title' => 'Location & Identification'],
+            ['key' => 'B2', 'title' => 'Project / Society'],
+            ['key' => 'C', 'title' => 'Unit Configuration'],
+            ['key' => 'C2', 'title' => 'Transaction & Possession'],
+            ['key' => 'D', 'title' => 'Legal & Compliance'],
+            ['key' => 'E', 'title' => 'Society & Building Amenities'],
+            ['key' => 'G', 'title' => 'Commercial Terms'],
+            ['key' => 'G2', 'title' => 'Tenant Preferences & Rental Terms'],
+            ['key' => 'H', 'title' => 'Investment / ROI'],
+            ['key' => 'J', 'title' => 'Photos & Media'],
+            ['key' => 'K', 'title' => 'Team Remarks'],
         ];
     @endphp
 
@@ -255,6 +266,8 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION B2 --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -489,6 +502,8 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION C2 --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -669,6 +684,8 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION E --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -856,6 +873,8 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION G2 --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -945,6 +964,8 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION H --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -1106,6 +1127,8 @@
                             </div>
                         </div>
 
+                </div>
+                <div class="wizard-step-content space-y-6" style="display:none">
                     {{-- SECTION K --}}
                     <div class="border-t pt-4">
                         <div class="border-b pb-2 mb-4">
@@ -1157,7 +1180,7 @@
         }
 
         window.wizCurrent = 0;
-        window.WIZ_TOTAL = 6;
+        window.WIZ_TOTAL = 12;
 
         function initSelect2() {
             if (typeof $ !== 'undefined' && $.fn.select2) {

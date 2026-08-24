@@ -4,13 +4,21 @@
 
 @section('content')
 @php
+    // One entry per real section in this type's Excel spec sheet — see
+    // config('property_entry_sections.agricultural_farm_land') for the
+    // authoritative list. Letters intentionally skip (no F, H or I for
+    // this type) because the spec sheet itself skips them; each tab must
+    // correspond to exactly one wizard-step-content panel below, in the
+    // same order, since they're matched by position, not by key.
     $steps = [
-        ['key' => 'A', 'title' => 'Submitter & Owner'],
-        ['key' => 'B', 'title' => 'Location & Project'],
-        ['key' => 'C', 'title' => 'Property & Config'],
-        ['key' => 'D', 'title' => 'Legal & Amenities'],
-        ['key' => 'E', 'title' => 'Commercials & Terms'],
-        ['key' => 'F', 'title' => 'Photos & Remarks'],
+        ['key' => 'A', 'title' => 'Submitter & Owner Details'],
+        ['key' => 'B', 'title' => 'Location & Identification'],
+        ['key' => 'C', 'title' => 'Land Specifications'],
+        ['key' => 'D', 'title' => 'Legal & Compliance'],
+        ['key' => 'E', 'title' => 'Access, Water & Infrastructure'],
+        ['key' => 'G', 'title' => 'Commercial Terms'],
+        ['key' => 'J', 'title' => 'Photos & Media'],
+        ['key' => 'K', 'title' => 'Team Remarks'],
     ];
 @endphp
 
@@ -496,7 +504,7 @@
     }
 
     window.wizCurrent = 0;
-    window.WIZ_TOTAL = 6;
+    window.WIZ_TOTAL = 8;
 
     function initSelect2() {
         if (typeof $ !== 'undefined' && $.fn.select2) {
