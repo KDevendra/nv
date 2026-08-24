@@ -13,7 +13,7 @@
     ];
 @endphp
 
-<div class="max-w-4xl mx-auto space-y-6" x-data="stepWizard()">
+<div class="max-w-5xl mx-auto space-y-6" x-data="stepWizard()">
     <div class="flex items-center justify-between mb-2">
         <div>
             <h2 class="text-2xl font-heading text-zendo-navy font-semibold">
@@ -55,7 +55,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS  (stored internally · never published)</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span class="text-red-500">*</span></label>
@@ -97,7 +97,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION B — LOCATION & IDENTIFICATION</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
@@ -164,7 +164,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION C — UNIT & OCCUPANCY</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Type <span class="text-red-500">*</span></label>
@@ -241,7 +241,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION E — SERVICES & AMENITIES</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Meals Included </label>
@@ -325,7 +325,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION G — COMMERCIAL TERMS</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Listing Purpose (Transaction Type) <span class="text-red-500">*</span></label>
@@ -386,7 +386,7 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION J — PHOTOS & MEDIA</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Room / common-area photos <span class="text-red-500">*</span></label>
@@ -410,13 +410,13 @@
                     <div class="border-b pb-2 mb-4">
                         <h4 class="text-base font-bold text-zendo-navy">SECTION K — TEAM REMARKS</h4>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Officer / Submitter Remarks <span class="text-red-500">*</span></label>
                             <textarea name="field_officer_submitter_remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('field_officer_submitter_remarks', $property->field_officer_submitter_remarks ?? '') }}</textarea>
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Description (public) </label>
                             <textarea name="property_description_public" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('property_description_public', $property->property_description_public ?? '') }}</textarea>
                         </div>

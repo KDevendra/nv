@@ -305,7 +305,7 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('property_name')->keep_field)
-                <div class="sm:col-span-2">
+                <div class="md:col-span-3">
                     <label class="{{ $lc }}">Name of Property {!! $ast('property_name') !!}</label>
                     <input type="text" name="property_name" value="{{ $v('property_name') }}" {{ $req('property_name') }}
                         class="{{ $ic('property_name') }}">
@@ -316,7 +316,7 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('name_full_address')->keep_field)
-                <div class="sm:col-span-2 lg:col-span-3">
+                <div class="md:col-span-3 lg:col-span-3">
                     <label class="{{ $lc }}">Address {!! $ast('name_full_address') !!}</label>
                     <textarea name="name_full_address" rows="2" {{ $req('name_full_address') }}
                         class="{{ $ic('name_full_address') }}">{{ $v('name_full_address') }}</textarea>
@@ -639,7 +639,7 @@ STEP 0 — A. Location & Identification
         <div class="{{ $sb }}">
 
             {{-- Area Unit Selector --}}
-            <div class="sm:col-span-2 lg:col-span-3 flex flex-col pb-2 border-b border-gray-100 mb-1">
+            <div class="md:col-span-3 lg:col-span-3 flex flex-col pb-2 border-b border-gray-100 mb-1">
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">Area
                         Unit</span>
@@ -1135,7 +1135,7 @@ STEP 0 — A. Location & Identification
                     });
                 </script>
 
-                <div class="sm:col-span-2 lg:col-span-3" x-data="officeWidget">
+                <div class="md:col-span-3 lg:col-span-3" x-data="officeWidget">
                     <div class="flex items-center gap-4 mb-3">
                         <label class="{{ $lc }} mb-0">Office Space Availability {!! $ast('no_of_offices') !!}</label>
                         <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
@@ -1746,7 +1746,7 @@ STEP 0 — A. Location & Identification
                 </div>
             @endif
             @if($fc('top_neighbouring_companies')->keep_field)
-                <div class="sm:col-span-2"><label class="{{ $lc }}">Top Neighbouring Companies
+                <div class="md:col-span-3"><label class="{{ $lc }}">Top Neighbouring Companies
                         {!! $ast('top_neighbouring_companies') !!}</label>
                     <textarea name="top_neighbouring_companies" rows="2" {{ $req('top_neighbouring_companies') }}
                         class="{{ $ic('top_neighbouring_companies') }}">{{ $v('top_neighbouring_companies') }}</textarea>
@@ -1977,7 +1977,7 @@ STEP 0 — A. Location & Identification
         </div>
         <div class="{{ $sb }}">
             @if($fc('remarks')->keep_field)
-                <div class="sm:col-span-2 lg:col-span-3">
+                <div class="md:col-span-3 lg:col-span-3">
                     <label class="{{ $lc }}">Remarks / Observations {!! $ast('remarks') !!}</label>
                     <textarea name="remarks" rows="3" {{ $req('remarks') }} class="{{ $ic('remarks') }}">{{ $v('remarks') }}</textarea>
                     @error('remarks')

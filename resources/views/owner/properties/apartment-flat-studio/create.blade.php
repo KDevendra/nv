@@ -13,7 +13,7 @@
     ];
 @endphp
 
-<div class="max-w-4xl mx-auto space-y-6" x-data="apartmentWizard()">
+<div class="max-w-5xl mx-auto space-y-6" x-data="apartmentWizard()">
 
     <div class="flex items-center justify-between mb-2">
         <div>
@@ -56,7 +56,7 @@
                     <h4 class="text-base font-bold text-zendo-navy">SECTION A — SUBMITTER & OWNER DETAILS</h4>
                     <p class="text-xs text-gray-500">Stored internally · Never published</p>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span class="text-red-500">*</span></label>
                         <input type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? auth()->user()->name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
@@ -104,7 +104,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION B — LOCATION & IDENTIFICATION</h4>
                         <p class="text-xs text-gray-500">Property location, coordinates & orientation</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
                             <input type="text" name="city" value="{{ old('city', $property->city ?? '') }}" required placeholder="e.g. Mumbai, Gurgaon, Delhi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
@@ -141,7 +141,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">GPS Longitude <span class="text-red-500">*</span></label>
                             <input type="number" step="0.000001" name="gps_longitude" value="{{ old('gps_longitude', $property->gps_longitude ?? '') }}" required placeholder="e.g. 77.0266" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Address (House/Plot No., Street) <span class="text-red-500">*</span></label>
                             <textarea name="name_full_address" required rows="2" placeholder="Full postal street address" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('name_full_address', $property->name_full_address ?? '') }}</textarea>
                         </div>
@@ -182,7 +182,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION B2 — PROJECT / SOCIETY</h4>
                         <p class="text-xs text-gray-500">If unit is part of a builder project</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Part of a Project / Society? <span class="text-red-500">*</span></label>
                             <select name="part_of_a_project_society" required x-model="isPartOfProject" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -247,7 +247,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION C — UNIT CONFIGURATION</h4>
                         <p class="text-xs text-gray-500">Unit type, area specs, floor & furnishing details</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Type <span class="text-red-500">*</span></label>
                             <select name="unit_property_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -350,7 +350,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION C2 — TRANSACTION & POSSESSION</h4>
                         <p class="text-xs text-gray-500">Property status, age, construction & availability timeline</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Status <span class="text-red-500">*</span></label>
                             <select name="property_status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -410,7 +410,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION D — LEGAL & COMPLIANCE</h4>
                         <p class="text-xs text-gray-500">Ownership, RERA, certificates & encumbrance status</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ownership Type <span class="text-red-500">*</span></label>
                             <select name="ownership_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -483,7 +483,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION E — SOCIETY & BUILDING AMENITIES</h4>
                         <p class="text-xs text-gray-500">Power backup, water supply, security & amenities checklist</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lift / Elevator <span class="text-red-500">*</span></label>
                             <select name="lift_elevator" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -552,7 +552,7 @@
                                 <option value="No" {{ old('pet_friendly', $property->pet_friendly ?? '') === 'No' ? 'selected' : '' }}>No</option>
                             </select>
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Amenities Checklist</label>
                             <select name="amenities_checklist[]" multiple class="select2-multiple w-full">
                                 @php
@@ -574,7 +574,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION G — COMMERCIAL TERMS</h4>
                         <p class="text-xs text-gray-500">Transaction type, rent/sale pricing & negotiable terms</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Listing Purpose / Deal Type <span class="text-red-500">*</span></label>
                             <select name="deal_type" required x-model="dealType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -620,7 +620,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Negotiable Floor Price (₹)</label>
                             <input type="number" name="negotiable_floor_price" value="{{ old('negotiable_floor_price', $property->negotiable_floor_price ?? '') }}" placeholder="Minimum negotiable price" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Flexibility Notes</label>
                             <textarea name="owner_flexibility_notes" rows="2" placeholder="Owner flexibility, negotiable terms..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('owner_flexibility_notes', $property->owner_flexibility_notes ?? '') }}</textarea>
                         </div>
@@ -633,7 +633,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION G2 — TENANT PREFERENCES & RENTAL TERMS</h4>
                         <p class="text-xs text-gray-500">Tenant filters, lease duration & utility charge responsibilities</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Tenant</label>
                             <select name="preferred_tenant[]" multiple class="select2-multiple w-full">
@@ -703,7 +703,7 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION H — INVESTMENT / ROI</h4>
                         <p class="text-xs text-gray-500">For pre-leased or currently tenanted properties being sold</p>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Currently Rented / Tenanted? <span class="text-red-500">*</span></label>
                             <select name="currently_rented_tenanted" required x-model="isTenanted" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
@@ -767,7 +767,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'" class="sm:col-span-2">
+                        <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'" class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Payback / Capital Value Note</label>
                             <textarea name="payback_capital_value_note" rows="2" placeholder="Payback notes..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('payback_capital_value_note', $property->payback_capital_value_note ?? '') }}</textarea>
                         </div>
@@ -792,7 +792,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Video Walkthrough Link</label>
                                 <input type="url" name="video_walkthrough_link" value="{{ old('video_walkthrough_link', $property->video_walkthrough_link ?? '') }}" placeholder="https://youtube.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">

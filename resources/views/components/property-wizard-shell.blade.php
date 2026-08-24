@@ -28,7 +28,7 @@
     $totalSteps = count($stepList);
 @endphp
 
-<div class="max-w-4xl mx-auto space-y-4">
+<div class="max-w-5xl mx-auto space-y-4">
 
     {{-- Top Horizontal Stepper --}}
     <div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm -mx-1 px-4 py-3 rounded-xl mb-4">
