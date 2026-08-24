@@ -230,7 +230,7 @@ class ApartmentFlatStudioRequest extends FormRequest
             'expected_rent' => 'nullable|required_if:deal_type,Rent,Both|numeric|gt:0',
             'rent_range_band' => 'nullable|string|max:255',
             'maintenance_charge' => 'nullable|numeric|gt:0',
-            'security_deposit_months' => 'nullable|required_if:deal_type,Rent,Both|in:1,2,3,6 months,Negotiable',
+            'security_deposit_months' => 'nullable|required_if:deal_type,Rent,Both|string|max:255',
             'expected_sale_price' => 'nullable|required_if:deal_type,Sale,Both|numeric|gt:0',
             'sale_price_band' => 'nullable|string|max:255',
             'price_per_sqft' => 'nullable|numeric|gt:0',

@@ -681,14 +681,14 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Security Deposit </label>
-                                <select name="security_deposit"
+                                <select name="security_deposit_months"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="1" {{ old('security_deposit', $property->security_deposit ?? '') === '1' ? 'selected' : '' }}>1</option>
-                                    <option value="2" {{ old('security_deposit', $property->security_deposit ?? '') === '2' ? 'selected' : '' }}>2</option>
-                                    <option value="3" {{ old('security_deposit', $property->security_deposit ?? '') === '3' ? 'selected' : '' }}>3</option>
-                                    <option value="6 months" {{ old('security_deposit', $property->security_deposit ?? '') === '6 months' ? 'selected' : '' }}>6 months</option>
-                                    <option value="Negotiable" {{ old('security_deposit', $property->security_deposit ?? '') === 'Negotiable' ? 'selected' : '' }}>Negotiable</option>
+                                    <option value="1" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === '1' ? 'selected' : '' }}>1</option>
+                                    <option value="2" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === '2' ? 'selected' : '' }}>2</option>
+                                    <option value="3" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === '3' ? 'selected' : '' }}>3</option>
+                                    <option value="6 months" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === '6 months' ? 'selected' : '' }}>6 months</option>
+                                    <option value="Negotiable" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === 'Negotiable' ? 'selected' : '' }}>Negotiable</option>
                                 </select>
                             </div>
                             <div>
@@ -873,38 +873,24 @@
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION J — PHOTOS & MEDIA</h4>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Interior / room photos <span
-                                        class="text-red-500">*</span></label>
-                                <input required type="text" name="interior_room_photos"
-                                    value="{{ old('interior_room_photos', $property->interior_room_photos ?? '') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Exterior / Building-face Photos
-                                </label>
-                                <input type="text" name="exterior_building_face_photos"
-                                    value="{{ old('exterior_building_face_photos', $property->exterior_building_face_photos ?? '') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Floor Plan / Layout </label>
-                                <input type="text" name="floor_plan_layout"
-                                    value="{{ old('floor_plan_layout', $property->floor_plan_layout ?? '') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Video / Virtual Tour Link
-                                </label>
-                                <input type="text" name="video_virtual_tour_link"
-                                    value="{{ old('video_virtual_tour_link', $property->video_virtual_tour_link ?? '') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
+                        @php
+                            $slots = $slots ?? [
+                                'Photo 1 — Exterior / Front View',
+                                'Photo 2 — Main Area / Interior',
+                                'Photo 3 — Secondary View / Room',
+                                'Photo 4 — Kitchen / Utility / Amenities',
+                                'Photo 5 — Washroom / Restroom',
+                                'Photo 6 — Balcony / Terrace / Open Area',
+                                'Photo 7 — Floor Plan / Layout Map',
+                                'Photo 8 — Additional Photos / Facilities',
+                            ];
+                        @endphp
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            @foreach($slots as $idx => $label)
+                                <x-property-photo-card :idx="$idx" :label="$label" :property="$property ?? null" />
+                            @endforeach
                         </div>
-                    </div>
-                    <div class="border-t pt-4 first:border-t-0 first:pt-0">
+                        <div class="border-t pt-4 first:border-t-0 first:pt-0">
                         <div class="border-b pb-2 mb-4">
                             <h4 class="text-base font-bold text-zendo-navy">SECTION K — TEAM REMARKS</h4>
                         </div>

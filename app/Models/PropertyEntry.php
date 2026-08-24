@@ -326,7 +326,7 @@ class PropertyEntry extends Model
         // G
         'expected_rent'                => 'float',
         'expected_sale_price'          => 'float',
-        'security_deposit_months'      => 'float',
+        'security_deposit_months'      => 'string',
         'lock_in_years'                => 'float',
         // H
         'approach_road_width'          => 'float',

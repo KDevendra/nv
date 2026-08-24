@@ -1068,18 +1068,24 @@
                             <p class="text-xs text-gray-500">Interior rooms, exterior photos, floor plans & 360 video
                                 walkthrough links</p>
                         </div>
-                        <div class="space-y-4">
-                            <p class="text-xs text-gray-500">Upload property photos (JPEG, PNG, WebP up to 5MB each)</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                @foreach($slots as $idx => $label)
-                                    <div class="border border-gray-200 rounded-lg p-3 bg-gray-50 text-center">
-                                        <span class="text-xs font-semibold text-gray-700 block mb-2">{{ $label }}</span>
-                                        <input type="file" name="photo_{{ $idx }}" accept="image/*,.pdf"
-                                            class="text-xs w-full text-gray-500">
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        @php
+                            $slots = $slots ?? [
+                                'Photo 1 — Exterior / Front View',
+                                'Photo 2 — Main Area / Interior',
+                                'Photo 3 — Secondary View / Room',
+                                'Photo 4 — Kitchen / Utility / Amenities',
+                                'Photo 5 — Washroom / Restroom',
+                                'Photo 6 — Balcony / Terrace / Open Area',
+                                'Photo 7 — Floor Plan / Layout Map',
+                                'Photo 8 — Additional Photos / Facilities',
+                            ];
+                        @endphp
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            @foreach($slots as $idx => $label)
+                                <x-property-photo-card :idx="$idx" :label="$label" :property="$property ?? null" />
+                            @endforeach
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Video Walkthrough
                                         Link</label>
@@ -1098,7 +1104,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
                     {{-- SECTION K --}}
                     <div class="border-t pt-4">

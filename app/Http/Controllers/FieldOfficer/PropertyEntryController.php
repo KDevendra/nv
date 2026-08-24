@@ -577,7 +577,7 @@ class PropertyEntryController extends Controller
             'deal_type' => 'string|max:50',
             'expected_rent' => 'numeric|min:0',
             'expected_sale_price' => 'numeric|min:0',
-            'security_deposit_months' => 'numeric|min:0|max:60',
+            'security_deposit_months' => 'nullable|string|max:255',
             'lock_in_years' => 'numeric|min:0|max:99',
             'available_from' => 'date',
             // H

@@ -538,6 +538,53 @@
         }
     })();
 
+    // ── Photo upload card live image preview & removal helper ────────────
+    window.previewPhotoCard = function (input, idx) {
+        if (!input.files || !input.files[0]) return;
+        var file = input.files[0];
+
+        var img = document.getElementById('photo-img-preview-' + idx);
+        var dropzone = document.getElementById('photo-dropzone-' + idx);
+        var meta = document.getElementById('photo-meta-' + idx);
+        var filename = document.getElementById('photo-filename-' + idx);
+        var removeFlag = document.getElementById('remove-photo-input-' + idx);
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            if (img) {
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+            }
+            if (dropzone) dropzone.classList.add('hidden');
+            if (meta) meta.classList.remove('hidden');
+            if (filename) filename.textContent = file.name;
+            if (removeFlag) removeFlag.disabled = true;
+            if (window.ZendoFieldValidation) {
+                window.ZendoFieldValidation.clearFieldError(input);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearPhotoCard = function (idx) {
+        var input = document.getElementById('photo-input-' + idx);
+        var img = document.getElementById('photo-img-preview-' + idx);
+        var dropzone = document.getElementById('photo-dropzone-' + idx);
+        var meta = document.getElementById('photo-meta-' + idx);
+        var filename = document.getElementById('photo-filename-' + idx);
+        var removeFlag = document.getElementById('remove-photo-input-' + idx);
+
+        if (input) input.value = '';
+        if (img) {
+            img.src = '';
+            img.classList.add('hidden');
+        }
+        if (dropzone) dropzone.classList.remove('hidden');
+        if (meta) meta.classList.add('hidden');
+        if (filename) filename.textContent = '';
+        if (removeFlag && removeFlag.value) removeFlag.disabled = false;
+    };
+
     // ── Browser Geolocation auto-fill for GPS Latitude & Longitude ──
     (function () {
         function setupGpsLocationHelper() {

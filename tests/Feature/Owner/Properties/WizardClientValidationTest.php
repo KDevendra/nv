@@ -228,4 +228,46 @@ class WizardClientValidationTest extends TestCase
         $this->assertStringContainsString('serverErrors', $body);
         $this->assertStringContainsString('photo_0', $body);
     }
+
+    /** @test */
+    public function security_deposit_months_persists_on_save_draft_and_edit_page_reload(): void
+    {
+        $user = \App\Models\User::factory()->create(['role' => 'owner']);
+
+        // 1. Save draft with security_deposit_months = 'Negotiable'
+        $response = $this->actingAs($user)->post(route('owner.properties.builder-floor.store'), [
+            'action' => 'draft',
+            'deal_type' => 'Rent',
+            'expected_rent' => 25000,
+            'security_deposit_months' => 'Negotiable',
+        ]);
+
+        $entry = \App\Models\PropertyEntry::where('field_officer_id', $user->id)->latest()->first();
+        $this->assertNotNull($entry);
+        $this->assertEquals('Negotiable', $entry->security_deposit_months);
+
+        // 2. Load edit view and verify option selected
+        $editResponse = $this->actingAs($user)->get(route('owner.properties.builder-floor.edit', $entry));
+        $editBody = $editResponse->getContent();
+
+        $this->assertStringContainsString('name="security_deposit_months"', $editBody);
+        $this->assertStringContainsString('value="Negotiable" selected', $editBody);
+
+        // 3. Save draft with numeric months '6 months'
+        $this->actingAs($user)->put(route('owner.properties.builder-floor.update', $entry), [
+            'action' => 'draft',
+            'deal_type' => 'Rent',
+            'expected_rent' => 30000,
+            'security_deposit_months' => '6 months',
+        ]);
+
+        $entry->refresh();
+        $this->assertEquals('6 months', (string) $entry->security_deposit_months);
+
+        // 4. Load edit view again and verify '6 months' selected
+        $editResponse2 = $this->actingAs($user)->get(route('owner.properties.builder-floor.edit', $entry));
+        $editBody2 = $editResponse2->getContent();
+
+        $this->assertStringContainsString('value="6 months" selected', $editBody2);
+    }
 }
