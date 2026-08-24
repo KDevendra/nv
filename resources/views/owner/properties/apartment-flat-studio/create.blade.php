@@ -59,15 +59,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span class="text-red-500">*</span></label>
-                        <input type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? auth()->user()->name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <input required  type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? auth()->user()->name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Phone <span class="text-red-500">*</span></label>
-                        <input type="text" name="submitter_phone" value="{{ old('submitter_phone', $property->submitter_phone ?? auth()->user()->phone) }}" required placeholder="10-digit mobile" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <input required  type="text" name="submitter_phone" value="{{ old('submitter_phone', $property->submitter_phone ?? auth()->user()->phone) }}" required placeholder="10-digit mobile" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="submitter_email" value="{{ old('submitter_email', $property->submitter_email ?? auth()->user()->email) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <input required  type="email" name="submitter_email" value="{{ old('submitter_email', $property->submitter_email ?? auth()->user()->email) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Role <span class="text-red-500">*</span></label>
@@ -84,11 +84,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Name <span class="text-red-500">*</span></label>
-                        <input type="text" name="owner_contact_name" value="{{ old('owner_contact_name', $property->owner_contact_name ?? auth()->user()->name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <input required  type="text" name="owner_contact_name" value="{{ old('owner_contact_name', $property->owner_contact_name ?? auth()->user()->name) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Number <span class="text-red-500">*</span></label>
-                        <input type="text" name="owner_contact_phone" value="{{ old('owner_contact_phone', $property->owner_contact_phone ?? auth()->user()->phone) }}" required placeholder="10-digit mobile" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <input required  type="text" name="owner_contact_phone" value="{{ old('owner_contact_phone', $property->owner_contact_phone ?? auth()->user()->phone) }}" required placeholder="10-digit mobile" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Owner Email</label>
@@ -107,15 +107,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code <span class="text-red-500">*</span></label>
-                            <input type="text" name="postal_address_pin" value="{{ old('postal_address_pin', $property->postal_address_pin ?? '') }}" required maxlength="6" placeholder="6-digit PIN" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="postal_address_pin" value="{{ old('postal_address_pin', $property->postal_address_pin ?? '') }}" required maxlength="6" placeholder="6-digit PIN" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
-                            <input type="text" name="city" value="{{ old('city', $property->city ?? '') }}" required placeholder="e.g. Mumbai, Gurgaon, Delhi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="city" value="{{ old('city', $property->city ?? '') }}" required placeholder="e.g. Mumbai, Gurgaon, Delhi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Locality / Broad Area <span class="text-red-500">*</span></label>
-                            <input type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" required placeholder="e.g. Bandra West, DLF Phase 5" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" required placeholder="e.g. Bandra West, DLF Phase 5" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Sub-locality / Society Name</label>
@@ -132,11 +132,11 @@
                         
                                                 <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
-                            <input type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
@@ -199,15 +199,15 @@
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project / Society Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="project_society_name" value="{{ old('project_society_name', $property->project_society_name ?? '') }}" placeholder="Society name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="project_society_name" value="{{ old('project_society_name', $property->project_society_name ?? '') }}" placeholder="Society name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project RERA ID <span class="text-red-500">*</span></label>
-                            <input type="text" name="project_rera_id" value="{{ old('project_rera_id', $property->project_rera_id ?? '') }}" placeholder="RERA ID" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="project_rera_id" value="{{ old('project_rera_id', $property->project_rera_id ?? '') }}" placeholder="RERA ID" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Developer / Builder Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="developer_builder_name" value="{{ old('developer_builder_name', $property->developer_builder_name ?? '') }}" placeholder="Developer name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="developer_builder_name" value="{{ old('developer_builder_name', $property->developer_builder_name ?? '') }}" placeholder="Developer name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Total Towers / Blocks</label>
@@ -275,7 +275,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Carpet Area (sq ft) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" name="carpet_area" value="{{ old('carpet_area', $property->carpet_area ?? '') }}" required placeholder="e.g. 850" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="0.01" name="carpet_area" value="{{ old('carpet_area', $property->carpet_area ?? '') }}" required placeholder="e.g. 850" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq ft)</label>
@@ -287,11 +287,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Floor Number <span class="text-red-500">*</span></label>
-                            <input type="number" name="floor_number" value="{{ old('floor_number', $property->floor_number ?? '') }}" required min="0" max="999" placeholder="0 = Ground" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="floor_number" value="{{ old('floor_number', $property->floor_number ?? '') }}" required min="0" max="999" placeholder="0 = Ground" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Total Floors in Building <span class="text-red-500">*</span></label>
-                            <input type="number" name="number_of_floors" value="{{ old('number_of_floors', $property->number_of_floors ?? '') }}" required min="0" max="999" placeholder="Total floors" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="number_of_floors" value="{{ old('number_of_floors', $property->number_of_floors ?? '') }}" required min="0" max="999" placeholder="Total floors" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Units on This Floor</label>
@@ -299,11 +299,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">No. of Bedrooms <span class="text-red-500">*</span></label>
-                            <input type="number" name="no_of_bedrooms" value="{{ old('no_of_bedrooms', $property->no_of_bedrooms ?? '') }}" required min="0" max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="no_of_bedrooms" value="{{ old('no_of_bedrooms', $property->no_of_bedrooms ?? '') }}" required min="0" max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">No. of Bathrooms <span class="text-red-500">*</span></label>
-                            <input type="number" name="no_of_bathrooms" value="{{ old('no_of_bathrooms', $property->no_of_bathrooms ?? '') }}" required min="0" max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="no_of_bathrooms" value="{{ old('no_of_bathrooms', $property->no_of_bathrooms ?? '') }}" required min="0" max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">No. of Balconies</label>
@@ -376,7 +376,7 @@
                         </div>
                         <div x-show="constrStatus === 'Under Construction'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Possession By Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="possession_by" value="{{ old('possession_by', isset($property->possession_by) ? $property->possession_by->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="possession_by" value="{{ old('possession_by', isset($property->possession_by) ? $property->possession_by->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Age of Property</label>
@@ -396,7 +396,7 @@
                         </div>
                         <div x-show="availability === 'From date'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Available From Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="available_from" value="{{ old('available_from', isset($property->available_from) ? $property->available_from->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="available_from" value="{{ old('available_from', isset($property->available_from) ? $property->available_from->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Bank Loan / EMI Available</label>
@@ -445,7 +445,7 @@
                         </div>
                         <div x-show="reraReg === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">RERA Registration ID <span class="text-red-500">*</span></label>
-                            <input type="text" name="rera_registration_id" value="{{ old('rera_registration_id', $property->rera_registration_id ?? '') }}" placeholder="RERA reg number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="rera_registration_id" value="{{ old('rera_registration_id', $property->rera_registration_id ?? '') }}" placeholder="RERA reg number" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Occupancy Certificate (OC) <span class="text-red-500">*</span></label>
@@ -600,11 +600,11 @@
                         </div>
                         <div x-show="dealType === 'Rent' || dealType === 'Both'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Rent (₹/month) <span class="text-red-500">*</span></label>
-                            <input type="number" name="expected_rent" value="{{ old('expected_rent', $property->expected_rent ?? '') }}" placeholder="Monthly rent" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="expected_rent" value="{{ old('expected_rent', $property->expected_rent ?? '') }}" placeholder="Monthly rent" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="dealType === 'Rent' || dealType === 'Both'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Security Deposit Months <span class="text-red-500">*</span></label>
-                            <select name="security_deposit_months" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="security_deposit_months" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 @foreach(['1','2','3','6 months','Negotiable'] as $dep)
                                     <option value="{{ $dep }}" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === $dep ? 'selected' : '' }}>{{ $dep }}</option>
@@ -613,7 +613,7 @@
                         </div>
                         <div x-show="dealType === 'Sale' || dealType === 'Both'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Sale Price (₹) <span class="text-red-500">*</span></label>
-                            <input type="number" name="expected_sale_price" value="{{ old('expected_sale_price', $property->expected_sale_price ?? '') }}" placeholder="Total sale price" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="expected_sale_price" value="{{ old('expected_sale_price', $property->expected_sale_price ?? '') }}" placeholder="Total sale price" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Maintenance Charge (₹/month)</label>
@@ -721,7 +721,7 @@
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Monthly Rent Received (₹) <span class="text-red-500">*</span></label>
-                            <input type="number" name="current_monthly_rent_received" value="{{ old('current_monthly_rent_received', $property->current_monthly_rent_received ?? '') }}" placeholder="Monthly rent" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="current_monthly_rent_received" value="{{ old('current_monthly_rent_received', $property->current_monthly_rent_received ?? '') }}" placeholder="Monthly rent" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tenant Name / Profile</label>
@@ -738,15 +738,15 @@
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lease Start Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="lease_start_date" value="{{ old('lease_start_date', isset($property->lease_start_date) ? $property->lease_start_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="lease_start_date" value="{{ old('lease_start_date', isset($property->lease_start_date) ? $property->lease_start_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lease Tenure (years) <span class="text-red-500">*</span></label>
-                            <input type="number" name="lease_tenure" value="{{ old('lease_tenure', $property->lease_tenure ?? '') }}" placeholder="e.g. 3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="lease_tenure" value="{{ old('lease_tenure', $property->lease_tenure ?? '') }}" placeholder="e.g. 3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lock-in Remaining (months) <span class="text-red-500">*</span></label>
-                            <input type="number" name="lock_in_remaining" value="{{ old('lock_in_remaining', $property->lock_in_remaining ?? '') }}" placeholder="e.g. 12" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" name="lock_in_remaining" value="{{ old('lock_in_remaining', $property->lock_in_remaining ?? '') }}" placeholder="e.g. 12" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Annual Escalation in Lease (%)</label>
@@ -821,7 +821,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : date('Y-m-d')) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : date('Y-m-d')) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Public Property Description</label>
@@ -872,6 +872,16 @@
 
     window.wizardGoTo = function(s) {
         if (s < 0 || s >= window.WIZ_TOTAL) return;
+        if (s > (window.wizCurrent || 0)) {
+            if (typeof window.wizardValidateStep === 'function' && !window.wizardValidateStep(window.wizCurrent || 0)) {
+                const lockMsg = document.getElementById('wiz-lock-msg');
+                if (lockMsg) {
+                    lockMsg.classList.remove('hidden');
+                    setTimeout(() => lockMsg.classList.add('hidden'), 4000);
+                }
+                return false;
+            }
+        }
         window.wizCurrent = s; const stepInput = document.getElementById('wizard_step_input'); if (stepInput) stepInput.value = s;
 
         // Toggle step contents

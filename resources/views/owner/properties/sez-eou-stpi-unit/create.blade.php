@@ -71,19 +71,19 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Phone <span class="text-red-500">*</span></label>
-                            <input type="text" name="submitter_phone" value="{{ old('submitter_phone', $property->submitter_phone ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_phone" value="{{ old('submitter_phone', $property->submitter_phone ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Email <span class="text-red-500">*</span></label>
-                            <input type="text" name="submitter_email" value="{{ old('submitter_email', $property->submitter_email ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_email" value="{{ old('submitter_email', $property->submitter_email ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Role <span class="text-red-500">*</span></label>
-                            <select name="submitter_role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="submitter_role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Owner" {{ old('submitter_role', $property->submitter_role ?? '') === 'Owner' ? 'selected' : '' }}>Owner</option>
                                 <option value="Builder" {{ old('submitter_role', $property->submitter_role ?? '') === 'Builder' ? 'selected' : '' }}>Builder</option>
@@ -94,11 +94,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Full Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="owner_full_name" value="{{ old('owner_full_name', $property->owner_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="owner_full_name" value="{{ old('owner_full_name', $property->owner_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Number <span class="text-red-500">*</span></label>
-                            <input type="text" name="owner_contact_number" value="{{ old('owner_contact_number', $property->owner_contact_number ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="owner_contact_number" value="{{ old('owner_contact_number', $property->owner_contact_number ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>
@@ -112,19 +112,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pin Code <span class="text-red-500">*</span></label>
-                            <input type="number" step="any" name="pin_code" value="{{ old('pin_code', $property->pin_code ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="any" name="pin_code" value="{{ old('pin_code', $property->pin_code ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
-                            <select name="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="active cities + Other" {{ old('city', $property->city ?? '') === 'active cities + Other' ? 'selected' : '' }}>active cities + Other</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Locality / Broad Area <span class="text-red-500">*</span></label>
-                            <input type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project Name </label>
@@ -136,16 +136,16 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Address (house/plot no., street) <span class="text-red-500">*</span></label>
-                            <input type="text" name="full_address_house_plot_no_street" value="{{ old('full_address_house_plot_no_street', $property->full_address_house_plot_no_street ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="full_address_house_plot_no_street" value="{{ old('full_address_house_plot_no_street', $property->full_address_house_plot_no_street ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         
                                                 <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
-                            <input type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
@@ -188,7 +188,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Type <span class="text-red-500">*</span></label>
-                            <select name="property_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="property_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="SEZ Unit" {{ old('property_type', $property->property_type ?? '') === 'SEZ Unit' ? 'selected' : '' }}>SEZ Unit</option>
                                 <option value="EOU" {{ old('property_type', $property->property_type ?? '') === 'EOU' ? 'selected' : '' }}>EOU</option>
@@ -198,11 +198,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Zone / Park Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="zone_park_name" value="{{ old('zone_park_name', $property->zone_park_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="zone_park_name" value="{{ old('zone_park_name', $property->zone_park_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Space Type <span class="text-red-500">*</span></label>
-                            <select name="space_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="space_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Built-up office" {{ old('space_type', $property->space_type ?? '') === 'Built-up office' ? 'selected' : '' }}>Built-up office</option>
                                 <option value="Built-up factory" {{ old('space_type', $property->space_type ?? '') === 'Built-up factory' ? 'selected' : '' }}>Built-up factory</option>
@@ -212,7 +212,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Carpet / Usable Area (sq ft) <span class="text-red-500">*</span></label>
-                            <input type="number" step="any" name="carpet_usable_area_sq_ft" value="{{ old('carpet_usable_area_sq_ft', $property->carpet_usable_area_sq_ft ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="any" name="carpet_usable_area_sq_ft" value="{{ old('carpet_usable_area_sq_ft', $property->carpet_usable_area_sq_ft ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq ft) </label>
@@ -224,7 +224,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Furnishing / Fit-out <span class="text-red-500">*</span></label>
-                            <select name="furnishing_fit_out" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="furnishing_fit_out" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Bare shell" {{ old('furnishing_fit_out', $property->furnishing_fit_out ?? '') === 'Bare shell' ? 'selected' : '' }}>Bare shell</option>
                                 <option value="Warm shell" {{ old('furnishing_fit_out', $property->furnishing_fit_out ?? '') === 'Warm shell' ? 'selected' : '' }}>Warm shell</option>
@@ -268,7 +268,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Zone Notification Status <span class="text-red-500">*</span></label>
-                            <select name="zone_notification_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="zone_notification_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Notified Operational SEZ" {{ old('zone_notification_status', $property->zone_notification_status ?? '') === 'Notified Operational SEZ' ? 'selected' : '' }}>Notified Operational SEZ</option>
                                 <option value="STPI Notified" {{ old('zone_notification_status', $property->zone_notification_status ?? '') === 'STPI Notified' ? 'selected' : '' }}>STPI Notified</option>
@@ -277,7 +277,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Processing / Non-Processing Area <span class="text-red-500">*</span></label>
-                            <select name="processing_non_processing_area" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="processing_non_processing_area" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Processing Area" {{ old('processing_non_processing_area', $property->processing_non_processing_area ?? '') === 'Processing Area' ? 'selected' : '' }}>Processing Area</option>
                                 <option value="Non-Processing Area" {{ old('processing_non_processing_area', $property->processing_non_processing_area ?? '') === 'Non-Processing Area' ? 'selected' : '' }}>Non-Processing Area</option>
@@ -285,7 +285,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Developer Consent for Sub-lease <span class="text-red-500">*</span></label>
-                            <select name="developer_consent_for_sub_lease" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="developer_consent_for_sub_lease" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Available" {{ old('developer_consent_for_sub_lease', $property->developer_consent_for_sub_lease ?? '') === 'Available' ? 'selected' : '' }}>Available</option>
                                 <option value="To be obtained" {{ old('developer_consent_for_sub_lease', $property->developer_consent_for_sub_lease ?? '') === 'To be obtained' ? 'selected' : '' }}>To be obtained</option>
@@ -333,7 +333,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Title / Lease Type <span class="text-red-500">*</span></label>
-                            <select name="title_lease_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="title_lease_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Developer Leasehold" {{ old('title_lease_type', $property->title_lease_type ?? '') === 'Developer Leasehold' ? 'selected' : '' }}>Developer Leasehold</option>
                                 <option value="Sub-lease" {{ old('title_lease_type', $property->title_lease_type ?? '') === 'Sub-lease' ? 'selected' : '' }}>Sub-lease</option>
@@ -421,7 +421,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Listing Purpose (Transaction Type) <span class="text-red-500">*</span></label>
-                            <select name="listing_purpose_transaction_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="listing_purpose_transaction_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Lease" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Lease' ? 'selected' : '' }}>Lease</option>
                                 <option value="Sale" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Sale' ? 'selected' : '' }}>Sale</option>
@@ -505,7 +505,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Currently Rented / Tenanted <span class="text-red-500">*</span></label>
-                            <select name="currently_rented_tenanted" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                            <select required  name="currently_rented_tenanted" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
                                 <option value="Yes" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
                                 <option value="No" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'No' ? 'selected' : '' }}>No</option>
@@ -569,7 +569,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Interior unit photos <span class="text-red-500">*</span></label>
-                            <input type="text" name="interior_unit_photos" value="{{ old('interior_unit_photos', $property->interior_unit_photos ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="interior_unit_photos" value="{{ old('interior_unit_photos', $property->interior_unit_photos ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Exterior / Building-face Photos </label>
@@ -593,7 +593,7 @@
                         
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Officer / Submitter Remarks <span class="text-red-500">*</span></label>
-                            <textarea name="field_officer_submitter_remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('field_officer_submitter_remarks', $property->field_officer_submitter_remarks ?? '') }}</textarea>
+                            <textarea required  name="field_officer_submitter_remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('field_officer_submitter_remarks', $property->field_officer_submitter_remarks ?? '') }}</textarea>
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Description (public) </label>
@@ -601,7 +601,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Officer Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="field_officer_name" value="{{ old('field_officer_name', $property->field_officer_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="field_officer_name" value="{{ old('field_officer_name', $property->field_officer_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Verified </label>
@@ -609,7 +609,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>
@@ -644,6 +644,16 @@
 
     window.wizardGoTo = function(s) {
         if (s < 0 || s >= window.WIZ_TOTAL) return;
+        if (s > (window.wizCurrent || 0)) {
+            if (typeof window.wizardValidateStep === 'function' && !window.wizardValidateStep(window.wizCurrent || 0)) {
+                const lockMsg = document.getElementById('wiz-lock-msg');
+                if (lockMsg) {
+                    lockMsg.classList.remove('hidden');
+                    setTimeout(() => lockMsg.classList.add('hidden'), 4000);
+                }
+                return false;
+            }
+        }
         window.wizCurrent = s; const stepInput = document.getElementById('wizard_step_input'); if (stepInput) stepInput.value = s;
 
         document.querySelectorAll('.wizard-step-content').forEach((el, idx) => {

@@ -167,11 +167,26 @@
     // `enforceRequired` is false while the user is merely typing/blurring and
     // true when they try to advance a step or submit, so an untouched empty
     // field doesn't shout at them but also can't slip past "Save & Next".
+    function checkIfRequired(input) {
+        if (input.hasAttribute('required')) return true;
+        var fieldWrap = input.closest('div');
+        if (fieldWrap) {
+            var label = fieldWrap.querySelector('label');
+            if (label) {
+                var asterisk = label.querySelector('.text-red-500');
+                if (asterisk && asterisk.style.display !== 'none' && (asterisk.textContent || '').indexOf('*') !== -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function validateField(input, enforceRequired) {
         if (input.disabled || input.type === 'hidden' || input.offsetParent === null) return true;
 
         var kind = inferKind(input);
-        var isRequired = input.hasAttribute('required');
+        var isRequired = checkIfRequired(input);
         var isBadInput = !!(input.validity && input.validity.badInput);
         var rawValue = input.value || '';
         var value = rawValue.trim();
@@ -794,6 +809,156 @@
             document.addEventListener('DOMContentLoaded', setupReraToggle);
         } else {
             setupReraToggle();
+        }
+    })();
+
+    // ── Conditional required validation for Deal Type / Commercial Terms ──
+    (function () {
+        function setupDealTypeToggle() {
+            var selects = document.querySelectorAll('select[name="deal_type"], select[name="listing_purpose_transaction_type"]');
+            selects.forEach(function (dealSelect) {
+                if (dealSelect.dataset.dealToggleBound) return;
+                dealSelect.dataset.dealToggleBound = 'true';
+
+                var form = dealSelect.closest('form') || document;
+
+                function toggleDealFields() {
+                    var val = (dealSelect.value || '').trim().toLowerCase();
+                    var isRent = val === 'rent' || val === 'both' || val === 'lease' || val.indexOf('rent') !== -1 || val.indexOf('lease') !== -1;
+                    var isSale = val === 'sale' || val === 'both' || val.indexOf('sale') !== -1;
+
+                    var rentFieldNames = ['expected_rent', 'rent_per_month', 'rent_per_bed_room_month', 'security_deposit_months', 'security_deposit'];
+                    var saleFieldNames = ['expected_sale_price', 'total_sale_price', 'price_cost', 'sale_price_band_shown_live'];
+
+                    rentFieldNames.forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"]');
+                        inputs.forEach(function (input) {
+                            var fieldWrap = input.closest('div');
+                            if (!fieldWrap) return;
+                            var label = fieldWrap.querySelector('label');
+                            var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                            if (isRent) {
+                                input.required = true;
+                                input.setAttribute('required', 'required');
+                                if (label && !asterisk) {
+                                    var span = document.createElement('span');
+                                    span.className = 'text-red-500 ml-0.5';
+                                    span.textContent = '*';
+                                    label.appendChild(span);
+                                } else if (asterisk) {
+                                    asterisk.style.display = '';
+                                }
+                            } else {
+                                input.required = false;
+                                input.removeAttribute('required');
+                                if (asterisk) asterisk.style.display = 'none';
+                                if (window.ZendoFieldValidation) {
+                                    window.ZendoFieldValidation.clearFieldError(input);
+                                }
+                            }
+                        });
+                    });
+
+                    saleFieldNames.forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"]');
+                        inputs.forEach(function (input) {
+                            var fieldWrap = input.closest('div');
+                            if (!fieldWrap) return;
+                            var label = fieldWrap.querySelector('label');
+                            var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                            if (isSale) {
+                                input.required = true;
+                                input.setAttribute('required', 'required');
+                                if (label && !asterisk) {
+                                    var span = document.createElement('span');
+                                    span.className = 'text-red-500 ml-0.5';
+                                    span.textContent = '*';
+                                    label.appendChild(span);
+                                } else if (asterisk) {
+                                    asterisk.style.display = '';
+                                }
+                            } else {
+                                input.required = false;
+                                input.removeAttribute('required');
+                                if (asterisk) asterisk.style.display = 'none';
+                                if (window.ZendoFieldValidation) {
+                                    window.ZendoFieldValidation.clearFieldError(input);
+                                }
+                            }
+                        });
+                    });
+                }
+
+                dealSelect.addEventListener('change', toggleDealFields);
+                toggleDealFields();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupDealTypeToggle);
+        } else {
+            setupDealTypeToggle();
+        }
+    })();
+
+    // ── Conditional required validation for Currently Rented / Tenanted ──
+    (function () {
+        function setupTenantedToggle() {
+            var selects = document.querySelectorAll('select[name="currently_rented_tenanted"], select[name="is_tenanted"]');
+            selects.forEach(function (tenantedSelect) {
+                if (tenantedSelect.dataset.tenantedToggleBound) return;
+                tenantedSelect.dataset.tenantedToggleBound = 'true';
+
+                var form = tenantedSelect.closest('form') || document;
+
+                function toggleTenantedFields() {
+                    var val = (tenantedSelect.value || '').trim().toLowerCase();
+                    var isTenanted = val === 'yes' || val === 'partially' || val.indexOf('yes') !== -1;
+
+                    var tenantedFieldNames = ['current_monthly_rent_received', 'lease_start_date', 'lease_tenure', 'lock_in_remaining'];
+
+                    tenantedFieldNames.forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"]');
+                        inputs.forEach(function (input) {
+                            var fieldWrap = input.closest('div');
+                            if (!fieldWrap) return;
+                            var label = fieldWrap.querySelector('label');
+                            var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                            if (isTenanted) {
+                                input.required = true;
+                                input.setAttribute('required', 'required');
+                                if (label && !asterisk) {
+                                    var span = document.createElement('span');
+                                    span.className = 'text-red-500 ml-0.5';
+                                    span.textContent = '*';
+                                    label.appendChild(span);
+                                } else if (asterisk) {
+                                    asterisk.style.display = '';
+                                }
+                            } else {
+                                input.required = false;
+                                input.removeAttribute('required');
+                                if (asterisk) asterisk.style.display = 'none';
+                                if (window.ZendoFieldValidation) {
+                                    window.ZendoFieldValidation.clearFieldError(input);
+                                }
+                            }
+                        });
+                    });
+                }
+
+                tenantedSelect.addEventListener('change', toggleTenantedFields);
+                toggleTenantedFields();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupTenantedToggle);
+        } else {
+            setupTenantedToggle();
         }
     })();
 

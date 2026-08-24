@@ -194,4 +194,15 @@ class WizardClientValidationTest extends TestCase
         $this->assertStringContainsString('setupReraToggle', $body);
         $this->assertStringContainsString('setupProjectSocietyToggle', $body);
     }
+
+    /** @test */
+    public function commercial_terms_and_step_gating_validation_is_enforced(): void
+    {
+        $body = $this->createPage('apartment-flat-studio')->getContent();
+
+        $this->assertStringContainsString('setupDealTypeToggle', $body);
+        $this->assertStringContainsString('setupTenantedToggle', $body);
+        $this->assertStringContainsString('checkIfRequired', $body);
+        $this->assertStringContainsString('if (s > (window.wizCurrent || 0))', $body);
+    }
 }
