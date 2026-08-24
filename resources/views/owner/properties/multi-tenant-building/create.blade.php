@@ -98,6 +98,10 @@
                         <h4 class="text-base font-bold text-zendo-navy">SECTION B — LOCATION & IDENTIFICATION</h4>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pin Code <span class="text-red-500">*</span></label>
+                            <input type="number" step="any" name="pin_code" value="{{ old('pin_code', $property->pin_code ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
@@ -122,10 +126,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Address (house/plot no., street) <span class="text-red-500">*</span></label>
                             <input type="text" name="full_address_house_plot_no_street" value="{{ old('full_address_house_plot_no_street', $property->full_address_house_plot_no_street ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Pin Code <span class="text-red-500">*</span></label>
-                            <input type="number" step="any" name="pin_code" value="{{ old('pin_code', $property->pin_code ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
                             <select name="state" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">

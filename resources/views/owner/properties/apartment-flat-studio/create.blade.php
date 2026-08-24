@@ -106,6 +106,10 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code <span class="text-red-500">*</span></label>
+                            <input type="text" name="postal_address_pin" value="{{ old('postal_address_pin', $property->postal_address_pin ?? '') }}" required maxlength="6" placeholder="6-digit PIN" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
                             <input type="text" name="city" value="{{ old('city', $property->city ?? '') }}" required placeholder="e.g. Mumbai, Gurgaon, Delhi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
@@ -125,10 +129,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Builder / Developer Name</label>
                             <input type="text" name="builder_developer_name" value="{{ old('builder_developer_name', $property->builder_developer_name ?? '') }}" placeholder="Developer name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code <span class="text-red-500">*</span></label>
-                            <input type="text" name="postal_address_pin" value="{{ old('postal_address_pin', $property->postal_address_pin ?? '') }}" required maxlength="6" placeholder="6-digit PIN" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
                             <input type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
