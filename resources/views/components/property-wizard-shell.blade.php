@@ -29,6 +29,31 @@
 @endphp
 
 <div class="max-w-5xl mx-auto space-y-4">
+    <input type="hidden" name="wizard_step" id="wizard_step_input" value="{{ session('wizard_step', $currentStep ?? 0) }}">
+
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition-all" role="alert">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 text-lg leading-none focus:outline-none">&times;</button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition-all" role="alert">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-lg leading-none focus:outline-none">&times;</button>
+        </div>
+    @endif
 
     {{-- Top Horizontal Stepper --}}
     <div id="wizard-progress" class="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm -mx-1 px-4 py-3 rounded-xl mb-4">
@@ -108,7 +133,7 @@
             <div class="flex items-center gap-2 flex-1 justify-end">
                 {{-- Save Draft Button --}}
                 <button type="submit" name="action" value="draft" formnovalidate
-                    onclick="if(document.querySelector('form')) document.querySelector('form').noValidate=true"
+                    onclick="if(document.querySelector('form')) document.querySelector('form').noValidate=true; var inp=document.getElementById('wizard_step_input'); if(inp) inp.value = window.wizCurrent || 0;"
                     class="px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
                     Save Draft
                 </button>
@@ -201,7 +226,7 @@
             if (!steps.length) return;
             const total = steps.length;
             if (s < 0 || s >= total) return;
-            window.wizCurrent = s;
+            window.wizCurrent = s; const stepInput = document.getElementById('wizard_step_input'); if (stepInput) stepInput.value = s;
 
             steps.forEach((el, idx) => {
                 el.style.display = (idx === s) ? 'block' : 'none';

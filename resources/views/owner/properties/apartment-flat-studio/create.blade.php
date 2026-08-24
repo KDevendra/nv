@@ -872,7 +872,7 @@
 
     window.wizardGoTo = function(s) {
         if (s < 0 || s >= window.WIZ_TOTAL) return;
-        window.wizCurrent = s;
+        window.wizCurrent = s; const stepInput = document.getElementById('wizard_step_input'); if (stepInput) stepInput.value = s;
 
         // Toggle step contents
         document.querySelectorAll('.wizard-step-content').forEach((el, idx) => {
@@ -934,7 +934,12 @@
 
     $(document).ready(function() {
         initSelect2();
-        window.wizardGoTo(0);
+                const sessionStep = parseInt("{{ session('wizard_step', -1) }}", 10);
+        const initialStep = (sessionStep >= 0) ? sessionStep : 0;
+        if (typeof window.wizFrontier !== 'undefined') {
+            window.wizFrontier = Math.max(window.wizFrontier || 0, initialStep);
+        }
+        window.wizardGoTo(initialStep);
     });
 </script>
 @endsection

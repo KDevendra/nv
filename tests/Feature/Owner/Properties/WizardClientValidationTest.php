@@ -162,4 +162,15 @@ class WizardClientValidationTest extends TestCase
 
         $this->assertSame([], $withoutRequired, 'Update this list as `required` attributes are added per spec sheet.');
     }
+
+    /** @test */
+    public function the_shared_validator_includes_numeric_field_validation(): void
+    {
+        $body = $this->createPage('apartment-flat-studio')->getContent();
+
+        $this->assertStringContainsString('Please enter a valid number.', $body);
+        $this->assertStringContainsString('Please enter a whole number.', $body);
+        $this->assertStringContainsString('NUMERIC_NAME_RE', $body);
+        $this->assertStringContainsString('NON_NUMERIC_EXACT', $body);
+    }
 }

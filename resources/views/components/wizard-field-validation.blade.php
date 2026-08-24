@@ -64,6 +64,37 @@
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     var PIN_RE   = /^[1-9][0-9]{5}$/;
 
+    var NON_NUMERIC_EXACT = {
+        'project_name': true, 'builder_developer_name': true, 'developer_builder_name': true,
+        'owner_full_name': true, 'submitter_full_name': true, 'field_officer_name': true,
+        'owner_contact_name': true, 'company_entity_name': true, 'tenant_name_profile': true,
+        'project_society_name': true, 'zone_park_name': true, 'property_name': true,
+        'full_address_house_plot_no_street': true, 'locality_broad_area': true,
+        'sub_locality_society_name': true, 'state': true, 'city': true, 'district': true,
+        'country': true, 'village': true, 'tehsil': true, 'discom_name': true,
+        'project_rera_id': true, 'rera_registration_id': true,
+        'bonded_export_oriented_unit_distinct_compliance_loa_nfe_cust': true,
+        'distinct_legal_regime_conversion_irrigation_ceiling_laws_99a': true,
+        'commercial_shop_showroom_space_in_retail_mall_sco_99acres_al': true,
+        'running_ready_industrial_unit_with_plant_power_effluent_dist': true,
+        'office_it_business_park_coworking_business_centre_ready_to_m': true,
+        'interior_unit_photos': true, 'exterior_building_face_photos': true,
+        'floor_plan_layout': true, 'room_common_area_photos': true,
+        'plot_site_photos_facing_inward': true, 'shop_interior_frontage_inside_view': true,
+        'video_virtual_tour_link': true, 'video_walkthrough_link': true,
+        'virtual_tour_360_link': true, 'nearby_landmarks_key_distances': true,
+        'distance_from_key_locations': true, 'current_crop_plantation': true,
+        'pollution_category': true, 'structure_type': true, 'clu_conversion_status': true,
+        'suitable_for_activity': true, 'approved_loan_banks': true,
+        'existing_brand_operator': true, 'existing_tenants_anchor': true,
+        'surrounding_development': true, 'field_verified': true,
+        'plot_dimensions_ft_ft': true, 'construction_permitted_floors': true,
+        'canteen_size': true, 'stp_capacity': true, 'water_tank_capacity': true,
+        'water_source_capacity': true, 'water_supply_tank_capacity': true, 'water_source_stp': true
+    };
+
+    var NUMERIC_NAME_RE = /^(.*_)?(area|sq_ft|sq_yd|acres|acreage|floor|floors|towers|blocks|units|bedrooms|bathrooms|balconies|rooms|beds|keys|inventory|workstations|seats|cabins|bays|docks|dock|parking|slots|rent|price|cost|amount|deposit|charges|escalation|yield|roi|maintenance|rate|value|booking|kva|kw|capacity|height|width|length|depth|frontage|dimensions|distance|months|years|tenure|age|bhk|washrooms|pax)(_.*)?$/i;
+
     function inferKind(input) {
         var explicit = input.dataset.validate;
         if (explicit) return explicit;
@@ -76,7 +107,11 @@
         if (/phone|contact_number|mobile/.test(name)) return 'phone';
         if (/latitude/.test(name)) return 'latitude';
         if (/longitude/.test(name)) return 'longitude';
-        if (type === 'number') return 'number';
+
+        if (NON_NUMERIC_EXACT[name]) return 'text';
+
+        if (type === 'number' || NUMERIC_NAME_RE.test(name)) return 'number';
+
         return 'text';
     }
 
@@ -85,7 +120,13 @@
     // counts — are non-negative whole numbers.
     function allowsDecimal(input) {
         var step = (input.getAttribute('step') || '').toLowerCase();
-        return step === 'any' || (step !== '' && parseFloat(step) % 1 !== 0);
+        if (step === 'any' || (step !== '' && parseFloat(step) % 1 !== 0)) return true;
+
+        var name = (input.getAttribute('name') || '').toLowerCase();
+        if (/bedroom|bathroom|balcony|floor_number|total_floors|no_of_floors|number_of_floors|units_on_this_floor|total_towers|total_units|parking_slots|car_parking|dock_door_count|dock_front|dock_back|dock_left|dock_right|dock_leveller|fire_exit|keys_rooms|guest_capacity|workstation|no_of_cabins|no_of_meeting_rooms|lifts|washrooms|urinals|closets/i.test(name)) {
+            return false;
+        }
+        return true;
     }
 
     function allowsNegative(input) {
@@ -102,20 +143,6 @@
             v = v.replace(/\D/g, '').slice(0, 10);
         } else if (kind === 'pincode') {
             v = v.replace(/\D/g, '').slice(0, 6);
-        } else if (kind === 'number' || kind === 'latitude' || kind === 'longitude') {
-            var dec = kind !== 'number' || allowsDecimal(input);
-            var neg = kind !== 'number' || allowsNegative(input);
-            // A type="number" control reports '' for text the browser can't
-            // parse, so restriction here is mainly for type="text" numerics;
-            // it is still applied uniformly so both behave the same.
-            var pattern = dec ? /[^0-9.\-]/g : /[^0-9\-]/g;
-            v = v.replace(pattern, '');
-            if (!neg) v = v.replace(/-/g, '');
-            else v = v.replace(/(?!^)-/g, '');
-            if (dec) {
-                var parts = v.split('.');
-                if (parts.length > 2) v = parts.shift() + '.' + parts.join('');
-            }
         }
 
         var maxlen = parseInt(input.getAttribute('maxlength'), 10);
@@ -124,12 +151,10 @@
         if (v !== before) {
             var pos = input.selectionStart;
             input.value = v;
-            // Keep the caret where the user was typing rather than jumping
-            // to the end, which is what a naive reassignment would do.
             if (input.type !== 'number' && pos !== null) {
                 try { input.setSelectionRange(pos - 1, pos - 1); } catch (e) {}
             }
-            return true; // something was stripped
+            return true;
         }
         return false;
     }
@@ -139,20 +164,80 @@
     // true when they try to advance a step or submit, so an untouched empty
     // field doesn't shout at them but also can't slip past "Save & Next".
     function validateField(input, enforceRequired) {
-        if (input.disabled || input.type === 'hidden') return true;
+        if (input.disabled || input.type === 'hidden' || input.offsetParent === null) return true;
 
         var kind = inferKind(input);
-        var value = (input.value || '').trim();
         var isRequired = input.hasAttribute('required');
+        var isBadInput = !!(input.validity && input.validity.badInput);
+        var rawValue = input.value || '';
+        var value = rawValue.trim();
+
+        // ── Numeric Fields Validation ──
+        if (kind === 'number' || kind === 'latitude' || kind === 'longitude') {
+            if (isBadInput || (value !== '' && !/^-?\d*\.?\d+$/.test(value))) {
+                showFieldError(input, 'Please enter a valid number.');
+                return false;
+            }
+
+            if (!value) {
+                if (enforceRequired && isRequired) {
+                    showFieldError(input, 'This field is required.');
+                    return false;
+                }
+                clearFieldError(input);
+                return true;
+            }
+
+            var num = parseFloat(value);
+            if (isNaN(num)) {
+                showFieldError(input, 'Please enter a valid number.');
+                return false;
+            }
+
+            if (kind === 'latitude' && (num < -90 || num > 90)) {
+                showFieldError(input, 'Latitude must be between -90 and 90.');
+                return false;
+            }
+            if (kind === 'longitude' && (num < -180 || num > 180)) {
+                showFieldError(input, 'Longitude must be between -180 and 180.');
+                return false;
+            }
+
+            if (kind === 'number') {
+                if (!allowsDecimal(input) && num % 1 !== 0) {
+                    showFieldError(input, 'Please enter a whole number.');
+                    return false;
+                }
+
+                var min = input.getAttribute('min');
+                var max = input.getAttribute('max');
+                var hasMin = min !== null && min !== '';
+                var hasMax = max !== null && max !== '';
+
+                if (hasMin && num < parseFloat(min)) {
+                    if (parseFloat(min) >= 0) {
+                        showFieldError(input, 'Value cannot be negative.');
+                    } else {
+                        showFieldError(input, 'Value must be ' + min + ' or more.');
+                    }
+                    return false;
+                }
+                if (hasMax && num > parseFloat(max)) {
+                    showFieldError(input, 'Value must be ' + max + ' or less.');
+                    return false;
+                }
+            }
+
+            clearFieldError(input);
+            return true;
+        }
 
         if (!value) {
             if (enforceRequired && isRequired) {
-                showFieldError(input, input.tagName === 'SELECT'
-                    ? 'Please select an option.'
-                    : 'This field is required.');
+                showFieldError(input, input.tagName === 'SELECT' ? 'Please select an option.' : 'This field is required.');
                 return false;
             }
-            clearFieldError(input); // empty + optional is fine
+            clearFieldError(input);
             return true;
         }
 
@@ -169,46 +254,6 @@
         if (kind === 'pincode' && !PIN_RE.test(value)) {
             showFieldError(input, 'Enter a valid 6-digit PIN code.');
             return false;
-        }
-
-        if (kind === 'number' || kind === 'latitude' || kind === 'longitude') {
-            if (isNaN(parseFloat(value)) || !/^-?\d*\.?\d+$/.test(value)) {
-                showFieldError(input, 'Enter a valid number.');
-                return false;
-            }
-            var num = parseFloat(value);
-
-            if (kind === 'latitude' && (num < -90 || num > 90)) {
-                showFieldError(input, 'Latitude must be between -90 and 90.');
-                return false;
-            }
-            if (kind === 'longitude' && (num < -180 || num > 180)) {
-                showFieldError(input, 'Longitude must be between -180 and 180.');
-                return false;
-            }
-
-            if (kind === 'number') {
-                if (!allowsDecimal(input) && num % 1 !== 0) {
-                    showFieldError(input, 'Enter a whole number.');
-                    return false;
-                }
-                var min = input.getAttribute('min');
-                var max = input.getAttribute('max');
-                var hasMin = min !== null && min !== '';
-                var hasMax = max !== null && max !== '';
-                if (hasMin && hasMax && (num < parseFloat(min) || num > parseFloat(max))) {
-                    showFieldError(input, 'Enter a value between ' + min + ' and ' + max + '.');
-                    return false;
-                }
-                if (hasMin && !hasMax && num < parseFloat(min)) {
-                    showFieldError(input, 'Value must be ' + min + ' or more.');
-                    return false;
-                }
-                if (hasMax && !hasMin && num > parseFloat(max)) {
-                    showFieldError(input, 'Value must be ' + max + ' or less.');
-                    return false;
-                }
-            }
         }
 
         var maxlen = parseInt(input.getAttribute('maxlength'), 10);
@@ -259,17 +304,18 @@
     document.addEventListener('input', function (e) {
         if (!isCandidate(e.target)) return;
         var kind = inferKind(e.target);
-        var stripped = restrict(e.target, kind);
 
-        if (stripped && (kind === 'phone' || kind === 'pincode')) {
-            showFieldError(e.target, kind === 'phone'
-                ? 'Phone number can only contain digits — other characters are ignored.'
-                : 'PIN code can only contain digits — other characters are ignored.');
-            return;
+        if (kind === 'number' || kind === 'latitude' || kind === 'longitude') {
+            var isBad = !!(e.target.validity && e.target.validity.badInput) || (e.target.value.trim() !== '' && !/^-?\d*\.?\d+$/.test(e.target.value.trim()));
+            if (isBad) {
+                showFieldError(e.target, 'Please enter a valid number.');
+                return;
+            }
         }
-        // Re-check live only once they've already left the field once, so a
-        // corrected value clears its error immediately.
-        if (touched.has(e.target)) validateField(e.target, false);
+
+        if (touched.has(e.target)) {
+            validateField(e.target, false);
+        }
     }, true);
 
     document.addEventListener('blur', function (e) {
