@@ -99,6 +99,10 @@
         var explicit = input.dataset.validate;
         if (explicit) return explicit;
 
+        var tagName = (input.tagName || '').toUpperCase();
+        if (tagName === 'SELECT') return 'select';
+        if (tagName === 'TEXTAREA') return 'text';
+
         var name = (input.getAttribute('name') || '').toLowerCase();
         var type = (input.getAttribute('type') || '').toLowerCase();
 
@@ -171,6 +175,20 @@
         var isBadInput = !!(input.validity && input.validity.badInput);
         var rawValue = input.value || '';
         var value = rawValue.trim();
+
+        // ── Dropdown / Select Fields Validation ──
+        if (kind === 'select' || input.tagName === 'SELECT') {
+            if (!value) {
+                if (enforceRequired && isRequired) {
+                    showFieldError(input, 'Please select an option.');
+                    return false;
+                }
+                clearFieldError(input);
+                return true;
+            }
+            clearFieldError(input);
+            return true;
+        }
 
         // ── Numeric Fields Validation ──
         if (kind === 'number' || kind === 'latitude' || kind === 'longitude') {
@@ -602,6 +620,180 @@
             document.addEventListener('DOMContentLoaded', setupProjectSocietyToggle);
         } else {
             setupProjectSocietyToggle();
+        }
+    })();
+
+    // ── Conditional required validation for Availability -> Available From Date ──
+    (function () {
+        function setupAvailabilityToggle() {
+            var selects = document.querySelectorAll('select[name="availability"]');
+            selects.forEach(function (availSelect) {
+                if (availSelect.dataset.availToggleBound) return;
+                availSelect.dataset.availToggleBound = 'true';
+
+                var form = availSelect.closest('form') || document;
+
+                function toggleAvailabilityFields() {
+                    var val = (availSelect.value || '').trim().toLowerCase();
+                    var isFromDate = val === 'from date' || val === 'from_date' || val.indexOf('from date') !== -1;
+                    var dateInputs = form.querySelectorAll('input[name="available_from"]');
+
+                    dateInputs.forEach(function (input) {
+                        var fieldWrap = input.closest('div');
+                        if (!fieldWrap) return;
+
+                        var label = fieldWrap.querySelector('label');
+                        var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                        if (isFromDate) {
+                            fieldWrap.style.display = '';
+                            input.required = true;
+                            input.setAttribute('required', 'required');
+                            if (label && !asterisk) {
+                                var span = document.createElement('span');
+                                span.className = 'text-red-500 ml-0.5';
+                                span.textContent = '*';
+                                label.appendChild(span);
+                            } else if (asterisk) {
+                                asterisk.style.display = '';
+                            }
+                        } else {
+                            fieldWrap.style.display = 'none';
+                            input.required = false;
+                            input.removeAttribute('required');
+                            if (asterisk) asterisk.style.display = 'none';
+                            if (window.ZendoFieldValidation) {
+                                window.ZendoFieldValidation.clearFieldError(input);
+                            }
+                        }
+                    });
+                }
+
+                availSelect.addEventListener('change', toggleAvailabilityFields);
+                toggleAvailabilityFields();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupAvailabilityToggle);
+        } else {
+            setupAvailabilityToggle();
+        }
+    })();
+
+    // ── Conditional required validation for Construction Status -> Possession By Date ──
+    (function () {
+        function setupConstructionStatusToggle() {
+            var selects = document.querySelectorAll('select[name="construction_status"], select[name="property_status"], select[name="construction_listing_status"]');
+            selects.forEach(function (statusSelect) {
+                if (statusSelect.dataset.constrToggleBound) return;
+                statusSelect.dataset.constrToggleBound = 'true';
+
+                var form = statusSelect.closest('form') || document;
+
+                function toggleConstructionFields() {
+                    var val = (statusSelect.value || '').trim().toLowerCase();
+                    var isUnderConstr = val === 'under construction' || val === 'under_construction' || val.indexOf('under construction') !== -1;
+                    var dateInputs = form.querySelectorAll('input[name="possession_by"], input[name="possession_by_if_under_constr"]');
+
+                    dateInputs.forEach(function (input) {
+                        var fieldWrap = input.closest('div');
+                        if (!fieldWrap) return;
+
+                        var label = fieldWrap.querySelector('label');
+                        var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                        if (isUnderConstr) {
+                            fieldWrap.style.display = '';
+                            input.required = true;
+                            input.setAttribute('required', 'required');
+                            if (label && !asterisk) {
+                                var span = document.createElement('span');
+                                span.className = 'text-red-500 ml-0.5';
+                                span.textContent = '*';
+                                label.appendChild(span);
+                            } else if (asterisk) {
+                                asterisk.style.display = '';
+                            }
+                        } else {
+                            fieldWrap.style.display = 'none';
+                            input.required = false;
+                            input.removeAttribute('required');
+                            if (asterisk) asterisk.style.display = 'none';
+                            if (window.ZendoFieldValidation) {
+                                window.ZendoFieldValidation.clearFieldError(input);
+                            }
+                        }
+                    });
+                }
+
+                statusSelect.addEventListener('change', toggleConstructionFields);
+                toggleConstructionFields();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupConstructionStatusToggle);
+        } else {
+            setupConstructionStatusToggle();
+        }
+    })();
+
+    // ── Conditional required validation for RERA Registered -> RERA ID ──
+    (function () {
+        function setupReraToggle() {
+            var selects = document.querySelectorAll('select[name="rera_registered"]');
+            selects.forEach(function (reraSelect) {
+                if (reraSelect.dataset.reraToggleBound) return;
+                reraSelect.dataset.reraToggleBound = 'true';
+
+                var form = reraSelect.closest('form') || document;
+
+                function toggleReraFields() {
+                    var val = (reraSelect.value || '').trim().toLowerCase();
+                    var isYes = val === 'yes' || val.startsWith('yes');
+                    var reraInputs = form.querySelectorAll('input[name="rera_registration_id"], input[name="project_rera_id"]');
+
+                    reraInputs.forEach(function (input) {
+                        var fieldWrap = input.closest('div');
+                        if (!fieldWrap) return;
+
+                        var label = fieldWrap.querySelector('label');
+                        var asterisk = label ? label.querySelector('.text-red-500') : null;
+
+                        if (isYes) {
+                            fieldWrap.style.display = '';
+                            input.required = true;
+                            input.setAttribute('required', 'required');
+                            if (label && !asterisk) {
+                                var span = document.createElement('span');
+                                span.className = 'text-red-500 ml-0.5';
+                                span.textContent = '*';
+                                label.appendChild(span);
+                            } else if (asterisk) {
+                                asterisk.style.display = '';
+                            }
+                        } else {
+                            fieldWrap.style.display = 'none';
+                            input.required = false;
+                            input.removeAttribute('required');
+                            if (asterisk) asterisk.style.display = 'none';
+                            if (window.ZendoFieldValidation) {
+                                window.ZendoFieldValidation.clearFieldError(input);
+                            }
+                        }
+                    });
+                }
+
+                reraSelect.addEventListener('change', toggleReraFields);
+                toggleReraFields();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupReraToggle);
+        } else {
+            setupReraToggle();
         }
     })();
 

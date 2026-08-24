@@ -173,4 +173,25 @@ class WizardClientValidationTest extends TestCase
         $this->assertStringContainsString('NUMERIC_NAME_RE', $body);
         $this->assertStringContainsString('NON_NUMERIC_EXACT', $body);
     }
+
+    /** @test */
+    public function dropdown_select_fields_are_never_evaluated_as_numeric_fields(): void
+    {
+        $body = $this->createPage('apartment-flat-studio')->getContent();
+
+        $this->assertStringContainsString("if (tagName === 'SELECT') return 'select';", $body);
+        $this->assertStringContainsString("if (kind === 'select' || input.tagName === 'SELECT')", $body);
+        $this->assertStringContainsString("Please select an option.", $body);
+    }
+
+    /** @test */
+    public function conditional_fields_like_availability_from_date_and_possession_by_are_validated(): void
+    {
+        $body = $this->createPage('apartment-flat-studio')->getContent();
+
+        $this->assertStringContainsString('setupAvailabilityToggle', $body);
+        $this->assertStringContainsString('setupConstructionStatusToggle', $body);
+        $this->assertStringContainsString('setupReraToggle', $body);
+        $this->assertStringContainsString('setupProjectSocietyToggle', $body);
+    }
 }

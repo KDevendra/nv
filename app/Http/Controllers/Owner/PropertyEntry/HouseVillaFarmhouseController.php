@@ -41,6 +41,21 @@ class HouseVillaFarmhouseController extends Controller
 
         $customFields = [];
         $fillable = (new PropertyEntry())->getFillable();
+        
+        if ($status === 'submitted') {
+            $request->validate([
+                'available_from' => 'nullable|required_if:availability,From date|date',
+                'possession_by' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
+                'possession_by_if_under_constr' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
+                'project_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'project_society_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'builder_developer_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'developer_builder_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'project_rera_id' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'rera_registration_id' => 'nullable|required_if:rera_registered,Yes|string|max:120',
+            ]);
+        }
+
         $data = ['property_type' => 'house_villa_farmhouse', 'field_officer_id' => auth()->id(), 'status' => $status];
 
         foreach ($validated as $key => $val) {
@@ -115,6 +130,21 @@ class HouseVillaFarmhouseController extends Controller
 
         $customFields = [];
         $fillable = (new PropertyEntry())->getFillable();
+        
+        if ($status === 'submitted') {
+            $request->validate([
+                'available_from' => 'nullable|required_if:availability,From date|date',
+                'possession_by' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
+                'possession_by_if_under_constr' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
+                'project_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'project_society_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'builder_developer_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'developer_builder_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'project_rera_id' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
+                'rera_registration_id' => 'nullable|required_if:rera_registered,Yes|string|max:120',
+            ]);
+        }
+
         $data = ['status' => $status];
 
         foreach ($validated as $key => $val) {
