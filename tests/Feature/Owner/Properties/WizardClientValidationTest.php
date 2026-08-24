@@ -270,4 +270,50 @@ class WizardClientValidationTest extends TestCase
 
         $this->assertStringContainsString('value="6 months" selected', $editBody2);
     }
+
+    public function test_property_show_page_displays_all_saved_fields_section_wise(): void
+    {
+        $property = \App\Models\PropertyEntry::create([
+            'owner_id' => $this->owner->id,
+            'field_officer_id' => $this->owner->id,
+            'code' => 'ZND-117',
+            'property_type' => 'apartment-flat-studio',
+            'unit_property_type' => 'Apartment',
+            'status' => 'draft',
+            'submitter_name' => 'John Doe',
+            'owner_contact_name' => 'Jane Owner',
+            'nearest_city' => 'Gurugram',
+            'part_of_a_project_society' => 'Yes',
+            'project_society_name' => 'Grand Residency',
+            'project_rera_id' => 'RERA-GUR-12345',
+            'configurations_offered' => ['2 BHK', '3 BHK'],
+            'project_amenities' => ['Swimming Pool', 'Gymnasium'],
+            'configuration' => '3',
+            'carpet_area' => 1250,
+            'additional_rooms' => ['Pooja Room', 'Servant Room'],
+            'furnishing_detail' => ['Sofa', 'AC', 'Modular Kitchen'],
+            'deal_type' => 'Rent',
+            'expected_rent' => 45000,
+            'security_deposit_months' => '2 months',
+            'amenities_checklist' => ['24x7 Security', 'Power Backup'],
+        ]);
+
+        $response = $this->actingAs($this->owner)->get(route('owner.properties.show', $property));
+
+        $response->assertOk();
+        $response->assertSee($property->code);
+        $response->assertSee('SECTION A — SUBMITTER &amp; OWNER DETAILS', false);
+        $response->assertSee('SECTION B — LOCATION &amp; IDENTIFICATION', false);
+        $response->assertSee('SECTION B2 — PROJECT / SOCIETY DETAILS', false);
+        $response->assertSee('Grand Residency');
+        $response->assertSee('RERA-GUR-12345');
+        $response->assertSee('2 BHK');
+        $response->assertSee('3 BHK');
+        $response->assertSee('Swimming Pool');
+        $response->assertSee('Gymnasium');
+        $response->assertSee('1,250.00 sq ft');
+        $response->assertSee('Pooja Room');
+        $response->assertSee('Servant Room');
+        $response->assertSee('2 months');
+    }
 }
