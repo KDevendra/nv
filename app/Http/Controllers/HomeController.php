@@ -114,6 +114,10 @@ class HomeController extends Controller
 
         $properties = $query->paginate(12)->withQueryString();
 
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->boolean('partial')) {
+            return view('pages.properties._results', compact('properties'));
+        }
+
         // Every filter's option list is scoped to the same publiclyVisible
         // gate, so a dropdown can never offer a value with zero live rows —
         // it also respects whichever other filters are already active, so

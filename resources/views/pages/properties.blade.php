@@ -1192,7 +1192,7 @@
 
 
     <!-- Property Listing Section -->
-    <section id="apw-resiPage" class="apw-resiPage">
+    <section id="apw-resiPage" class="apw-resiPage" x-data="propertiesFilter()">
         <div class="apw-resiWrap">
             @if ($introSection)
                 <div class="apw-resiIntro">
@@ -1248,34 +1248,18 @@
                             <p class="apw-filterSub">Quickly refine by budget, location & type.</p>
                         </div>
 
-                        <button type="button" class="apw-filterReset"
+                        <button type="button" class="apw-filterReset" @click.prevent="resetFilters()"
                             onclick="window.location.href='{{ route('properties.index') }}'">
                             Reset
-                            <span class="apw-btnSvg" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                    <path d="M20 6v6h-6" stroke="#fbf8f2" stroke-width="1.7" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M20 12a8 8 0 1 1-2.3-5.6" stroke="#fbf8f2" stroke-width="1.7"
-                                        stroke-linecap="round" />
-                                </svg>
-                            </span>
                         </button>
                     </div>
 
-                    <form method="GET" action="{{ route('properties.index') }}" id="apw-resiFilterForm">
-                        {{-- property_type_slug is a real <select> below, so no hidden
-                             mirror here — two inputs of the same name would make the
-                             dropdown's value unrecoverable on submit. --}}
-
-                        {{-- Every option list below comes from distinct values that
-                             actually exist on publicly-visible property_entries rows,
-                             so no dropdown can offer a zero-result combination. --}}
-
+                    <form method="GET" action="{{ route('properties.index') }}" id="apw-resiFilterForm" @submit.prevent="applyFilters()">
                         <!-- City -->
                         <div class="apw-field">
                             <label class="apw-label" for="city">City</label>
                             <div class="apw-selectWrap">
-                                <select id="city" name="city" class="apw-select">
+                                <select id="city" name="city" class="apw-select" x-model="city" @change="onCityChange()">
                                     <option value="">All Cities</option>
                                     @foreach ($cities as $city)
                                         <option value="{{ $city }}" {{ request('city') === $city ? 'selected' : '' }}>
@@ -1296,7 +1280,7 @@
                         <div class="apw-field">
                             <label class="apw-label" for="locality">Location</label>
                             <div class="apw-selectWrap">
-                                <select id="locality" name="locality" class="apw-select">
+                                <select id="locality" name="locality" class="apw-select" x-model="locality" @change="applyFilters()">
                                     <option value="">All Locations</option>
                                     @foreach ($localities as $locality)
                                         <option value="{{ $locality }}" {{ request('locality') === $locality ? 'selected' : '' }}>
@@ -1317,7 +1301,7 @@
                         <div class="apw-field">
                             <label class="apw-label" for="property_type_slug">Property Type</label>
                             <div class="apw-selectWrap">
-                                <select id="property_type_slug" name="property_type_slug" class="apw-select">
+                                <select id="property_type_slug" name="property_type_slug" class="apw-select" x-model="property_type_slug" @change="applyFilters()">
                                     <option value="">All Types</option>
                                     @foreach ($propertyTypeOptions as $type)
                                         <option value="{{ $type['key'] }}"
@@ -1340,7 +1324,7 @@
                             <div class="apw-field">
                                 <label class="apw-label" for="construction_status">Availability</label>
                                 <div class="apw-selectWrap">
-                                    <select id="construction_status" name="construction_status" class="apw-select">
+                                    <select id="construction_status" name="construction_status" class="apw-select" x-model="construction_status" @change="applyFilters()">
                                         <option value="">Any Availability</option>
                                         @foreach ($constructionStatuses as $status)
                                             <option value="{{ $status }}"
@@ -1364,7 +1348,7 @@
                             <div class="apw-field">
                                 <label class="apw-label" for="builder">Builder</label>
                                 <div class="apw-selectWrap">
-                                    <select id="builder" name="builder" class="apw-select">
+                                    <select id="builder" name="builder" class="apw-select" x-model="builder" @change="applyFilters()">
                                         <option value="">All Builders</option>
                                         @foreach ($builders as $builder)
                                             <option value="{{ $builder }}" {{ request('builder') === $builder ? 'selected' : '' }}>
@@ -1382,13 +1366,16 @@
                             </div>
                         @endif
 
-                        <button type="submit" class="apw-filterApply">
-                            Apply Filters
-                            <span class="apw-btnSvg" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                    <path d="M10 7l5 5-5 5" stroke="#fbf8f2" stroke-width="1.9" stroke-linecap="round"
-                                        stroke-linejoin="round" />
+                        <button type="submit" class="apw-filterApply" :disabled="loading" @click.prevent="applyFilters()">
+                            <span x-show="!loading" style="display: inline-flex; align-items: center; gap: 10px;">
+                                Apply Filters
+                            </span>
+                            <span x-show="loading" x-cloak style="display: inline-flex; align-items: center; gap: 8px;">
+                                <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle>
+                                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75;"></path>
                                 </svg>
+                                Applying...
                             </span>
                         </button>
 
@@ -1399,124 +1386,15 @@
                 </aside>
 
                 <!-- Listings Area -->
-                <main class="apw-resiListings" aria-label="Residential Listings">
-                    <div class="apw-listTop">
-                        <div class="apw-listTopLeft">
-                            <h2 class="apw-listTitle">Property Listings</h2>
-                            <p class="apw-listSub">Showing {{ $properties->count() }} of {{ $properties->total() }}
-                                properties</p>
-                        </div>
-
-                        <div class="apw-listTopRight">
-                            <div class="apw-searchWrap">
-                                <span class="apw-searchSvg" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                        <circle cx="11" cy="11" r="6.5" stroke="#b39359"
-                                            stroke-width="1.7" />
-                                        <path d="M16.2 16.2L21 21" stroke="#b39359" stroke-width="1.7"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                </span>
-                                <input type="text" class="apw-search" placeholder="Search by project or location..."
-                                    value="{{ request('search') }}"
-                                    onchange="document.getElementById('apw-resiFilterForm').search.value = this.value; document.getElementById('apw-resiFilterForm').submit();">
-                                <input type="hidden" name="search" form="apw-resiFilterForm"
-                                    value="{{ request('search') }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Property Cards — property_entries only, type-aware -->
-                    <p class="apw-listSub" style="margin-bottom:12px">Showing {{ $properties->count() }} of {{ $properties->total() }} properties</p>
-
-                    @if ($properties->count() > 0)
-                        <div class="apw-cardGrid">
-                            @foreach ($properties as $entry)
-                                @php
-                                    $entryPhoto = $entry->photos->first();
-                                    $entryImg = $entryPhoto
-                                        ? asset('images/property_photos/' . basename($entryPhoto->file_path))
-                                        : 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=70';
-                                @endphp
-                                <article class="apw-card">
-                                    <div class="apw-cardMedia" style="background-image:url('{{ $entryImg }}');">
-                                        @if ($entry->construction_listing_status)
-                                            <span class="apw-tag apw-tagAlt">{{ $entry->construction_listing_status }}</span>
-                                        @endif
-                                    </div>
-                                    <div class="apw-cardBody">
-                                        <h3 class="apw-cardTitle">{{ $entry->public_title }}</h3>
-                                        <p class="apw-cardMeta">
-                                            <span class="apw-miniSvg" aria-hidden="true">
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                                                    <path d="M12 21s7-5.2 7-11A7 7 0 1 0 5 10c0 5.8 7 11 7 11z"
-                                                        stroke="#b39359" stroke-width="1.7" />
-                                                    <circle cx="12" cy="10" r="2.3" stroke="#b39359"
-                                                        stroke-width="1.7" />
-                                                </svg>
-                                            </span>
-                                            {{ $entry->public_detail_line }}
-                                        </p>
-                                        <div class="apw-cardRow">
-                                            <div class="apw-price">
-                                                <span class="apw-priceLabel">{{ $entry->public_price_label }}</span>
-                                                <span class="apw-priceVal">{{ $entry->public_price_value }}</span>
-                                            </div>
-                                            <div class="apw-ctaRow">
-                                                <a class="apw-btnOutline"
-                                                    href="{{ route('property-entries.show', $entry->code) }}">View Details</a>
-                                            </div>
-                                        </div>
-                                        @if (count($entry->public_amenities))
-                                            <div class="apw-amenities">
-                                                @foreach ($entry->public_amenities as $amenity)
-                                                    <span>{{ $amenity }}</span>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-
-                        <!-- Pagination -->
-                        @if($properties->hasPages())
-                        <div class="mt-8">
-                            {{ $properties->links() }}
-                        </div>
-                        @endif
-                    @else
-                        <div class="apw-empty">
-                            <div class="apw-emptyBox">
-                                <div class="apw-emptySvg" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none">
-                                        <path d="M4 10.8l8-6 8 6V20a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 20v-9.2z"
-                                            stroke="#b39359" stroke-width="1.7" stroke-linejoin="round" />
-                                        <path d="M9.5 21.6V14h5v7.6" stroke="#b39359" stroke-width="1.7"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                </div>
-                                <h3>No matching properties found</h3>
-                                <p>Try changing location, budget, or property type — or reset all filters.</p>
-                                <button type="button" class="apw-filterApply"
-                                    onclick="window.location.href='{{ route('properties.index') }}'">Reset
-                                    Filters</button>
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- CTA Strip -->
-                    <div class="apw-ctaStrip" id="enquiry">
-                        <div class="apw-ctaLeft">
-                            <h3>Need help shortlisting the right home?</h3>
-                            <p>Share your requirement and we'll suggest best residential options in your preferred location.
-                            </p>
-                        </div>
-                        <div class="apw-ctaRight">
-                            <a class="apw-ctaBtn" href="{{ route('contact') }}">Get a Call Back</a>
-                        </div>
-                    </div>
+                <main class="apw-resiListings" id="apw-results-container"
+                    aria-label="Residential Listings"
+                    @click="handleResultsClick($event)"
+                    :class="{ 'opacity-50 pointer-events-none transition-opacity duration-200': loading }">
+                    @include('pages.properties._results')
                 </main>
+            </div>
+        </div>
+    </section>
             </div>
         </div>
     </section>
@@ -1711,30 +1589,128 @@
         startAutoplay();
     })();
 
-    // ─── Filters ─────────────────────────────────────────────────────────────────
-    // BHK chips and the legacy property_type_id → BHK fetch are gone: BHK is an
-    // apartment-only concept and this listing now spans all 13 property types,
-    // so a shared BHK filter can't apply. Per-type detail lives on the card.
+    // ─── Alpine Properties Filter ───────────────────────────────────────────────
+    function propertiesFilter() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            city: params.get('city') || '',
+            locality: params.get('locality') || '',
+            property_type_slug: params.get('property_type_slug') || '',
+            construction_status: params.get('construction_status') || '',
+            builder: params.get('builder') || '',
+            search: params.get('search') || '',
+            page: params.get('page') || 1,
+            loading: false,
+            error: false,
 
-    // Changing City re-submits so the Location list re-scopes to that city.
-    const cityFilter = document.getElementById('city');
-    if (cityFilter) {
-        cityFilter.addEventListener('change', function () {
-            const localitySelect = document.getElementById('locality');
-            if (localitySelect) localitySelect.value = '';
-            document.getElementById('apw-resiFilterForm').submit();
-        });
+            init() {
+                window.addEventListener('popstate', () => {
+                    this.syncFromUrl();
+                    this.fetchResults(window.location.href, false);
+                });
+            },
+
+            syncFromUrl() {
+                const p = new URLSearchParams(window.location.search);
+                this.city = p.get('city') || '';
+                this.locality = p.get('locality') || '';
+                this.property_type_slug = p.get('property_type_slug') || '';
+                this.construction_status = p.get('construction_status') || '';
+                this.builder = p.get('builder') || '';
+                this.search = p.get('search') || '';
+                this.page = p.get('page') || 1;
+            },
+
+            buildUrl(targetPage = null) {
+                const url = new URL('{{ route("properties.index") }}', window.location.origin);
+                if (this.city) url.searchParams.set('city', this.city);
+                if (this.locality) url.searchParams.set('locality', this.locality);
+                if (this.property_type_slug) url.searchParams.set('property_type_slug', this.property_type_slug);
+                if (this.construction_status) url.searchParams.set('construction_status', this.construction_status);
+                if (this.builder) url.searchParams.set('builder', this.builder);
+                if (this.search) url.searchParams.set('search', this.search);
+
+                const p = targetPage !== null ? targetPage : (this.page > 1 ? this.page : null);
+                if (p && p > 1) {
+                    url.searchParams.set('page', p);
+                }
+                return url.toString();
+            },
+
+            applyFilters() {
+                this.page = 1;
+                const url = this.buildUrl(1);
+                this.fetchResults(url, true);
+            },
+
+            resetFilters() {
+                this.city = '';
+                this.locality = '';
+                this.property_type_slug = '';
+                this.construction_status = '';
+                this.builder = '';
+                this.search = '';
+                this.page = 1;
+                const url = '{{ route("properties.index") }}';
+                this.fetchResults(url, true);
+            },
+
+            onCityChange() {
+                this.locality = '';
+                this.applyFilters();
+            },
+
+            handleResultsClick(e) {
+                const link = e.target.closest('.apw-pagination-wrap a, .pagination a');
+                if (link) {
+                    e.preventDefault();
+                    const url = link.getAttribute('href');
+                    if (url) {
+                        const linkUrl = new URL(url, window.location.origin);
+                        const pageVal = linkUrl.searchParams.get('page') || 1;
+                        this.page = pageVal;
+                        this.fetchResults(url, true);
+                    }
+                }
+            },
+
+            fetchResults(url, shouldPushState = true) {
+                if (this.loading) return;
+                this.loading = true;
+                this.error = false;
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html, application/xhtml+xml'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    const container = document.getElementById('apw-results-container');
+                    if (container) {
+                        container.innerHTML = html;
+                        if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                            window.Alpine.initTree(container);
+                        }
+                    }
+                    if (shouldPushState) {
+                        history.pushState(null, '', url);
+                    }
+                    this.loading = false;
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    this.loading = false;
+                    this.error = true;
+                });
+            }
+        };
     }
-
-    // ─── Apply Filters button ─────────────────────────────────────────────────────
-    // Use the one INSIDE the form only (not the empty-state reset button)
-    const applyBtn = document.querySelector('#apw-resiFilterForm .apw-filterApply');
-    if (applyBtn) {
-        applyBtn.type = 'button'; // prevent native form submit; we control it here
-        applyBtn.addEventListener('click', function () {
-            document.getElementById('apw-resiFilterForm').submit();
-        });
-    }
-
 </script>
 @endsection
