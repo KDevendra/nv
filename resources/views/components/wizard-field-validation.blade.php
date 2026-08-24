@@ -168,8 +168,11 @@
     // true when they try to advance a step or submit, so an untouched empty
     // field doesn't shout at them but also can't slip past "Save & Next".
     function checkIfRequired(input) {
-        if (input.hasAttribute('required')) return true;
         var fieldWrap = input.closest('div');
+        if (fieldWrap && (fieldWrap.style.display === 'none' || input.offsetParent === null)) {
+            return false;
+        }
+        if (input.hasAttribute('required')) return true;
         if (fieldWrap) {
             var label = fieldWrap.querySelector('label');
             if (label) {
@@ -183,7 +186,11 @@
     }
 
     function validateField(input, enforceRequired) {
-        if (input.disabled || input.type === 'hidden' || input.offsetParent === null) return true;
+        var fieldWrap = input.closest('div');
+        if (input.disabled || input.type === 'hidden' || input.offsetParent === null || (fieldWrap && fieldWrap.style.display === 'none')) {
+            clearFieldError(input);
+            return true;
+        }
 
         var kind = inferKind(input);
         var isRequired = checkIfRequired(input);
@@ -569,66 +576,68 @@
     // ── Conditional required validation for "Part of a Project / Society?" ──
     (function () {
         function setupProjectSocietyToggle() {
-            var projectSelect = document.querySelector('select[name="part_of_a_project_society"]');
-            if (!projectSelect || projectSelect.dataset.projectToggleBound) return;
-            projectSelect.dataset.projectToggleBound = 'true';
+            var selects = document.querySelectorAll('select[name="part_of_a_project_society"]');
+            selects.forEach(function (projectSelect) {
+                if (projectSelect.dataset.projectToggleBound) return;
+                projectSelect.dataset.projectToggleBound = 'true';
 
-            var secB2Container = projectSelect.closest('.border-t') || (projectSelect.closest('.grid') ? projectSelect.closest('.grid').parentElement : null);
-            if (!secB2Container) return;
+                var form = projectSelect.closest('form') || document;
 
-            var projectFieldNames = [
-                'project_society_name',
-                'project_name',
-                'project_rera_id',
-                'developer_builder_name',
-                'builder_developer_name',
-                'total_towers_blocks',
-                'total_units_in_project',
-                'approved_loan_banks',
-                'configurations_offered',
-                'project_amenities'
-            ];
+                var projectFieldNames = [
+                    'project_society_name',
+                    'project_name',
+                    'project_rera_id',
+                    'developer_builder_name',
+                    'builder_developer_name',
+                    'total_towers_blocks',
+                    'total_units_in_project',
+                    'approved_loan_banks',
+                    'configurations_offered',
+                    'project_amenities'
+                ];
 
-            function toggleProjectFields() {
-                var val = (projectSelect.value || '').trim().toLowerCase();
-                var isYes = val === 'yes' || val.startsWith('yes');
+                function toggleProjectFields() {
+                    var val = (projectSelect.value || '').trim().toLowerCase();
+                    var isYes = val === 'yes' || val.startsWith('yes');
 
-                projectFieldNames.forEach(function (name) {
-                    var inputs = secB2Container.querySelectorAll('[name="' + name + '"], [name="' + name + '[]"]');
-                    inputs.forEach(function (input) {
-                        var fieldWrap = input.closest('div');
-                        if (!fieldWrap) return;
+                    projectFieldNames.forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"], [name="' + name + '[]"]');
+                        inputs.forEach(function (input) {
+                            var fieldWrap = input.closest('div');
+                            if (!fieldWrap) return;
 
-                        var label = fieldWrap.querySelector('label');
-                        var asterisk = fieldWrap.querySelector('.text-red-500');
+                            var label = fieldWrap.querySelector('label');
+                            var asterisk = label ? label.querySelector('.text-red-500') : null;
 
-                        if (isYes) {
-                            fieldWrap.style.display = '';
-                            input.required = true;
-                            input.setAttribute('required', 'required');
-                            if (label && !asterisk) {
-                                var span = document.createElement('span');
-                                span.className = 'text-red-500 ml-0.5';
-                                span.textContent = '*';
-                                label.appendChild(span);
-                            } else if (asterisk) {
-                                asterisk.style.display = '';
+                            if (isYes) {
+                                fieldWrap.style.display = '';
+                                input.required = true;
+                                input.setAttribute('required', 'required');
+                                if (label && !asterisk) {
+                                    var span = document.createElement('span');
+                                    span.className = 'text-red-500 ml-0.5';
+                                    span.textContent = '*';
+                                    label.appendChild(span);
+                                } else if (asterisk) {
+                                    asterisk.style.display = '';
+                                }
+                            } else {
+                                fieldWrap.style.display = 'none';
+                                input.required = false;
+                                input.removeAttribute('required');
+                                if (asterisk) asterisk.style.display = 'none';
+                                if (window.ZendoFieldValidation) {
+                                    window.ZendoFieldValidation.clearFieldError(input);
+                                }
                             }
-                        } else {
-                            fieldWrap.style.display = 'none';
-                            input.required = false;
-                            input.removeAttribute('required');
-                            if (asterisk) asterisk.style.display = 'none';
-                            if (window.ZendoFieldValidation) {
-                                window.ZendoFieldValidation.clearFieldError(input);
-                            }
-                        }
+                        });
                     });
-                });
-            }
+                }
 
-            projectSelect.addEventListener('change', toggleProjectFields);
-            toggleProjectFields();
+                projectSelect.addEventListener('change', toggleProjectFields);
+                projectSelect.addEventListener('input', toggleProjectFields);
+                toggleProjectFields();
+            });
         }
 
         if (document.readyState === 'loading') {

@@ -190,15 +190,15 @@
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project / Society Name <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="project_society_name" value="{{ old('project_society_name', $property->project_society_name ?? '') }}" placeholder="Society name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="project_society_name" value="{{ old('project_society_name', $property->project_society_name ?? '') }}" placeholder="Society name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project RERA ID <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="project_rera_id" value="{{ old('project_rera_id', $property->project_rera_id ?? '') }}" placeholder="RERA ID" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="project_rera_id" value="{{ old('project_rera_id', $property->project_rera_id ?? '') }}" placeholder="RERA ID" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Developer / Builder Name <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="developer_builder_name" value="{{ old('developer_builder_name', $property->developer_builder_name ?? '') }}" placeholder="Developer name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="developer_builder_name" value="{{ old('developer_builder_name', $property->developer_builder_name ?? '') }}" placeholder="Developer name" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div x-show="isPartOfProject === 'Yes'">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Total Towers / Blocks</label>
