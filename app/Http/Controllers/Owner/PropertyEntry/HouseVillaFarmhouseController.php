@@ -83,6 +83,17 @@ class HouseVillaFarmhouseController extends Controller
             $data['custom_fields'] = json_encode($customFields);
         }
 
+        // Never user-controlled — the form used to expose these as plain
+        // text inputs even though the spec marks both "System-populated /
+        // calculated; read-only". An owner who left field_verified blank
+        // submitted a literal empty string, which ConvertEmptyStringsToNull
+        // turns into NULL, and the column is NOT NULL with no PHP-side
+        // default — every draft/submit on this form crashed with
+        // "Column 'field_verified' cannot be null" until this was forced
+        // here instead of left to whatever the request happened to carry.
+        $data['field_officer_name'] = auth()->user()?->name ?? 'System Officer';
+        $data['field_verified'] = false;
+
         $entry = PropertyEntry::create($data);
 
         // Reject non-image / oversized uploads before touching storage —
@@ -183,6 +194,11 @@ class HouseVillaFarmhouseController extends Controller
         if (!empty($customFields)) {
             $data['custom_fields'] = json_encode($customFields);
         }
+
+        // Never user-controlled — see the note in store(). An edit must not
+        // let a submitted (possibly empty) value overwrite the officer's
+        // real name or flip verification status.
+        unset($data['field_officer_name'], $data['field_verified']);
 
         $property->update($data);
 
