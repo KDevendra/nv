@@ -90,6 +90,12 @@ class MultiTenantBuildingController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Multi-Tenant Commercial Building submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.multi-tenant-building.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class MultiTenantBuildingController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Multi-Tenant Commercial Building updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.multi-tenant-building.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

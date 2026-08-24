@@ -90,6 +90,12 @@ class AgriculturalFarmLandController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Agricultural / Farm Land submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.agricultural-farm-land.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class AgriculturalFarmLandController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Agricultural / Farm Land updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.agricultural-farm-land.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

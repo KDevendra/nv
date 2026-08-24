@@ -90,6 +90,12 @@ class HouseVillaFarmhouseController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'House / Villa / Farmhouse submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.house-villa-farmhouse.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class HouseVillaFarmhouseController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'House / Villa / Farmhouse updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.house-villa-farmhouse.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

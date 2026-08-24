@@ -90,6 +90,12 @@ class ServiceApartmentPgController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Service Apartment / Co-living / PG submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.service-apartment-pg.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class ServiceApartmentPgController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Service Apartment / Co-living / PG updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.service-apartment-pg.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

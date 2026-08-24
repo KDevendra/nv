@@ -90,6 +90,12 @@ class SezEouStpiUnitController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'SEZ / EOU / STPI Unit submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.sez-eou-stpi-unit.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class SezEouStpiUnitController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'SEZ / EOU / STPI Unit updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.sez-eou-stpi-unit.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

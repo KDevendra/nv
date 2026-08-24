@@ -414,90 +414,69 @@
     // ── Browser Geolocation auto-fill for GPS Latitude & Longitude ──
     (function () {
         function setupGpsLocationHelper() {
-            var latInput = document.querySelector('input[name="gps_latitude"]');
-            var lngInput = document.querySelector('input[name="gps_longitude"]');
-            if (!latInput || !lngInput) return;
-            
-            var parentWrap = latInput.closest('.grid') || latInput.parentElement.parentElement;
-            if (!parentWrap || parentWrap.querySelector('.btn-use-gps-location')) return;
+            var buttons = document.querySelectorAll('.btn-use-gps-location');
+            if (!buttons.length) return;
 
-            var btnWrap = document.createElement('div');
-            btnWrap.className = 'col-span-full mb-1 flex items-center justify-between bg-blue-50/60 border border-blue-100 rounded-lg p-2.5';
-            btnWrap.innerHTML = [
-                '<div class="flex items-center gap-2">',
-                '  <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">',
-                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>',
-                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>',
-                '  </svg>',
-                '  <span class="text-xs font-medium text-blue-900">GPS Coordinates (Auto-Detect or Enter Manually)</span>',
-                '</div>',
-                '<button type="button" class="btn-use-gps-location inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm cursor-pointer">',
-                '  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">',
-                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>',
-                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>',
-                '  </svg>',
-                '  <span>Use Current Location</span>',
-                '</button>'
-            ].join('');
+            buttons.forEach(function (btn) {
+                if (btn.dataset.gpsBound) return;
+                btn.dataset.gpsBound = 'true';
 
-            // Insert location helper bar right before the GPS Latitude input wrapper
-            var latFieldContainer = latInput.closest('div');
-            if (latFieldContainer && latFieldContainer.parentElement) {
-                latFieldContainer.parentElement.insertBefore(btnWrap, latFieldContainer);
-            }
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var form = btn.closest('form') || document;
+                    var latInput = form.querySelector('input[name="gps_latitude"]');
+                    var lngInput = form.querySelector('input[name="gps_longitude"]');
 
-            var btn = btnWrap.querySelector('.btn-use-gps-location');
+                    if (!latInput || !lngInput) return;
 
-            btn.addEventListener('click', function () {
-                if (!navigator.geolocation) {
-                    alert('Geolocation is not supported by your browser. Please enter coordinates manually.');
-                    return;
-                }
+                    if (!navigator.geolocation) {
+                        alert('Geolocation is not supported by your browser. Please enter coordinates manually.');
+                        return;
+                    }
 
-                btn.disabled = true;
-                btn.classList.add('opacity-75', 'cursor-wait');
-                btn.querySelector('span').textContent = 'Detecting location...';
+                    btn.disabled = true;
+                    var span = btn.querySelector('span') || btn;
+                    var originalText = span.textContent;
+                    span.textContent = 'Detecting...';
 
-                navigator.geolocation.getCurrentPosition(
-                    function (pos) {
-                        var lat = pos.coords.latitude.toFixed(6);
-                        var lng = pos.coords.longitude.toFixed(6);
+                    navigator.geolocation.getCurrentPosition(
+                        function (pos) {
+                            var lat = pos.coords.latitude.toFixed(6);
+                            var lng = pos.coords.longitude.toFixed(6);
 
-                        latInput.value = lat;
-                        lngInput.value = lng;
+                            latInput.value = lat;
+                            lngInput.value = lng;
 
-                        // Trigger input events so any validation errors clear immediately
-                        latInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        lngInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            latInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            lngInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            latInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            lngInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-                        if (window.ZendoFieldValidation) {
-                            window.ZendoFieldValidation.clearFieldError(latInput);
-                            window.ZendoFieldValidation.clearFieldError(lngInput);
-                        }
+                            if (window.ZendoFieldValidation) {
+                                window.ZendoFieldValidation.clearFieldError(latInput);
+                                window.ZendoFieldValidation.clearFieldError(lngInput);
+                            }
 
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-75', 'cursor-wait');
-                        btn.querySelector('span').textContent = '✓ Location Applied';
-                        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                            btn.disabled = false;
+                            span.textContent = '✓ Location Applied';
 
-                        setTimeout(function () {
-                            btn.querySelector('span').textContent = 'Update Location';
-                        }, 3000);
-                    },
-                    function (err) {
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-75', 'cursor-wait');
-                        btn.querySelector('span').textContent = 'Use Current Location';
+                            setTimeout(function () {
+                                span.textContent = originalText;
+                            }, 3000);
+                        },
+                        function (err) {
+                            btn.disabled = false;
+                            span.textContent = originalText;
 
-                        var msg = 'Unable to fetch location. Please enter coordinates manually.';
-                        if (err.code === err.PERMISSION_DENIED) {
-                            msg = 'Location access denied. Please enable location permission in browser or enter manually.';
-                        }
-                        alert(msg);
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
+                            var msg = 'Unable to fetch location. Please enter coordinates manually.';
+                            if (err.code === err.PERMISSION_DENIED) {
+                                msg = 'Location access denied. Please enable location permission in browser or enter manually.';
+                            }
+                            alert(msg);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                });
             });
         }
 
@@ -505,6 +484,78 @@
             document.addEventListener('DOMContentLoaded', setupGpsLocationHelper);
         } else {
             setupGpsLocationHelper();
+        }
+    })();
+
+    // ── Conditional required validation for "Part of a Project / Society?" ──
+    (function () {
+        function setupProjectSocietyToggle() {
+            var projectSelect = document.querySelector('select[name="part_of_a_project_society"]');
+            if (!projectSelect || projectSelect.dataset.projectToggleBound) return;
+            projectSelect.dataset.projectToggleBound = 'true';
+
+            var secB2Container = projectSelect.closest('.border-t') || (projectSelect.closest('.grid') ? projectSelect.closest('.grid').parentElement : null);
+            if (!secB2Container) return;
+
+            var projectFieldNames = [
+                'project_society_name',
+                'project_name',
+                'project_rera_id',
+                'developer_builder_name',
+                'builder_developer_name',
+                'total_towers_blocks',
+                'total_units_in_project',
+                'approved_loan_banks',
+                'configurations_offered',
+                'project_amenities'
+            ];
+
+            function toggleProjectFields() {
+                var val = (projectSelect.value || '').trim().toLowerCase();
+                var isYes = val === 'yes' || val.startsWith('yes');
+
+                projectFieldNames.forEach(function (name) {
+                    var inputs = secB2Container.querySelectorAll('[name="' + name + '"], [name="' + name + '[]"]');
+                    inputs.forEach(function (input) {
+                        var fieldWrap = input.closest('div');
+                        if (!fieldWrap) return;
+
+                        var label = fieldWrap.querySelector('label');
+                        var asterisk = fieldWrap.querySelector('.text-red-500');
+
+                        if (isYes) {
+                            fieldWrap.style.display = '';
+                            input.required = true;
+                            input.setAttribute('required', 'required');
+                            if (label && !asterisk) {
+                                var span = document.createElement('span');
+                                span.className = 'text-red-500 ml-0.5';
+                                span.textContent = '*';
+                                label.appendChild(span);
+                            } else if (asterisk) {
+                                asterisk.style.display = '';
+                            }
+                        } else {
+                            fieldWrap.style.display = 'none';
+                            input.required = false;
+                            input.removeAttribute('required');
+                            if (asterisk) asterisk.style.display = 'none';
+                            if (window.ZendoFieldValidation) {
+                                window.ZendoFieldValidation.clearFieldError(input);
+                            }
+                        }
+                    });
+                });
+            }
+
+            projectSelect.addEventListener('change', toggleProjectFields);
+            toggleProjectFields();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupProjectSocietyToggle);
+        } else {
+            setupProjectSocietyToggle();
         }
     })();
 

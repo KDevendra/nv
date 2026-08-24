@@ -90,6 +90,12 @@ class FactoryManufacturingIndustrialController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Factory / Manufacturing / Industrial submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.factory-manufacturing-industrial.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class FactoryManufacturingIndustrialController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Factory / Manufacturing / Industrial updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.factory-manufacturing-industrial.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

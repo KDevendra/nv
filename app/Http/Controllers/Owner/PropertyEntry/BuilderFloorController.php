@@ -90,6 +90,12 @@ class BuilderFloorController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Builder Floor submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.builder-floor.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class BuilderFloorController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Builder Floor updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.builder-floor.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

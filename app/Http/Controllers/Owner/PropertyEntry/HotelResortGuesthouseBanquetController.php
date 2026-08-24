@@ -90,6 +90,12 @@ class HotelResortGuesthouseBanquetController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Hospitality — Hotel / Resort / Guest House submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.hotel-resort-guesthouse-banquet.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class HotelResortGuesthouseBanquetController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Hospitality — Hotel / Resort / Guest House updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.hotel-resort-guesthouse-banquet.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

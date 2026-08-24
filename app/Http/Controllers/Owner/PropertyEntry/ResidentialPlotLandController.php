@@ -90,6 +90,12 @@ class ResidentialPlotLandController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Residential Plot / Land submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.residential-plot-land.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class ResidentialPlotLandController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Residential Plot / Land updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.residential-plot-land.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

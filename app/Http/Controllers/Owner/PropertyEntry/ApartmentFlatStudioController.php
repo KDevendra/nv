@@ -91,7 +91,7 @@ class ApartmentFlatStudioController extends Controller
 
         if ($isDraft) {
             return redirect()->route('owner.properties.apartment-flat-studio.edit', $entry)
-                ->with('success', 'Draft saved successfully. Code: ' . $entry->code)
+                ->with('success', 'Draft saved successfully.')
                 ->with('wizard_step', $request->input('wizard_step', 0));
         }
 
@@ -163,7 +163,7 @@ class ApartmentFlatStudioController extends Controller
             $this->handlePhotos($property, $request);
 
             return redirect()->route('owner.properties.apartment-flat-studio.edit', $property)
-                ->with('success', 'Draft updated.')
+                ->with('success', 'Draft saved successfully.')
                 ->with('wizard_step', $request->input('wizard_step', 0));
         }
 

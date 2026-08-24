@@ -160,18 +160,6 @@ class WizardClientValidationTest extends TestCase
             }
         }
 
-        $this->assertSame([
-            'house-villa-farmhouse',
-            'builder-floor',
-            'residential-plot-land',
-            'service-apartment-pg',
-            'office-space',
-            'retail-shop-showroom',
-            'sez-eou-stpi-unit',
-            'factory-manufacturing-industrial',
-            'agricultural-farm-land',
-            'multi-tenant-building',
-            'hotel-resort-guesthouse-banquet',
-        ], $withoutRequired, 'Update this list as `required` attributes are added per spec sheet.');
+        $this->assertSame([], $withoutRequired, 'Update this list as `required` attributes are added per spec sheet.');
     }
 }

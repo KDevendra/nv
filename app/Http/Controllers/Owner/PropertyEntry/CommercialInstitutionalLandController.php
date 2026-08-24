@@ -90,6 +90,12 @@ class CommercialInstitutionalLandController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Commercial / Institutional Land submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.commercial-institutional-land.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class CommercialInstitutionalLandController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Commercial / Institutional Land updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.commercial-institutional-land.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }

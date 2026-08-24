@@ -90,6 +90,12 @@ class RetailShopShowroomController extends Controller
         ]);
 
         $msg = $status === 'draft' ? 'Draft saved successfully.' : 'Retail Shop / Showroom submitted successfully.';
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.retail-shop-showroom.edit', $entry)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
         return redirect()->route('owner.properties.index')->with('success', $msg);
     }
 
@@ -138,6 +144,12 @@ class RetailShopShowroomController extends Controller
 
         $property->update($data);
 
-        return redirect()->route('owner.properties.index')->with('success', 'Retail Shop / Showroom updated successfully.');
+        if ($status === 'draft') {
+            return redirect()->route('owner.properties.retail-shop-showroom.edit', $property)
+                ->with('success', 'Draft saved successfully.')
+                ->with('wizard_step', $request->input('wizard_step', 0));
+        }
+
+        return redirect()->route('owner.properties.index')->with('success', 'Property updated successfully.');
     }
 }
