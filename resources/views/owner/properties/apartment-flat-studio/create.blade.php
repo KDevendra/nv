@@ -158,8 +158,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Facing / Orientation</label>
                             <select name="facing_orientation" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                @foreach(['N','E','W','S','NE','NW','SE','SW'] as $dir)
-                                    <option value="{{ $dir }}" {{ old('facing_orientation', $property->facing_orientation ?? '') === $dir ? 'selected' : '' }}>{{ $dir }}</option>
+                                @foreach(['N'=>'North','E'=>'East','W'=>'West','S'=>'South','NE'=>'North-East','NW'=>'North-West','SE'=>'South-East','SW'=>'South-West'] as $dir => $label)
+                                    <option value="{{ $dir }}" {{ old('facing_orientation', $property->facing_orientation ?? '') === $dir ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
