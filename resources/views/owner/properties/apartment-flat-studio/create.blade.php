@@ -1,4 +1,5 @@
 @extends('layouts.owner')
+@php if (!isset($property)) { $property = null; } @endphp
 @section('title', (isset($property) ? 'Edit' : 'List New') . ' Apartment / Flat / Studio - Owner Portal')
 
 @section('content')
@@ -56,14 +57,14 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span
                                     class="text-red-500">*</span></label>
                             <input required type="text" name="submitter_full_name"
-                                value="{{ old('submitter_full_name', $property->submitter_full_name ?? auth()->user()->name) }}"
+                                value="{{ old('submitter_full_name', $property?->fieldValue('submitter_full_name') ?? auth()->user()->name) }}"
                                 required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Phone <span
                                     class="text-red-500">*</span></label>
                             <input required type="text" name="submitter_phone"
-                                value="{{ old('submitter_phone', $property->submitter_phone ?? auth()->user()->phone) }}"
+                                value="{{ old('submitter_phone', $property?->fieldValue('submitter_phone') ?? auth()->user()->phone) }}"
                                 required placeholder="10-digit mobile"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
@@ -71,7 +72,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Email <span
                                     class="text-red-500">*</span></label>
                             <input required type="email" name="submitter_email"
-                                value="{{ old('submitter_email', $property->submitter_email ?? auth()->user()->email) }}"
+                                value="{{ old('submitter_email', $property?->fieldValue('submitter_email') ?? auth()->user()->email) }}"
                                 required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
@@ -81,14 +82,14 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select Role —</option>
                                 @foreach(['Owner', 'Builder', 'Authorised Agent', 'Broker', 'GPA holder'] as $role)
-                                    <option value="{{ $role }}" {{ old('submitter_role', $property->submitter_role ?? 'Owner') === $role ? 'selected' : '' }}>{{ $role }}</option>
+                                    <option value="{{ $role }}" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? 'Owner') === $role ? 'selected' : '' }}>{{ $role }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Company / Entity Name</label>
                             <input type="text" name="company_entity_name"
-                                value="{{ old('company_entity_name', $property->company_entity_name ?? '') }}"
+                                value="{{ old('company_entity_name', $property?->fieldValue('company_entity_name') ?? '') }}"
                                 placeholder="Company or entity name"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
@@ -96,21 +97,21 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Name <span
                                     class="text-red-500">*</span></label>
                             <input required type="text" name="owner_contact_name"
-                                value="{{ old('owner_contact_name', $property->owner_contact_name ?? auth()->user()->name) }}"
+                                value="{{ old('owner_contact_name', $property?->fieldValue('owner_contact_name') ?? auth()->user()->name) }}"
                                 required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Number <span
                                     class="text-red-500">*</span></label>
                             <input required type="text" name="owner_contact_phone"
-                                value="{{ old('owner_contact_phone', $property->owner_contact_phone ?? auth()->user()->phone) }}"
+                                value="{{ old('owner_contact_phone', $property?->fieldValue('owner_contact_phone') ?? auth()->user()->phone) }}"
                                 required placeholder="10-digit mobile"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Email</label>
                             <input type="email" name="owner_email"
-                                value="{{ old('owner_email', $property->owner_email ?? '') }}"
+                                value="{{ old('owner_email', $property?->fieldValue('owner_email') ?? '') }}"
                                 placeholder="Owner email address"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
@@ -129,14 +130,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code <span
                                         class="text-red-500">*</span></label>
                                 <input required type="text" name="postal_address_pin"
-                                    value="{{ old('postal_address_pin', $property->postal_address_pin ?? '') }}" required
+                                    value="{{ old('postal_address_pin', $property?->fieldValue('postal_address_pin') ?? '') }}" required
                                     maxlength="6" placeholder="6-digit PIN"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">City <span
                                         class="text-red-500">*</span></label>
-                                <input required type="text" name="city" value="{{ old('city', $property->city ?? '') }}"
+                                <input required type="text" name="city" value="{{ old('city', $property?->fieldValue('city') ?? '') }}"
                                     required placeholder="e.g. Mumbai, Gurgaon, Delhi"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -144,7 +145,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Locality / Broad Area <span
                                         class="text-red-500">*</span></label>
                                 <input required type="text" name="locality_broad_area"
-                                    value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" required
+                                    value="{{ old('locality_broad_area', $property?->fieldValue('locality_broad_area') ?? '') }}" required
                                     placeholder="e.g. Bandra West, DLF Phase 5"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -152,21 +153,21 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sub-locality / Society
                                     Name</label>
                                 <input type="text" name="sub_locality_society_name"
-                                    value="{{ old('sub_locality_society_name', $property->sub_locality_society_name ?? '') }}"
+                                    value="{{ old('sub_locality_society_name', $property?->fieldValue('sub_locality_society_name') ?? '') }}"
                                     placeholder="Sub-locality or society"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
                                 <input type="text" name="project_name"
-                                    value="{{ old('project_name', $property->project_name ?? '') }}"
+                                    value="{{ old('project_name', $property?->fieldValue('project_name') ?? '') }}"
                                     placeholder="Project name"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Builder / Developer Name</label>
                                 <input type="text" name="builder_developer_name"
-                                    value="{{ old('builder_developer_name', $property->builder_developer_name ?? '') }}"
+                                    value="{{ old('builder_developer_name', $property?->fieldValue('builder_developer_name') ?? '') }}"
                                     placeholder="Developer name"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -174,7 +175,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">State <span
                                         class="text-red-500">*</span></label>
-                                <input required type="text" name="state" value="{{ old('state', $property->state ?? '') }}"
+                                <input required type="text" name="state" value="{{ old('state', $property?->fieldValue('state') ?? '') }}"
                                     required placeholder="State"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -182,7 +183,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" step="0.000001" name="gps_latitude"
-                                    value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required
+                                    value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}" required
                                     placeholder="e.g. 28.459512"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -203,7 +204,7 @@
                                     </button>
                                 </div>
                                 <input type="number" step="0.000001" name="gps_longitude"
-                                    value="{{ old('gps_longitude', $property->gps_longitude ?? '') }}" required
+                                    value="{{ old('gps_longitude', $property?->fieldValue('gps_longitude') ?? '') }}" required
                                     placeholder="e.g. 77.026634"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -212,12 +213,12 @@
                                     Street) <span class="text-red-500">*</span></label>
                                 <textarea name="name_full_address" required rows="2"
                                     placeholder="Full postal street address"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('name_full_address', $property->name_full_address ?? '') }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('name_full_address', $property?->fieldValue('name_full_address') ?? '') }}</textarea>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Nearby Landmarks</label>
                                 <input type="text" name="nearby_landmarks"
-                                    value="{{ old('nearby_landmarks', $property->nearby_landmarks ?? '') }}"
+                                    value="{{ old('nearby_landmarks', $property?->fieldValue('nearby_landmarks') ?? '') }}"
                                     placeholder="Key landmarks nearby"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -225,7 +226,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Distance from Key
                                     Locations</label>
                                 <input type="text" name="distance_from_key_locations"
-                                    value="{{ old('distance_from_key_locations', $property->distance_from_key_locations ?? '') }}"
+                                    value="{{ old('distance_from_key_locations', $property?->fieldValue('distance_from_key_locations') ?? '') }}"
                                     placeholder="Distance from Metro/School/Hospital"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -235,7 +236,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['N' => 'North', 'E' => 'East', 'W' => 'West', 'S' => 'South', 'NE' => 'North-East', 'NW' => 'North-West', 'SE' => 'South-East', 'SW' => 'South-West'] as $dir => $label)
-                                        <option value="{{ $dir }}" {{ old('facing_orientation', $property->facing_orientation ?? '') === $dir ? 'selected' : '' }}>{{ $label }}</option>
+                                        <option value="{{ $dir }}" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === $dir ? 'selected' : '' }}>{{ $label }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -243,7 +244,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Overlooking / View</label>
                                 <select name="overlooking_view[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedOverlooking = old('overlooking_view', $property->overlooking_view ?? []);
+                                        $selectedOverlooking = old('overlooking_view', $property?->fieldValue('overlooking_view') ?? []);
                                     @endphp
                                     @foreach(['Main Road', 'Park-Garden', 'Pool', 'Club', 'Others'] as $vw)
                                         <option value="{{ $vw }}" {{ in_array($vw, $selectedOverlooking) ? 'selected' : '' }}>
@@ -266,16 +267,16 @@
                                     <span class="text-red-500">*</span></label>
                                 <select name="part_of_a_project_society" required x-model="isPartOfProject"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Yes" {{ old('part_of_a_project_society', $property->part_of_a_project_society ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes
+                                    <option value="Yes" {{ old('part_of_a_project_society', $property?->fieldValue('part_of_a_project_society') ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes
                                     </option>
-                                    <option value="No" {{ old('part_of_a_project_society', $property->part_of_a_project_society ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="No" {{ old('part_of_a_project_society', $property?->fieldValue('part_of_a_project_society') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div x-show="isPartOfProject === 'Yes'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project / Society Name <span
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="project_society_name"
-                                    value="{{ old('project_society_name', $property->project_society_name ?? '') }}"
+                                    value="{{ old('project_society_name', $property?->fieldValue('project_society_name') ?? '') }}"
                                     placeholder="Society name"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -283,7 +284,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project RERA ID <span
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="project_rera_id"
-                                    value="{{ old('project_rera_id', $property->project_rera_id ?? '') }}"
+                                    value="{{ old('project_rera_id', $property?->fieldValue('project_rera_id') ?? '') }}"
                                     placeholder="RERA ID"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -291,28 +292,28 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Developer / Builder Name <span
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="developer_builder_name"
-                                    value="{{ old('developer_builder_name', $property->developer_builder_name ?? '') }}"
+                                    value="{{ old('developer_builder_name', $property?->fieldValue('developer_builder_name') ?? '') }}"
                                     placeholder="Developer name"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isPartOfProject === 'Yes'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Total Towers / Blocks</label>
                                 <input type="number" name="total_towers_blocks"
-                                    value="{{ old('total_towers_blocks', $property->total_towers_blocks ?? '') }}" min="0"
+                                    value="{{ old('total_towers_blocks', $property?->fieldValue('total_towers_blocks') ?? '') }}" min="0"
                                     placeholder="Total towers"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isPartOfProject === 'Yes'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Total Units in Project</label>
                                 <input type="number" name="total_units_in_project"
-                                    value="{{ old('total_units_in_project', $property->total_units_in_project ?? '') }}"
+                                    value="{{ old('total_units_in_project', $property?->fieldValue('total_units_in_project') ?? '') }}"
                                     min="0" placeholder="Total units"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isPartOfProject === 'Yes'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Approved Loan Banks</label>
                                 <input type="text" name="approved_loan_banks"
-                                    value="{{ old('approved_loan_banks', $property->approved_loan_banks ?? '') }}"
+                                    value="{{ old('approved_loan_banks', $property?->fieldValue('approved_loan_banks') ?? '') }}"
                                     placeholder="SBI, HDFC, ICICI..."
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -320,7 +321,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Configurations Offered</label>
                                 <select name="configurations_offered[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedConfigs = old('configurations_offered', $property->configurations_offered ?? []);
+                                        $selectedConfigs = old('configurations_offered', $property?->fieldValue('configurations_offered') ?? []);
                                     @endphp
                                     @foreach(['1', '2', '3', '4', '4+ BHK', 'Studio', 'Shop', 'Office'] as $cfgOpt)
                                         <option value="{{ $cfgOpt }}" {{ in_array($cfgOpt, $selectedConfigs) ? 'selected' : '' }}>{{ $cfgOpt }}</option>
@@ -331,7 +332,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project Amenities</label>
                                 <select name="project_amenities[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedProjAmen = old('project_amenities', $property->project_amenities ?? []);
+                                        $selectedProjAmen = old('project_amenities', $property?->fieldValue('project_amenities') ?? []);
                                     @endphp
                                     @foreach(['Clubhouse', 'Pool', 'Gym', 'Park', 'Sports', 'Power backup'] as $pam)
                                         <option value="{{ $pam }}" {{ in_array($pam, $selectedProjAmen) ? 'selected' : '' }}>
@@ -358,7 +359,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Apartment', 'Flat', 'Studio Apartment', 'Penthouse', 'Duplex'] as $t)
-                                        <option value="{{ $t }}" {{ old('unit_property_type', $property->unit_property_type ?? '') === $t ? 'selected' : '' }}>{{ $t }}</option>
+                                        <option value="{{ $t }}" {{ old('unit_property_type', $property?->fieldValue('unit_property_type') ?? '') === $t ? 'selected' : '' }}>{{ $t }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -369,7 +370,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['1RK', '1', '2', '3', '4', '4+ BHK'] as $cfg)
-                                        <option value="{{ $cfg }}" {{ old('configuration', $property->configuration ?? '') === $cfg ? 'selected' : '' }}>{{ $cfg }} BHK</option>
+                                        <option value="{{ $cfg }}" {{ old('configuration', $property?->fieldValue('configuration') ?? '') === $cfg ? 'selected' : '' }}>{{ $cfg }} BHK</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -377,14 +378,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Carpet Area (sq ft) <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" step="0.01" name="carpet_area"
-                                    value="{{ old('carpet_area', $property->carpet_area ?? '') }}" required
+                                    value="{{ old('carpet_area', $property?->fieldValue('carpet_area') ?? '') }}" required
                                     placeholder="e.g. 850"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq ft)</label>
                                 <input type="number" step="0.01" name="built_up_area"
-                                    value="{{ old('built_up_area', $property->built_up_area ?? '') }}"
+                                    value="{{ old('built_up_area', $property?->fieldValue('built_up_area') ?? '') }}"
                                     placeholder="e.g. 1100"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -392,7 +393,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Super Built-up Area (sq
                                     ft)</label>
                                 <input type="number" step="0.01" name="super_built_up_area"
-                                    value="{{ old('super_built_up_area', $property->super_built_up_area ?? '') }}"
+                                    value="{{ old('super_built_up_area', $property?->fieldValue('super_built_up_area') ?? '') }}"
                                     placeholder="e.g. 1350"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -400,7 +401,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Floor Number <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="floor_number"
-                                    value="{{ old('floor_number', $property->floor_number ?? '') }}" required min="0"
+                                    value="{{ old('floor_number', $property?->fieldValue('floor_number') ?? '') }}" required min="0"
                                     max="999" placeholder="0 = Ground"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -408,41 +409,41 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Total Floors in Building <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="number_of_floors"
-                                    value="{{ old('number_of_floors', $property->number_of_floors ?? '') }}" required
+                                    value="{{ old('number_of_floors', $property?->fieldValue('number_of_floors') ?? '') }}" required
                                     min="0" max="999" placeholder="Total floors"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Units on This Floor</label>
                                 <input type="number" name="units_on_this_floor"
-                                    value="{{ old('units_on_this_floor', $property->units_on_this_floor ?? '') }}" min="0"
+                                    value="{{ old('units_on_this_floor', $property?->fieldValue('units_on_this_floor') ?? '') }}" min="0"
                                     max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">No. of Bedrooms <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="no_of_bedrooms"
-                                    value="{{ old('no_of_bedrooms', $property->no_of_bedrooms ?? '') }}" required min="0"
+                                    value="{{ old('no_of_bedrooms', $property?->fieldValue('no_of_bedrooms') ?? '') }}" required min="0"
                                     max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">No. of Bathrooms <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="no_of_bathrooms"
-                                    value="{{ old('no_of_bathrooms', $property->no_of_bathrooms ?? '') }}" required min="0"
+                                    value="{{ old('no_of_bathrooms', $property?->fieldValue('no_of_bathrooms') ?? '') }}" required min="0"
                                     max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">No. of Balconies</label>
                                 <input type="number" name="no_of_balconies"
-                                    value="{{ old('no_of_balconies', $property->no_of_balconies ?? '') }}" min="0" max="999"
+                                    value="{{ old('no_of_balconies', $property?->fieldValue('no_of_balconies') ?? '') }}" min="0" max="999"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Additional Rooms</label>
                                 <select name="additional_rooms[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedAddRooms = old('additional_rooms', $property->additional_rooms ?? []);
+                                        $selectedAddRooms = old('additional_rooms', $property?->fieldValue('additional_rooms') ?? []);
                                     @endphp
                                     @foreach(['Pooja', 'Study', 'Servant', 'Store'] as $ar)
                                         <option value="{{ $ar }}" {{ in_array($ar, $selectedAddRooms) ? 'selected' : '' }}>
@@ -457,7 +458,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Unfurnished', 'Semi', 'Fully furnished'] as $f)
-                                        <option value="{{ $f }}" {{ old('furnishing_status', $property->furnishing_status ?? '') === $f ? 'selected' : '' }}>{{ $f }}</option>
+                                        <option value="{{ $f }}" {{ old('furnishing_status', $property?->fieldValue('furnishing_status') ?? '') === $f ? 'selected' : '' }}>{{ $f }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -465,7 +466,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Furnishing Details</label>
                                 <select name="furnishing_detail[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedFurnDetail = old('furnishing_detail', $property->furnishing_detail ?? []);
+                                        $selectedFurnDetail = old('furnishing_detail', $property?->fieldValue('furnishing_detail') ?? []);
                                     @endphp
                                     @foreach(['wardrobes', 'modular kitchen', 'ACs', 'appliances'] as $fd)
                                         <option value="{{ $fd }}" {{ in_array($fd, $selectedFurnDetail) ? 'selected' : '' }}>
@@ -476,13 +477,13 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Covered Parking Slots</label>
                                 <input type="number" name="covered_parking_slots"
-                                    value="{{ old('covered_parking_slots', $property->covered_parking_slots ?? '') }}"
+                                    value="{{ old('covered_parking_slots', $property?->fieldValue('covered_parking_slots') ?? '') }}"
                                     min="0" max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Open Parking Slots</label>
                                 <input type="number" name="open_parking_slots"
-                                    value="{{ old('open_parking_slots', $property->open_parking_slots ?? '') }}" min="0"
+                                    value="{{ old('open_parking_slots', $property?->fieldValue('open_parking_slots') ?? '') }}" min="0"
                                     max="999" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                         </div>
@@ -500,8 +501,8 @@
                                         class="text-red-500">*</span></label>
                                 <select name="property_status" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="New" {{ old('property_status', $property->property_status ?? 'New') === 'New' ? 'selected' : '' }}>New</option>
-                                    <option value="Resale" {{ old('property_status', $property->property_status ?? '') === 'Resale' ? 'selected' : '' }}>Resale</option>
+                                    <option value="New" {{ old('property_status', $property?->fieldValue('property_status') ?? 'New') === 'New' ? 'selected' : '' }}>New</option>
+                                    <option value="Resale" {{ old('property_status', $property?->fieldValue('property_status') ?? '') === 'Resale' ? 'selected' : '' }}>Resale</option>
                                 </select>
                             </div>
                             <div>
@@ -509,11 +510,11 @@
                                     <span class="text-red-500">*</span></label>
                                 <select name="construction_listing_status" required x-model="constrStatus"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Ready to Move" {{ old('construction_listing_status', $property->construction_listing_status ?? 'Ready to Move') === 'Ready to Move' ? 'selected' : '' }}>Ready to Move</option>
-                                    <option value="Under Construction" {{ old('construction_listing_status', $property->construction_listing_status ?? '') === 'Under Construction' ? 'selected' : '' }}>Under Construction</option>
-                                    <option value="New Launch" {{ old('construction_listing_status', $property->construction_listing_status ?? '') === 'New Launch' ? 'selected' : '' }}>
+                                    <option value="Ready to Move" {{ old('construction_listing_status', $property?->fieldValue('construction_listing_status') ?? 'Ready to Move') === 'Ready to Move' ? 'selected' : '' }}>Ready to Move</option>
+                                    <option value="Under Construction" {{ old('construction_listing_status', $property?->fieldValue('construction_listing_status') ?? '') === 'Under Construction' ? 'selected' : '' }}>Under Construction</option>
+                                    <option value="New Launch" {{ old('construction_listing_status', $property?->fieldValue('construction_listing_status') ?? '') === 'New Launch' ? 'selected' : '' }}>
                                         New Launch</option>
-                                    <option value="Pre-launch" {{ old('construction_listing_status', $property->construction_listing_status ?? '') === 'Pre-launch' ? 'selected' : '' }}>
+                                    <option value="Pre-launch" {{ old('construction_listing_status', $property?->fieldValue('construction_listing_status') ?? '') === 'Pre-launch' ? 'selected' : '' }}>
                                         Pre-launch</option>
                                 </select>
                             </div>
@@ -521,7 +522,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Possession By Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="possession_by"
-                                    value="{{ old('possession_by', isset($property->possession_by) ? $property->possession_by->format('Y-m-d') : '') }}"
+                                    value="{{ old('possession_by', ($property?->fieldValue('possession_by') !== null) ? $property?->fieldValue('possession_by')->format('Y-m-d') : '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -530,7 +531,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['<1', '1-5', '5-10', '10+ yrs'] as $age)
-                                        <option value="{{ $age }}" {{ old('age_of_property', $property->age_of_property ?? '') === $age ? 'selected' : '' }}>{{ $age }}</option>
+                                        <option value="{{ $age }}" {{ old('age_of_property', $property?->fieldValue('age_of_property') ?? '') === $age ? 'selected' : '' }}>{{ $age }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -539,15 +540,15 @@
                                         class="text-red-500">*</span></label>
                                 <select name="availability" required x-model="availability"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Immediate" {{ old('availability', $property->availability ?? 'Immediate') === 'Immediate' ? 'selected' : '' }}>Immediate</option>
-                                    <option value="From date" {{ old('availability', $property->availability ?? '') === 'From date' ? 'selected' : '' }}>From date</option>
+                                    <option value="Immediate" {{ old('availability', $property?->fieldValue('availability') ?? 'Immediate') === 'Immediate' ? 'selected' : '' }}>Immediate</option>
+                                    <option value="From date" {{ old('availability', $property?->fieldValue('availability') ?? '') === 'From date' ? 'selected' : '' }}>From date</option>
                                 </select>
                             </div>
                             <div x-show="availability === 'From date'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Available From Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="available_from"
-                                    value="{{ old('available_from', isset($property->available_from) ? $property->available_from->format('Y-m-d') : '') }}"
+                                    value="{{ old('available_from', ($property?->fieldValue('available_from') !== null) ? $property?->fieldValue('available_from')->format('Y-m-d') : '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -556,8 +557,8 @@
                                 <select name="bank_loan_emi_available"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes — approved banks" {{ old('bank_loan_emi_available', $property->bank_loan_emi_available ?? '') === 'Yes — approved banks' ? 'selected' : '' }}>Yes — approved banks</option>
-                                    <option value="No" {{ old('bank_loan_emi_available', $property->bank_loan_emi_available ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes — approved banks" {{ old('bank_loan_emi_available', $property?->fieldValue('bank_loan_emi_available') ?? '') === 'Yes — approved banks' ? 'selected' : '' }}>Yes — approved banks</option>
+                                    <option value="No" {{ old('bank_loan_emi_available', $property?->fieldValue('bank_loan_emi_available') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                         </div>
@@ -579,7 +580,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Freehold', 'Leasehold', 'GPA', 'Co-op Society'] as $o)
-                                        <option value="{{ $o }}" {{ old('ownership_type', $property->ownership_type ?? '') === $o ? 'selected' : '' }}>{{ $o }}</option>
+                                        <option value="{{ $o }}" {{ old('ownership_type', $property?->fieldValue('ownership_type') ?? '') === $o ? 'selected' : '' }}>{{ $o }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -588,9 +589,9 @@
                                         class="text-red-500">*</span></label>
                                 <select name="title_status" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Clear" {{ old('title_status', $property->title_status ?? 'Clear') === 'Clear' ? 'selected' : '' }}>Clear</option>
-                                    <option value="Under Dispute" {{ old('title_status', $property->title_status ?? '') === 'Under Dispute' ? 'selected' : '' }}>Under Dispute</option>
-                                    <option value="Encumbrance Being Resolved" {{ old('title_status', $property->title_status ?? '') === 'Encumbrance Being Resolved' ? 'selected' : '' }}>
+                                    <option value="Clear" {{ old('title_status', $property?->fieldValue('title_status') ?? 'Clear') === 'Clear' ? 'selected' : '' }}>Clear</option>
+                                    <option value="Under Dispute" {{ old('title_status', $property?->fieldValue('title_status') ?? '') === 'Under Dispute' ? 'selected' : '' }}>Under Dispute</option>
+                                    <option value="Encumbrance Being Resolved" {{ old('title_status', $property?->fieldValue('title_status') ?? '') === 'Encumbrance Being Resolved' ? 'selected' : '' }}>
                                         Encumbrance Being Resolved</option>
                                 </select>
                             </div>
@@ -599,16 +600,16 @@
                                         class="text-red-500">*</span></label>
                                 <select name="rera_registered" required x-model="reraReg"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Yes" {{ old('rera_registered', $property->rera_registered ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('rera_registered', $property->rera_registered ?? '') === 'No' ? 'selected' : '' }}>No</option>
-                                    <option value="Not Applicable" {{ old('rera_registered', $property->rera_registered ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
+                                    <option value="Yes" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Not Applicable" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
                                 </select>
                             </div>
                             <div x-show="reraReg === 'Yes'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">RERA Registration ID <span
                                         class="text-red-500">*</span></label>
                                 <input required type="text" name="rera_registration_id"
-                                    value="{{ old('rera_registration_id', $property->rera_registration_id ?? '') }}"
+                                    value="{{ old('rera_registration_id', $property?->fieldValue('rera_registration_id') ?? '') }}"
                                     placeholder="RERA reg number"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -617,10 +618,10 @@
                                         class="text-red-500">*</span></label>
                                 <select name="occupancy_certificate" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Received" {{ old('occupancy_certificate', $property->occupancy_certificate ?? 'Received') === 'Received' ? 'selected' : '' }}>
+                                    <option value="Received" {{ old('occupancy_certificate', $property?->fieldValue('occupancy_certificate') ?? 'Received') === 'Received' ? 'selected' : '' }}>
                                         Received</option>
-                                    <option value="Applied" {{ old('occupancy_certificate', $property->occupancy_certificate ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
-                                    <option value="Not Received" {{ old('occupancy_certificate', $property->occupancy_certificate ?? '') === 'Not Received' ? 'selected' : '' }}>Not
+                                    <option value="Applied" {{ old('occupancy_certificate', $property?->fieldValue('occupancy_certificate') ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
+                                    <option value="Not Received" {{ old('occupancy_certificate', $property?->fieldValue('occupancy_certificate') ?? '') === 'Not Received' ? 'selected' : '' }}>Not
                                         Received</option>
                                 </select>
                             </div>
@@ -630,11 +631,11 @@
                                 <select name="completion_certificate"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Received" {{ old('completion_certificate', $property->completion_certificate ?? '') === 'Received' ? 'selected' : '' }}>Received
+                                    <option value="Received" {{ old('completion_certificate', $property?->fieldValue('completion_certificate') ?? '') === 'Received' ? 'selected' : '' }}>Received
                                     </option>
-                                    <option value="Applied" {{ old('completion_certificate', $property->completion_certificate ?? '') === 'Applied' ? 'selected' : '' }}>Applied
+                                    <option value="Applied" {{ old('completion_certificate', $property?->fieldValue('completion_certificate') ?? '') === 'Applied' ? 'selected' : '' }}>Applied
                                     </option>
-                                    <option value="Not Received" {{ old('completion_certificate', $property->completion_certificate ?? '') === 'Not Received' ? 'selected' : '' }}>Not
+                                    <option value="Not Received" {{ old('completion_certificate', $property?->fieldValue('completion_certificate') ?? '') === 'Not Received' ? 'selected' : '' }}>Not
                                         Received</option>
                                 </select>
                             </div>
@@ -643,13 +644,13 @@
                                     <span class="text-red-500">*</span></label>
                                 <select name="encumbrance_loan_on_property" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="None" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? 'None') === 'None' ? 'selected' : '' }}>
+                                    <option value="None" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? 'None') === 'None' ? 'selected' : '' }}>
                                         None</option>
-                                    <option value="Home Loan" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Home Loan' ? 'selected' : '' }}>
+                                    <option value="Home Loan" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Home Loan' ? 'selected' : '' }}>
                                         Home Loan</option>
-                                    <option value="Mortgage" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Mortgage' ? 'selected' : '' }}>
+                                    <option value="Mortgage" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Mortgage' ? 'selected' : '' }}>
                                         Mortgage</option>
-                                    <option value="Other" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Other' ? 'selected' : '' }}>Other
+                                    <option value="Other" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Other' ? 'selected' : '' }}>Other
                                     </option>
                                 </select>
                             </div>
@@ -659,9 +660,9 @@
                                 <select name="khata_property_tax_status"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Up to date" {{ old('khata_property_tax_status', $property->khata_property_tax_status ?? '') === 'Up to date' ? 'selected' : '' }}>Up
+                                    <option value="Up to date" {{ old('khata_property_tax_status', $property?->fieldValue('khata_property_tax_status') ?? '') === 'Up to date' ? 'selected' : '' }}>Up
                                         to date</option>
-                                    <option value="Pending" {{ old('khata_property_tax_status', $property->khata_property_tax_status ?? '') === 'Pending' ? 'selected' : '' }}>Pending
+                                    <option value="Pending" {{ old('khata_property_tax_status', $property?->fieldValue('khata_property_tax_status') ?? '') === 'Pending' ? 'selected' : '' }}>Pending
                                     </option>
                                 </select>
                             </div>
@@ -680,8 +681,8 @@
                                         class="text-red-500">*</span></label>
                                 <select name="lift_elevator" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Yes" {{ old('lift_elevator', $property->lift_elevator ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('lift_elevator', $property->lift_elevator ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('lift_elevator', $property?->fieldValue('lift_elevator') ?? 'Yes') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('lift_elevator', $property?->fieldValue('lift_elevator') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div>
@@ -690,7 +691,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Full', 'Partial', 'None'] as $pb)
-                                        <option value="{{ $pb }}" {{ old('power_backup', $property->power_backup ?? '') === $pb ? 'selected' : '' }}>{{ $pb }}</option>
+                                        <option value="{{ $pb }}" {{ old('power_backup', $property?->fieldValue('power_backup') ?? '') === $pb ? 'selected' : '' }}>{{ $pb }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -700,7 +701,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Municipal', 'Borewell', 'Both', '24x7'] as $ws)
-                                        <option value="{{ $ws }}" {{ old('water_source', $property->water_source ?? '') === $ws ? 'selected' : '' }}>{{ $ws }}</option>
+                                        <option value="{{ $ws }}" {{ old('water_source', $property?->fieldValue('water_source') ?? '') === $ws ? 'selected' : '' }}>{{ $ws }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -710,7 +711,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['24x7', 'Fixed hours', 'Tanker dependent'] as $wa)
-                                        <option value="{{ $wa }}" {{ old('water_availability', $property->water_availability ?? '') === $wa ? 'selected' : '' }}>{{ $wa }}</option>
+                                        <option value="{{ $wa }}" {{ old('water_availability', $property?->fieldValue('water_availability') ?? '') === $wa ? 'selected' : '' }}>{{ $wa }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -720,7 +721,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['No cuts', 'Rare cuts', 'Frequent cuts'] as $es)
-                                        <option value="{{ $es }}" {{ old('electricity_status', $property->electricity_status ?? '') === $es ? 'selected' : '' }}>{{ $es }}</option>
+                                        <option value="{{ $es }}" {{ old('electricity_status', $property?->fieldValue('electricity_status') ?? '') === $es ? 'selected' : '' }}>{{ $es }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -729,8 +730,8 @@
                                 <select name="gated_society"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes" {{ old('gated_society', $property->gated_society ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('gated_society', $property->gated_society ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('gated_society', $property?->fieldValue('gated_society') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('gated_society', $property?->fieldValue('gated_society') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div>
@@ -739,7 +740,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['24x7', 'Partial', 'None'] as $sec)
-                                        <option value="{{ $sec }}" {{ old('security_cctv', $property->security_cctv ?? '') === $sec ? 'selected' : '' }}>{{ $sec }}</option>
+                                        <option value="{{ $sec }}" {{ old('security_cctv', $property?->fieldValue('security_cctv') ?? '') === $sec ? 'selected' : '' }}>{{ $sec }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -748,15 +749,15 @@
                                 <select name="pet_friendly"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes" {{ old('pet_friendly', $property->pet_friendly ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('pet_friendly', $property->pet_friendly ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('pet_friendly', $property?->fieldValue('pet_friendly') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('pet_friendly', $property?->fieldValue('pet_friendly') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div class="md:col-span-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Amenities Checklist</label>
                                 <select name="amenities_checklist[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedAmenities = old('amenities_checklist', $property->amenities_checklist ?? []);
+                                        $selectedAmenities = old('amenities_checklist', $property?->fieldValue('amenities_checklist') ?? []);
                                     @endphp
                                     @foreach(['Gym', 'Pool', 'Clubhouse', 'Park', 'Play area', 'Lift', 'Garden'] as $am)
                                         <option value="{{ $am }}" {{ in_array($am, $selectedAmenities) ? 'selected' : '' }}>
@@ -781,9 +782,9 @@
                                     <span class="text-red-500">*</span></label>
                                 <select name="deal_type" required x-model="dealType"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="Rent" {{ old('deal_type', $property->deal_type ?? 'Rent') === 'Rent' ? 'selected' : '' }}>Rent</option>
-                                    <option value="Sale" {{ old('deal_type', $property->deal_type ?? '') === 'Sale' ? 'selected' : '' }}>Sale</option>
-                                    <option value="Both" {{ old('deal_type', $property->deal_type ?? '') === 'Both' ? 'selected' : '' }}>Both (Rent or Sale)</option>
+                                    <option value="Rent" {{ old('deal_type', $property?->fieldValue('deal_type') ?? 'Rent') === 'Rent' ? 'selected' : '' }}>Rent</option>
+                                    <option value="Sale" {{ old('deal_type', $property?->fieldValue('deal_type') ?? '') === 'Sale' ? 'selected' : '' }}>Sale</option>
+                                    <option value="Both" {{ old('deal_type', $property?->fieldValue('deal_type') ?? '') === 'Both' ? 'selected' : '' }}>Both (Rent or Sale)</option>
                                 </select>
                             </div>
                             <div>
@@ -791,15 +792,15 @@
                                 <select name="price_on_request"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes" {{ old('price_on_request', $property->price_on_request ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('price_on_request', $property->price_on_request ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('price_on_request', $property?->fieldValue('price_on_request') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('price_on_request', $property?->fieldValue('price_on_request') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div x-show="dealType === 'Rent' || dealType === 'Both'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Expected Rent (₹/month) <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="expected_rent"
-                                    value="{{ old('expected_rent', $property->expected_rent ?? '') }}"
+                                    value="{{ old('expected_rent', $property?->fieldValue('expected_rent') ?? '') }}"
                                     placeholder="Monthly rent"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -810,7 +811,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['1', '2', '3', '6 months', 'Negotiable'] as $dep)
-                                        <option value="{{ $dep }}" {{ old('security_deposit_months', $property->security_deposit_months ?? '') === $dep ? 'selected' : '' }}>{{ $dep }}
+                                        <option value="{{ $dep }}" {{ old('security_deposit_months', $property?->fieldValue('security_deposit_months') ?? '') === $dep ? 'selected' : '' }}>{{ $dep }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -819,7 +820,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Expected Sale Price (₹) <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="expected_sale_price"
-                                    value="{{ old('expected_sale_price', $property->expected_sale_price ?? '') }}"
+                                    value="{{ old('expected_sale_price', $property?->fieldValue('expected_sale_price') ?? '') }}"
                                     placeholder="Total sale price"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -827,14 +828,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Maintenance Charge
                                     (₹/month)</label>
                                 <input type="number" name="maintenance_charge"
-                                    value="{{ old('maintenance_charge', $property->maintenance_charge ?? '') }}"
+                                    value="{{ old('maintenance_charge', $property?->fieldValue('maintenance_charge') ?? '') }}"
                                     placeholder="Monthly maintenance"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Booking Amount (₹)</label>
                                 <input type="number" name="booking_amount"
-                                    value="{{ old('booking_amount', $property->booking_amount ?? '') }}"
+                                    value="{{ old('booking_amount', $property?->fieldValue('booking_amount') ?? '') }}"
                                     placeholder="Booking amount"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -842,7 +843,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Negotiable Floor Price
                                     (₹)</label>
                                 <input type="number" name="negotiable_floor_price"
-                                    value="{{ old('negotiable_floor_price', $property->negotiable_floor_price ?? '') }}"
+                                    value="{{ old('negotiable_floor_price', $property?->fieldValue('negotiable_floor_price') ?? '') }}"
                                     placeholder="Minimum negotiable price"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -850,7 +851,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Owner Flexibility Notes</label>
                                 <textarea name="owner_flexibility_notes" rows="2"
                                     placeholder="Owner flexibility, negotiable terms..."
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('owner_flexibility_notes', $property->owner_flexibility_notes ?? '') }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('owner_flexibility_notes', $property?->fieldValue('owner_flexibility_notes') ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -868,7 +869,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Tenant</label>
                                 <select name="preferred_tenant[]" multiple class="select2-multiple w-full">
                                     @php
-                                        $selectedTenants = old('preferred_tenant', $property->preferred_tenant ?? []);
+                                        $selectedTenants = old('preferred_tenant', $property?->fieldValue('preferred_tenant') ?? []);
                                     @endphp
                                     @foreach(['Family', 'Bachelor Male', 'Bachelor Female', 'Company', 'Any'] as $pt)
                                         <option value="{{ $pt }}" {{ in_array($pt, $selectedTenants) ? 'selected' : '' }}>
@@ -881,8 +882,8 @@
                                 <select name="non_veg_allowed"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes" {{ old('non_veg_allowed', $property->non_veg_allowed ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('non_veg_allowed', $property->non_veg_allowed ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('non_veg_allowed', $property?->fieldValue('non_veg_allowed') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('non_veg_allowed', $property?->fieldValue('non_veg_allowed') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div>
@@ -890,14 +891,14 @@
                                 <select name="pets_allowed"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Yes" {{ old('pets_allowed', $property->pets_allowed ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                    <option value="No" {{ old('pets_allowed', $property->pets_allowed ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                    <option value="Yes" {{ old('pets_allowed', $property?->fieldValue('pets_allowed') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('pets_allowed', $property?->fieldValue('pets_allowed') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Notice Period (months)</label>
                                 <input type="number" name="notice_period"
-                                    value="{{ old('notice_period', $property->notice_period ?? '') }}" min="0"
+                                    value="{{ old('notice_period', $property?->fieldValue('notice_period') ?? '') }}" min="0"
                                     placeholder="Notice period"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -905,7 +906,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Lease Term
                                     (months)</label>
                                 <input type="number" name="minimum_lease_agreement_term"
-                                    value="{{ old('minimum_lease_agreement_term', $property->minimum_lease_agreement_term ?? '') }}"
+                                    value="{{ old('minimum_lease_agreement_term', $property?->fieldValue('minimum_lease_agreement_term') ?? '') }}"
                                     min="0" placeholder="Minimum agreement term"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -914,8 +915,8 @@
                                 <select name="electricity_charges"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Included" {{ old('electricity_charges', $property->electricity_charges ?? '') === 'Included' ? 'selected' : '' }}>Included</option>
-                                    <option value="Extra — as per meter" {{ old('electricity_charges', $property->electricity_charges ?? '') === 'Extra — as per meter' ? 'selected' : '' }}>
+                                    <option value="Included" {{ old('electricity_charges', $property?->fieldValue('electricity_charges') ?? '') === 'Included' ? 'selected' : '' }}>Included</option>
+                                    <option value="Extra — as per meter" {{ old('electricity_charges', $property?->fieldValue('electricity_charges') ?? '') === 'Extra — as per meter' ? 'selected' : '' }}>
                                         Extra — as per meter</option>
                                 </select>
                             </div>
@@ -924,8 +925,8 @@
                                 <select name="water_charges"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Included" {{ old('water_charges', $property->water_charges ?? '') === 'Included' ? 'selected' : '' }}>Included</option>
-                                    <option value="Extra" {{ old('water_charges', $property->water_charges ?? '') === 'Extra' ? 'selected' : '' }}>Extra</option>
+                                    <option value="Included" {{ old('water_charges', $property?->fieldValue('water_charges') ?? '') === 'Included' ? 'selected' : '' }}>Included</option>
+                                    <option value="Extra" {{ old('water_charges', $property?->fieldValue('water_charges') ?? '') === 'Extra' ? 'selected' : '' }}>Extra</option>
                                 </select>
                             </div>
                             <div>
@@ -933,11 +934,11 @@
                                 <select name="maintenance_inclusion"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
-                                    <option value="Included in rent" {{ old('maintenance_inclusion', $property->maintenance_inclusion ?? '') === 'Included in rent' ? 'selected' : '' }}>
+                                    <option value="Included in rent" {{ old('maintenance_inclusion', $property?->fieldValue('maintenance_inclusion') ?? '') === 'Included in rent' ? 'selected' : '' }}>
                                         Included in rent</option>
-                                    <option value="Extra fixed" {{ old('maintenance_inclusion', $property->maintenance_inclusion ?? '') === 'Extra fixed' ? 'selected' : '' }}>Extra
+                                    <option value="Extra fixed" {{ old('maintenance_inclusion', $property?->fieldValue('maintenance_inclusion') ?? '') === 'Extra fixed' ? 'selected' : '' }}>Extra
                                         fixed</option>
-                                    <option value="Extra per sq ft" {{ old('maintenance_inclusion', $property->maintenance_inclusion ?? '') === 'Extra per sq ft' ? 'selected' : '' }}>
+                                    <option value="Extra per sq ft" {{ old('maintenance_inclusion', $property?->fieldValue('maintenance_inclusion') ?? '') === 'Extra per sq ft' ? 'selected' : '' }}>
                                         Extra per sq ft</option>
                                 </select>
                             </div>
@@ -956,11 +957,11 @@
                                     <span class="text-red-500">*</span></label>
                                 <select name="currently_rented_tenanted" required x-model="isTenanted"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                                    <option value="No" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? 'No') === 'No' ? 'selected' : '' }}>No
+                                    <option value="No" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? 'No') === 'No' ? 'selected' : '' }}>No
                                     </option>
-                                    <option value="Yes" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'Yes' ? 'selected' : '' }}>Yes
+                                    <option value="Yes" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? '') === 'Yes' ? 'selected' : '' }}>Yes
                                     </option>
-                                    <option value="Partially" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'Partially' ? 'selected' : '' }}>
+                                    <option value="Partially" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? '') === 'Partially' ? 'selected' : '' }}>
                                         Partially</option>
                                 </select>
                             </div>
@@ -968,14 +969,14 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Current Monthly Rent Received
                                     (₹) <span class="text-red-500">*</span></label>
                                 <input required type="number" name="current_monthly_rent_received"
-                                    value="{{ old('current_monthly_rent_received', $property->current_monthly_rent_received ?? '') }}"
+                                    value="{{ old('current_monthly_rent_received', $property?->fieldValue('current_monthly_rent_received') ?? '') }}"
                                     placeholder="Monthly rent"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tenant Name / Profile</label>
                                 <input type="text" name="tenant_name_profile"
-                                    value="{{ old('tenant_name_profile', $property->tenant_name_profile ?? '') }}"
+                                    value="{{ old('tenant_name_profile', $property?->fieldValue('tenant_name_profile') ?? '') }}"
                                     placeholder="Tenant name / profile"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -985,7 +986,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['MNC', 'Corporate', 'Bank', 'Brand Retail', 'Individual'] as $tt)
-                                        <option value="{{ $tt }}" {{ old('tenant_type', $property->tenant_type ?? '') === $tt ? 'selected' : '' }}>{{ $tt }}</option>
+                                        <option value="{{ $tt }}" {{ old('tenant_type', $property?->fieldValue('tenant_type') ?? '') === $tt ? 'selected' : '' }}>{{ $tt }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -993,21 +994,21 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lease Start Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="lease_start_date"
-                                    value="{{ old('lease_start_date', isset($property->lease_start_date) ? $property->lease_start_date->format('Y-m-d') : '') }}"
+                                    value="{{ old('lease_start_date', ($property?->fieldValue('lease_start_date') !== null) ? $property?->fieldValue('lease_start_date')->format('Y-m-d') : '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lease Tenure (years) <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="lease_tenure"
-                                    value="{{ old('lease_tenure', $property->lease_tenure ?? '') }}" placeholder="e.g. 3"
+                                    value="{{ old('lease_tenure', $property?->fieldValue('lease_tenure') ?? '') }}" placeholder="e.g. 3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lock-in Remaining (months) <span
                                         class="text-red-500">*</span></label>
                                 <input required type="number" name="lock_in_remaining"
-                                    value="{{ old('lock_in_remaining', $property->lock_in_remaining ?? '') }}"
+                                    value="{{ old('lock_in_remaining', $property?->fieldValue('lock_in_remaining') ?? '') }}"
                                     placeholder="e.g. 12"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -1015,7 +1016,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Annual Escalation in Lease
                                     (%)</label>
                                 <input type="number" step="0.01" name="annual_escalation_in_lease"
-                                    value="{{ old('annual_escalation_in_lease', $property->annual_escalation_in_lease ?? '') }}"
+                                    value="{{ old('annual_escalation_in_lease', $property?->fieldValue('annual_escalation_in_lease') ?? '') }}"
                                     placeholder="e.g. 5.0"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -1023,7 +1024,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Security Deposit Held
                                     (₹)</label>
                                 <input type="text" name="security_deposit_held"
-                                    value="{{ old('security_deposit_held', $property->security_deposit_held ?? '') }}"
+                                    value="{{ old('security_deposit_held', $property?->fieldValue('security_deposit_held') ?? '') }}"
                                     placeholder="Deposit amount"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -1034,7 +1035,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Transferred to buyer', 'Refunded', 'Negotiable'] as $depAdj)
-                                        <option value="{{ $depAdj }}" {{ old('deposit_adjustment_on_sale', $property->deposit_adjustment_on_sale ?? '') === $depAdj ? 'selected' : '' }}>
+                                        <option value="{{ $depAdj }}" {{ old('deposit_adjustment_on_sale', $property?->fieldValue('deposit_adjustment_on_sale') ?? '') === $depAdj ? 'selected' : '' }}>
                                             {{ $depAdj }}</option>
                                     @endforeach
                                 </select>
@@ -1045,7 +1046,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                     <option value="">— Select —</option>
                                     @foreach(['Tenant', 'Owner', 'Shared'] as $cam)
-                                        <option value="{{ $cam }}" {{ old('cam_outgoings_borne_by', $property->cam_outgoings_borne_by ?? '') === $cam ? 'selected' : '' }}>{{ $cam }}
+                                        <option value="{{ $cam }}" {{ old('cam_outgoings_borne_by', $property?->fieldValue('cam_outgoings_borne_by') ?? '') === $cam ? 'selected' : '' }}>{{ $cam }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -1054,7 +1055,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Payback / Capital Value
                                     Note</label>
                                 <textarea name="payback_capital_value_note" rows="2" placeholder="Payback notes..."
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('payback_capital_value_note', $property->payback_capital_value_note ?? '') }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('payback_capital_value_note', $property?->fieldValue('payback_capital_value_note') ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -1090,7 +1091,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Video Walkthrough
                                         Link</label>
                                     <input type="url" name="video_walkthrough_link"
-                                        value="{{ old('video_walkthrough_link', $property->video_walkthrough_link ?? '') }}"
+                                        value="{{ old('video_walkthrough_link', $property?->fieldValue('video_walkthrough_link') ?? '') }}"
                                         placeholder="https://youtube.com/..."
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 </div>
@@ -1098,7 +1099,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Virtual Tour / 360
                                         Link</label>
                                     <input type="url" name="virtual_tour_360_link"
-                                        value="{{ old('virtual_tour_360_link', $property->virtual_tour_360_link ?? '') }}"
+                                        value="{{ old('virtual_tour_360_link', $property?->fieldValue('virtual_tour_360_link') ?? '') }}"
                                         placeholder="https://my.matterport.com/..."
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 </div>
@@ -1116,7 +1117,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date
                                     <span class="text-red-500">*</span></label>
                                 <input required type="date" name="inspection_submission_date"
-                                    value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : date('Y-m-d')) }}"
+                                    value="{{ old('inspection_submission_date', ($property?->fieldValue('inspection_submission_date') !== null) ? $property?->fieldValue('inspection_submission_date')->format('Y-m-d') : date('Y-m-d')) }}"
                                     required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -1124,14 +1125,14 @@
                                     Description</label>
                                 <textarea name="property_description" rows="3"
                                     placeholder="Public facing description of the property..."
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('property_description', $property->property_description ?? '') }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('property_description', $property?->fieldValue('property_description') ?? '') }}</textarea>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Remarks <span
                                         class="text-red-500">*</span></label>
                                 <textarea name="remarks" required rows="3"
                                     placeholder="General remarks, special highlights or notes..."
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('remarks', $property->remarks ?? '') }}</textarea>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('remarks', $property?->fieldValue('remarks') ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -1146,12 +1147,12 @@
     <script>
         function apartmentWizard() {
             return {
-                isPartOfProject: '{{ old('part_of_a_project_society', $property->part_of_a_project_society ?? 'Yes') }}',
-                constrStatus: '{{ old('construction_listing_status', $property->construction_listing_status ?? 'Ready to Move') }}',
-                availability: '{{ old('availability', $property->availability ?? 'Immediate') }}',
-                reraReg: '{{ old('rera_registered', $property->rera_registered ?? 'Yes') }}',
-                dealType: '{{ old('deal_type', $property->deal_type ?? 'Rent') }}',
-                isTenanted: '{{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? 'No') }}',
+                isPartOfProject: '{{ old('part_of_a_project_society', $property?->fieldValue('part_of_a_project_society') ?? 'Yes') }}',
+                constrStatus: '{{ old('construction_listing_status', $property?->fieldValue('construction_listing_status') ?? 'Ready to Move') }}',
+                availability: '{{ old('availability', $property?->fieldValue('availability') ?? 'Immediate') }}',
+                reraReg: '{{ old('rera_registered', $property?->fieldValue('rera_registered') ?? 'Yes') }}',
+                dealType: '{{ old('deal_type', $property?->fieldValue('deal_type') ?? 'Rent') }}',
+                isTenanted: '{{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? 'No') }}',
             };
         }
 

@@ -32,7 +32,16 @@
 <div class="space-y-6">
 
     {{-- SECTION A — SUBMITTER & OWNER DETAILS --}}
-    @if($property->owner_contact_name || $property->owner_contact_phone || $property->owner_email || $property->submitter_name)
+    @php
+        // submitter_full_name/submitter_role are the real column names every
+        // one of the 13 forms actually submits under (confirmed against
+        // $fillable and each view's markup) — "submitter_name" and
+        // "submitter_relationship_to_owner" were never real fields on any
+        // form, so they always rendered "—" regardless of what was entered.
+        $submitterName = $property->fieldValue('submitter_full_name');
+        $submitterRole = $property->fieldValue('submitter_role');
+    @endphp
+    @if($property->fieldValue('owner_contact_name') || $property->fieldValue('owner_contact_phone') || $property->fieldValue('owner_email') || $submitterName)
         <div class="{{ $card }}">
             <h3 class="text-sm font-bold text-zendo-navy uppercase tracking-wider pb-2 border-b border-gray-100 flex items-center gap-2">
                 <svg class="w-4 h-4 text-zendo-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,11 +50,11 @@
                 SECTION A — SUBMITTER &amp; OWNER DETAILS
             </h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {!! $dl('Submitter Name', $property->submitter_name) !!}
-                {!! $dl('Submitter Relationship', $property->submitter_relationship_to_owner) !!}
-                {!! $dl('Owner Contact Name', $property->owner_contact_name) !!}
-                {!! $dl('Owner Contact Phone', $property->owner_contact_phone) !!}
-                {!! $dl('Owner Email', $property->owner_email) !!}
+                {!! $dl('Submitter Name', $submitterName) !!}
+                {!! $dl('Submitter Role', $submitterRole) !!}
+                {!! $dl('Owner Contact Name', $property->fieldValue('owner_contact_name')) !!}
+                {!! $dl('Owner Contact Phone', $property->fieldValue('owner_contact_phone')) !!}
+                {!! $dl('Owner Email', $property->fieldValue('owner_email')) !!}
             </dl>
         </div>
     @endif
@@ -60,29 +69,29 @@
             SECTION B — LOCATION &amp; IDENTIFICATION
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Facility / Property Type', $property->facility_type ?? ucwords(str_replace('_', ' ', $property->property_type ?? ''))) !!}
-            {!! $dl('Property Name', $property->property_name) !!}
-            {!! $dl('Nearest City', $property->nearest_city) !!}
-            {!! $dl('State', $property->state) !!}
-            {!! $dl('Country', $property->country) !!}
-            {!! $dl('PIN Code', $property->postal_address_pin) !!}
-            {!! $dl('Village / Town / District', $property->village_town_district ?? $property->district) !!}
-            {!! $dl('Tehsil', $property->tehsil) !!}
-            {!! $dl('Nearest Highway', $property->nearest_highway) !!}
-            {!! $dl('Nearest Railway Station', $property->nearest_railway_station) !!}
-            {!! $dl('Nearest Airport', $property->nearest_airport) !!}
-            {!! $dl('GPS Latitude', $property->gps_latitude) !!}
-            {!! $dl('GPS Longitude', $property->gps_longitude) !!}
-            {!! $dl('Facing / Orientation', $property->facing_orientation) !!}
-            {!! $dl('Overlooking / View', $property->overlooking_view) !!}
-            {!! $dl('Nearby Landmarks', $property->nearby_landmarks) !!}
-            {!! $dl('Distance from Key Locations', $property->distance_from_key_locations) !!}
-            {!! $dl('Full Address', $property->name_full_address, true) !!}
+            {!! $dl('Facility / Property Type', $property->fieldValue('facility_type') ?? ucwords(str_replace('_', ' ', $property->fieldValue('property_type') ?? ''))) !!}
+            {!! $dl('Property Name', $property->fieldValue('property_name')) !!}
+            {!! $dl('Nearest City', $property->fieldValue('nearest_city')) !!}
+            {!! $dl('State', $property->fieldValue('state')) !!}
+            {!! $dl('Country', $property->fieldValue('country')) !!}
+            {!! $dl('PIN Code', $property->fieldValue('postal_address_pin')) !!}
+            {!! $dl('Village / Town / District', $property->fieldValue('village_town_district') ?? $property->fieldValue('district')) !!}
+            {!! $dl('Tehsil', $property->fieldValue('tehsil')) !!}
+            {!! $dl('Nearest Highway', $property->fieldValue('nearest_highway')) !!}
+            {!! $dl('Nearest Railway Station', $property->fieldValue('nearest_railway_station')) !!}
+            {!! $dl('Nearest Airport', $property->fieldValue('nearest_airport')) !!}
+            {!! $dl('GPS Latitude', $property->fieldValue('gps_latitude')) !!}
+            {!! $dl('GPS Longitude', $property->fieldValue('gps_longitude')) !!}
+            {!! $dl('Facing / Orientation', $property->fieldValue('facing_orientation')) !!}
+            {!! $dl('Overlooking / View', $property->fieldValue('overlooking_view')) !!}
+            {!! $dl('Nearby Landmarks', $property->fieldValue('nearby_landmarks')) !!}
+            {!! $dl('Distance from Key Locations', $property->fieldValue('distance_from_key_locations')) !!}
+            {!! $dl('Full Address', $property->fieldValue('name_full_address'), true) !!}
         </dl>
     </div>
 
     {{-- SECTION B2 — PROJECT / SOCIETY --}}
-    @if($property->part_of_a_project_society === 'Yes' || $property->project_society_name || $property->project_name)
+    @if($property->fieldValue('part_of_a_project_society') === 'Yes' || $property->fieldValue('project_society_name') || $property->fieldValue('project_name'))
         <div class="{{ $card }}">
             <h3 class="text-sm font-bold text-zendo-navy uppercase tracking-wider pb-2 border-b border-gray-100 flex items-center gap-2">
                 <svg class="w-4 h-4 text-zendo-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,15 +100,15 @@
                 SECTION B2 — PROJECT / SOCIETY DETAILS
             </h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {!! $dl('Part of Project / Society?', $property->part_of_a_project_society) !!}
-                {!! $dl('Project / Society Name', $property->project_society_name ?? $property->project_name) !!}
-                {!! $dl('Project RERA ID', $property->project_rera_id) !!}
-                {!! $dl('Developer / Builder Name', $property->developer_builder_name ?? $property->builder_developer_name) !!}
-                {!! $dl('Total Towers / Blocks', $property->total_towers_blocks) !!}
-                {!! $dl('Total Units in Project', $property->total_units_in_project) !!}
-                {!! $dl('Approved Loan Banks', $property->approved_loan_banks) !!}
-                {!! $dl('Configurations Offered', $property->configurations_offered) !!}
-                {!! $dl('Project Amenities', $property->project_amenities) !!}
+                {!! $dl('Part of Project / Society?', $property->fieldValue('part_of_a_project_society')) !!}
+                {!! $dl('Project / Society Name', $property->fieldValue('project_society_name') ?? $property->fieldValue('project_name')) !!}
+                {!! $dl('Project RERA ID', $property->fieldValue('project_rera_id')) !!}
+                {!! $dl('Developer / Builder Name', $property->fieldValue('developer_builder_name') ?? $property->fieldValue('builder_developer_name')) !!}
+                {!! $dl('Total Towers / Blocks', $property->fieldValue('total_towers_blocks')) !!}
+                {!! $dl('Total Units in Project', $property->fieldValue('total_units_in_project')) !!}
+                {!! $dl('Approved Loan Banks', $property->fieldValue('approved_loan_banks')) !!}
+                {!! $dl('Configurations Offered', $property->fieldValue('configurations_offered')) !!}
+                {!! $dl('Project Amenities', $property->fieldValue('project_amenities')) !!}
             </dl>
         </div>
     @endif
@@ -113,21 +122,21 @@
             SECTION C — UNIT CONFIGURATION &amp; SPECIFICATIONS
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Unit / Property Type', $property->unit_property_type) !!}
-            {!! $dl('Configuration (BHK)', $property->configuration ? $property->configuration . ' BHK' : null) !!}
-            {!! $dl('Carpet Area', $property->carpet_area ? number_format($property->carpet_area, 2) . ' sq ft' : null) !!}
-            {!! $dl('Built-up Area', $property->built_up_area ? number_format($property->built_up_area, 2) . ' sq ft' : null) !!}
-            {!! $dl('Super Built-up Area', $property->super_built_up_area ? number_format($property->super_built_up_area, 2) . ' sq ft' : null) !!}
-            {!! $dl('Plot Area', $property->plot_area ? number_format($property->plot_area, 2) . ' sq ft' : null) !!}
-            {!! $dl('Floor Number', $property->floor_number) !!}
-            {!! $dl('Total Floors in Building', $property->number_of_floors) !!}
-            {!! $dl('Units on This Floor', $property->units_on_this_floor) !!}
-            {!! $dl('No. of Bedrooms', $property->no_of_bedrooms) !!}
-            {!! $dl('No. of Bathrooms', $property->no_of_bathrooms) !!}
-            {!! $dl('No. of Balconies', $property->no_of_balconies) !!}
-            {!! $dl('Additional Rooms', $property->additional_rooms) !!}
-            {!! $dl('Furnishing Status', $property->furnishing_status) !!}
-            {!! $dl('Furnishing Details', $property->furnishing_detail) !!}
+            {!! $dl('Unit / Property Type', $property->fieldValue('unit_property_type')) !!}
+            {!! $dl('Configuration (BHK)', $property->fieldValue('configuration') ? $property->fieldValue('configuration') . ' BHK' : null) !!}
+            {!! $dl('Carpet Area', $property->fieldValue('carpet_area') ? number_format($property->fieldValue('carpet_area'), 2) . ' sq ft' : null) !!}
+            {!! $dl('Built-up Area', $property->fieldValue('built_up_area') ? number_format($property->fieldValue('built_up_area'), 2) . ' sq ft' : null) !!}
+            {!! $dl('Super Built-up Area', $property->fieldValue('super_built_up_area') ? number_format($property->fieldValue('super_built_up_area'), 2) . ' sq ft' : null) !!}
+            {!! $dl('Plot Area', $property->fieldValue('plot_area') ? number_format($property->fieldValue('plot_area'), 2) . ' sq ft' : null) !!}
+            {!! $dl('Floor Number', $property->fieldValue('floor_number')) !!}
+            {!! $dl('Total Floors in Building', $property->fieldValue('number_of_floors')) !!}
+            {!! $dl('Units on This Floor', $property->fieldValue('units_on_this_floor')) !!}
+            {!! $dl('No. of Bedrooms', $property->fieldValue('no_of_bedrooms')) !!}
+            {!! $dl('No. of Bathrooms', $property->fieldValue('no_of_bathrooms')) !!}
+            {!! $dl('No. of Balconies', $property->fieldValue('no_of_balconies')) !!}
+            {!! $dl('Additional Rooms', $property->fieldValue('additional_rooms')) !!}
+            {!! $dl('Furnishing Status', $property->fieldValue('furnishing_status')) !!}
+            {!! $dl('Furnishing Details', $property->fieldValue('furnishing_detail')) !!}
         </dl>
     </div>
 
@@ -140,15 +149,19 @@
             SECTION C2 — TRANSACTION &amp; POSSESSION STATUS
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Transaction Type', $property->transaction_type) !!}
-            {!! $dl('Property / Construction Status', $property->construction_listing_status ?? $property->construction_status ?? $property->property_status) !!}
-            {!! $dl('Possession By / Year', $property->possession_by ?? $property->possession_by_if_under_constr) !!}
-            {!! $dl('Availability', $property->availability) !!}
-            {!! $dl('Available From Date', $property->available_from) !!}
-            {!! $dl('Age of Property', $property->age_of_property) !!}
-            {!! $dl('Ownership Type', $property->ownership_type) !!}
-            {!! $dl('RERA Registered?', $property->rera_registered) !!}
-            {!! $dl('RERA Registration ID', $property->rera_registration_id) !!}
+            {{-- "transaction_type" was never a real field on any of the 13 forms;
+                 deal_type (apartment/warehouse) and listing_purpose_transaction_type
+                 (the other 12) are the two real names this concept is actually
+                 submitted under. --}}
+            {!! $dl('Transaction Type', $property->fieldValue('deal_type') ?? $property->fieldValue('listing_purpose_transaction_type')) !!}
+            {!! $dl('Property / Construction Status', $property->fieldValue('construction_listing_status') ?? $property->fieldValue('construction_status') ?? $property->fieldValue('property_status')) !!}
+            {!! $dl('Possession By / Year', $property->fieldValue('possession_by') ?? $property->fieldValue('possession_by_if_under_constr')) !!}
+            {!! $dl('Availability', $property->fieldValue('availability')) !!}
+            {!! $dl('Available From Date', $property->fieldValue('available_from')) !!}
+            {!! $dl('Age of Property', $property->fieldValue('age_of_property')) !!}
+            {!! $dl('Ownership Type', $property->fieldValue('ownership_type')) !!}
+            {!! $dl('RERA Registered?', $property->fieldValue('rera_registered')) !!}
+            {!! $dl('RERA Registration ID', $property->fieldValue('rera_registration_id')) !!}
         </dl>
     </div>
 
@@ -161,19 +174,34 @@
             SECTION D &amp; E — LEGAL, STATUTORY &amp; AMENITIES
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Tenure', $property->tenure) !!}
-            {!! $dl('Approved Land Use', $property->approved_land_use) !!}
-            {!! $dl('Fire NOC', $property->fire_noc) !!}
-            {!! $dl('Occupancy Certificate', $property->occupancy_certificate) !!}
-            {!! $dl('Title Deed / Khata / Mutated', $property->title_deed_khata_mutated) !!}
-            {!! $dl('Clear Title', $property->clear_title) !!}
-            {!! $dl('Loan / Encumbrance', $property->loan_encumbrance) !!}
-            {!! $dl('Gated Society', $property->gated_society) !!}
-            {!! $dl('Water Source', $property->water_source) !!}
-            {!! $dl('Power Backup', $property->power_backup) !!}
-            {!! $dl('Parking Type', $property->parking_type) !!}
-            {!! $dl('Parking Slots', $property->parking_slots_count) !!}
-            {!! $dl('Amenities Checklist', $property->amenities_checklist, true) !!}
+            {!! $dl('Tenure', $property->fieldValue('tenure')) !!}
+            {!! $dl('Approved Land Use', $property->fieldValue('approved_land_use')) !!}
+            {!! $dl('Fire NOC', $property->fieldValue('fire_noc')) !!}
+            {!! $dl('Occupancy Certificate', $property->fieldValue('occupancy_certificate')) !!}
+            {{-- title_deed_khata_mutated / clear_title / loan_encumbrance were
+                 never real field names on any of the 13 forms — title_status
+                 and encumbrance_loan_on_property are the real columns the
+                 same concepts are actually submitted under (khata specifically
+                 is only asked on a couple of types, hence its own line). --}}
+            {!! $dl('Title Status', $property->fieldValue('title_status')) !!}
+            {!! $dl('Khata / Property Tax Status', $property->fieldValue('khata_property_tax_status')) !!}
+            {!! $dl('Loan / Encumbrance', $property->fieldValue('encumbrance_loan_on_property')) !!}
+            {!! $dl('Gated Society', $property->fieldValue('gated_society')) !!}
+            {!! $dl('Water Source', $property->fieldValue('water_source')) !!}
+            {!! $dl('Power Backup', $property->fieldValue('power_backup')) !!}
+            {{-- parking_type / parking_slots_count matched no form's real
+                 field name — parking is captured very differently per type
+                 (covered/open counts on some, a single free-text description
+                 on others), so both real shapes are shown. --}}
+            {!! $dl('Parking Slots', $property->fieldValue('parking_slots')) !!}
+            @php
+                $covered = $property->fieldValue('covered_parking_slots');
+                $open = $property->fieldValue('open_parking_slots');
+            @endphp
+            @if($covered !== null || $open !== null)
+                {!! $dl('Covered / Open Parking', trim(($covered !== null ? $covered . ' covered' : '') . ($covered !== null && $open !== null ? ', ' : '') . ($open !== null ? $open . ' open' : '')) ?: null) !!}
+            @endif
+            {!! $dl('Amenities Checklist', $property->fieldValue('amenities_checklist'), true) !!}
         </dl>
     </div>
 
@@ -186,25 +214,28 @@
             SECTION H — FINANCIAL &amp; COMMERCIAL TERMS
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Deal Type', $property->deal_type) !!}
-            {!! $dl('Expected Rent', $property->expected_rent ? '₹' . number_format($property->expected_rent) . ' / mo' : null) !!}
-            {!! $dl('Rent Range Band', $property->rent_range_band) !!}
-            {!! $dl('Maintenance Charge', $property->maintenance_charge ? '₹' . number_format($property->maintenance_charge) . ' / mo' : null) !!}
-            {!! $dl('Maintenance Borne By', $property->maintenance_borne_by) !!}
-            {!! $dl('Expected Sale Price', $property->expected_sale_price ? '₹' . number_format($property->expected_sale_price) : null) !!}
-            {!! $dl('Price Per Sqft', $property->price_per_sqft ? '₹' . number_format($property->price_per_sqft) . ' / sq ft' : null) !!}
-            {!! $dl('Booking Amount', $property->booking_amount ? '₹' . number_format($property->booking_amount) : null) !!}
-            {!! $dl('Sale Price Band', $property->sale_price_band) !!}
-            {!! $dl('Negotiable / Floor Price', $property->negotiable_floor_price ? '₹' . number_format($property->negotiable_floor_price) : null) !!}
-            {!! $dl('Security Deposit (months)', $property->security_deposit_months) !!}
-            {!! $dl('Lock-in Period', $property->lock_in_years ? $property->lock_in_years . ' years' : null) !!}
-            {!! $dl('Tax & Stamp Duty Extra?', $property->tax_stamp_duty_extra) !!}
-            {!! $dl('Owner Flexibility Notes', $property->owner_flexibility_notes, true) !!}
+            {!! $dl('Deal Type', $property->fieldValue('deal_type')) !!}
+            {!! $dl('Expected Rent', $property->fieldValue('expected_rent') ? '₹' . number_format($property->fieldValue('expected_rent')) . ' / mo' : null) !!}
+            {!! $dl('Rent Range Band', $property->fieldValue('rent_range_band')) !!}
+            {!! $dl('Maintenance Charge', $property->fieldValue('maintenance_charge') ? '₹' . number_format($property->fieldValue('maintenance_charge')) . ' / mo' : null) !!}
+            {{-- maintenance_borne_by matched no real field; utilities_who_bears
+                 and cam_outgoings_borne_by are the two real columns for this
+                 concept depending on residential vs commercial type. --}}
+            {!! $dl('Maintenance / Utilities Borne By', $property->fieldValue('utilities_who_bears') ?? $property->fieldValue('cam_outgoings_borne_by')) !!}
+            {!! $dl('Expected Sale Price', $property->fieldValue('expected_sale_price') ? '₹' . number_format($property->fieldValue('expected_sale_price')) : null) !!}
+            {!! $dl('Price Per Sqft', $property->fieldValue('price_per_sqft') ? '₹' . number_format($property->fieldValue('price_per_sqft')) . ' / sq ft' : null) !!}
+            {!! $dl('Booking Amount', $property->fieldValue('booking_amount') ? '₹' . number_format($property->fieldValue('booking_amount')) : null) !!}
+            {!! $dl('Sale Price Band', $property->fieldValue('sale_price_band')) !!}
+            {!! $dl('Negotiable / Floor Price', $property->fieldValue('negotiable_floor_price') ? '₹' . number_format($property->fieldValue('negotiable_floor_price')) : null) !!}
+            {!! $dl('Security Deposit (months)', $property->fieldValue('security_deposit_months')) !!}
+            {!! $dl('Lock-in Period', $property->fieldValue('lock_in_years') ? $property->fieldValue('lock_in_years') . ' years' : null) !!}
+            {!! $dl('Tax & Stamp Duty Extra?', $property->fieldValue('tax_stamp_duty_extra')) !!}
+            {!! $dl('Owner Flexibility Notes', $property->fieldValue('owner_flexibility_notes'), true) !!}
         </dl>
     </div>
 
     {{-- SECTION I — PRE-LEASED / TENANTED DETAILS --}}
-    @if($property->currently_rented_tenanted === 'Yes' || $property->currently_rented_tenanted === 'Partially' || $property->current_monthly_rent_received)
+    @if($property->fieldValue('currently_rented_tenanted') === 'Yes' || $property->fieldValue('currently_rented_tenanted') === 'Partially' || $property->fieldValue('current_monthly_rent_received'))
         <div class="{{ $card }}">
             <h3 class="text-sm font-bold text-zendo-navy uppercase tracking-wider pb-2 border-b border-gray-100 flex items-center gap-2">
                 <svg class="w-4 h-4 text-zendo-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,18 +244,18 @@
                 SECTION I — PRE-LEASED / TENANTED DETAILS
             </h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {!! $dl('Currently Rented / Tenanted?', $property->currently_rented_tenanted) !!}
-                {!! $dl('Current Monthly Rent Received', $property->current_monthly_rent_received ? '₹' . number_format($property->current_monthly_rent_received) : null) !!}
-                {!! $dl('Tenant Name / Profile', $property->tenant_name_profile) !!}
-                {!! $dl('Tenant Type', $property->tenant_type) !!}
-                {!! $dl('Lease Start Date', $property->lease_start_date) !!}
-                {!! $dl('Lease Tenure', $property->lease_tenure ? $property->lease_tenure . ' years' : null) !!}
-                {!! $dl('Lock-in Remaining', $property->lock_in_remaining ? $property->lock_in_remaining . ' months' : null) !!}
-                {!! $dl('Annual Escalation in Lease', $property->annual_escalation_in_lease ? $property->annual_escalation_in_lease . '%' : null) !!}
-                {!! $dl('Security Deposit Held', $property->security_deposit_held) !!}
-                {!! $dl('Deposit Adjustment on Sale', $property->deposit_adjustment_on_sale) !!}
-                {!! $dl('CAM / Outgoings Borne By', $property->cam_outgoings_borne_by) !!}
-                {!! $dl('Payback / Capital Value Note', $property->payback_capital_value_note, true) !!}
+                {!! $dl('Currently Rented / Tenanted?', $property->fieldValue('currently_rented_tenanted')) !!}
+                {!! $dl('Current Monthly Rent Received', $property->fieldValue('current_monthly_rent_received') ? '₹' . number_format($property->fieldValue('current_monthly_rent_received')) : null) !!}
+                {!! $dl('Tenant Name / Profile', $property->fieldValue('tenant_name_profile')) !!}
+                {!! $dl('Tenant Type', $property->fieldValue('tenant_type')) !!}
+                {!! $dl('Lease Start Date', $property->fieldValue('lease_start_date')) !!}
+                {!! $dl('Lease Tenure', $property->fieldValue('lease_tenure') ? $property->fieldValue('lease_tenure') . ' years' : null) !!}
+                {!! $dl('Lock-in Remaining', $property->fieldValue('lock_in_remaining') ? $property->fieldValue('lock_in_remaining') . ' months' : null) !!}
+                {!! $dl('Annual Escalation in Lease', $property->fieldValue('annual_escalation_in_lease') ? $property->fieldValue('annual_escalation_in_lease') . '%' : null) !!}
+                {!! $dl('Security Deposit Held', $property->fieldValue('security_deposit_held')) !!}
+                {!! $dl('Deposit Adjustment on Sale', $property->fieldValue('deposit_adjustment_on_sale')) !!}
+                {!! $dl('CAM / Outgoings Borne By', $property->fieldValue('cam_outgoings_borne_by')) !!}
+                {!! $dl('Payback / Capital Value Note', $property->fieldValue('payback_capital_value_note'), true) !!}
             </dl>
         </div>
     @endif
@@ -238,11 +269,11 @@
             SECTION J &amp; K — MEDIA &amp; REMARKS
         </h3>
         <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {!! $dl('Video Walkthrough Link', $property->video_walkthrough_link) !!}
-            {!! $dl('Virtual Tour / 360 Link', $property->virtual_tour_360_link) !!}
-            {!! $dl('Inspection / Submission Date', $property->inspection_submission_date) !!}
-            {!! $dl('Public Property Description', $property->property_description ?? $property->property_description_public, true) !!}
-            {!! $dl('Submitter / Team Remarks', $property->remarks ?? $property->field_officer_submitter_remarks, true) !!}
+            {!! $dl('Video Walkthrough Link', $property->fieldValue('video_walkthrough_link')) !!}
+            {!! $dl('Virtual Tour / 360 Link', $property->fieldValue('virtual_tour_360_link')) !!}
+            {!! $dl('Inspection / Submission Date', $property->fieldValue('inspection_submission_date')) !!}
+            {!! $dl('Public Property Description', $property->fieldValue('property_description') ?? $property->fieldValue('property_description_public'), true) !!}
+            {!! $dl('Submitter / Team Remarks', $property->fieldValue('remarks') ?? $property->fieldValue('field_officer_submitter_remarks'), true) !!}
         </dl>
     </div>
 

@@ -1,4 +1,5 @@
 @extends('layouts.owner')
+@php if (!isset($property)) { $property = null; } @endphp
 @section('title', (isset($property) ? 'Edit' : 'List New') . ' Hospitality — Hotel / Resort / Guest House - Owner Portal')
 
 @section('content')
@@ -50,7 +51,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Hotel/Resorts · Guest House/Banquet Halls · 99acres-aligned </label>
-                            <input type="text" name="hotel_resorts_guest_house_banquet_halls_99acres_aligned" value="{{ old('hotel_resorts_guest_house_banquet_halls_99acres_aligned', $property->hotel_resorts_guest_house_banquet_halls_99acres_aligned ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="hotel_resorts_guest_house_banquet_halls_99acres_aligned" value="{{ old('hotel_resorts_guest_house_banquet_halls_99acres_aligned', $property?->fieldValue('hotel_resorts_guest_house_banquet_halls_99acres_aligned') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>
@@ -62,34 +63,34 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Full Name <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property->submitter_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_full_name" value="{{ old('submitter_full_name', $property?->fieldValue('submitter_full_name') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Phone <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="submitter_phone" value="{{ old('submitter_phone', $property->submitter_phone ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_phone" value="{{ old('submitter_phone', $property?->fieldValue('submitter_phone') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Email <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="submitter_email" value="{{ old('submitter_email', $property->submitter_email ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="submitter_email" value="{{ old('submitter_email', $property?->fieldValue('submitter_email') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Role <span class="text-red-500">*</span></label>
                             <select required  name="submitter_role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Owner" {{ old('submitter_role', $property->submitter_role ?? '') === 'Owner' ? 'selected' : '' }}>Owner</option>
-                                <option value="Builder" {{ old('submitter_role', $property->submitter_role ?? '') === 'Builder' ? 'selected' : '' }}>Builder</option>
-                                <option value="Authorised Agent" {{ old('submitter_role', $property->submitter_role ?? '') === 'Authorised Agent' ? 'selected' : '' }}>Authorised Agent</option>
-                                <option value="Broker" {{ old('submitter_role', $property->submitter_role ?? '') === 'Broker' ? 'selected' : '' }}>Broker</option>
-                                <option value="GPA holder" {{ old('submitter_role', $property->submitter_role ?? '') === 'GPA holder' ? 'selected' : '' }}>GPA holder</option>
+                                <option value="Owner" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? '') === 'Owner' ? 'selected' : '' }}>Owner</option>
+                                <option value="Builder" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? '') === 'Builder' ? 'selected' : '' }}>Builder</option>
+                                <option value="Authorised Agent" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? '') === 'Authorised Agent' ? 'selected' : '' }}>Authorised Agent</option>
+                                <option value="Broker" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? '') === 'Broker' ? 'selected' : '' }}>Broker</option>
+                                <option value="GPA holder" {{ old('submitter_role', $property?->fieldValue('submitter_role') ?? '') === 'GPA holder' ? 'selected' : '' }}>GPA holder</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Full Name <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="owner_full_name" value="{{ old('owner_full_name', $property->owner_full_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="owner_full_name" value="{{ old('owner_full_name', $property?->fieldValue('owner_full_name') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Contact Number <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="owner_contact_number" value="{{ old('owner_contact_number', $property->owner_contact_number ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="owner_contact_number" value="{{ old('owner_contact_number', $property?->fieldValue('owner_contact_number') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>
@@ -103,40 +104,40 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pin Code <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="any" name="pin_code" value="{{ old('pin_code', $property->pin_code ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="any" name="pin_code" value="{{ old('pin_code', $property?->fieldValue('pin_code') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
                             <select required  name="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="active cities + Other" {{ old('city', $property->city ?? '') === 'active cities + Other' ? 'selected' : '' }}>active cities + Other</option>
+                                <option value="active cities + Other" {{ old('city', $property?->fieldValue('city') ?? '') === 'active cities + Other' ? 'selected' : '' }}>active cities + Other</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Locality / Broad Area <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property->locality_broad_area ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="locality_broad_area" value="{{ old('locality_broad_area', $property?->fieldValue('locality_broad_area') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Project Name </label>
-                            <input type="text" name="project_name" value="{{ old('project_name', $property->project_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="project_name" value="{{ old('project_name', $property?->fieldValue('project_name') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Builder / Developer Name </label>
-                            <input type="text" name="builder_developer_name" value="{{ old('builder_developer_name', $property->builder_developer_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="builder_developer_name" value="{{ old('builder_developer_name', $property?->fieldValue('builder_developer_name') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Address (house/plot no., street) <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="full_address_house_plot_no_street" value="{{ old('full_address_house_plot_no_street', $property->full_address_house_plot_no_street ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="full_address_house_plot_no_street" value="{{ old('full_address_house_plot_no_street', $property?->fieldValue('full_address_house_plot_no_street') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         
                                                 <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="state" value="{{ old('state', $property->state ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="state" value="{{ old('state', $property?->fieldValue('state') ?? '') }}" required placeholder="State" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property->gps_latitude ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
@@ -146,24 +147,24 @@
                                     <span>Use Current Location</span>
                                 </button>
                             </div>
-                            <input type="number" step="0.000001" name="gps_longitude" value="{{ old('gps_longitude', $property->gps_longitude ?? '') }}" required placeholder="e.g. 77.026634" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="0.000001" name="gps_longitude" value="{{ old('gps_longitude', $property?->fieldValue('gps_longitude') ?? '') }}" required placeholder="e.g. 77.026634" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nearby Landmarks / Key Distances </label>
-                            <input type="text" name="nearby_landmarks_key_distances" value="{{ old('nearby_landmarks_key_distances', $property->nearby_landmarks_key_distances ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="nearby_landmarks_key_distances" value="{{ old('nearby_landmarks_key_distances', $property?->fieldValue('nearby_landmarks_key_distances') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Facing / Orientation </label>
                             <select name="facing_orientation" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="N" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'N' ? 'selected' : '' }}>North</option>
-                                <option value="E" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'E' ? 'selected' : '' }}>East</option>
-                                <option value="W" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'W' ? 'selected' : '' }}>West</option>
-                                <option value="S" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'S' ? 'selected' : '' }}>South</option>
-                                <option value="NE" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'NE' ? 'selected' : '' }}>North-East</option>
-                                <option value="NW" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'NW' ? 'selected' : '' }}>North-West</option>
-                                <option value="SE" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'SE' ? 'selected' : '' }}>South-East</option>
-                                <option value="SW" {{ old('facing_orientation', $property->facing_orientation ?? '') === 'SW' ? 'selected' : '' }}>South-West</option>
+                                <option value="N" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'N' ? 'selected' : '' }}>North</option>
+                                <option value="E" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'E' ? 'selected' : '' }}>East</option>
+                                <option value="W" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'W' ? 'selected' : '' }}>West</option>
+                                <option value="S" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'S' ? 'selected' : '' }}>South</option>
+                                <option value="NE" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'NE' ? 'selected' : '' }}>North-East</option>
+                                <option value="NW" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'NW' ? 'selected' : '' }}>North-West</option>
+                                <option value="SE" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'SE' ? 'selected' : '' }}>South-East</option>
+                                <option value="SW" {{ old('facing_orientation', $property?->fieldValue('facing_orientation') ?? '') === 'SW' ? 'selected' : '' }}>South-West</option>
                             </select>
                         </div>
                     </div>
@@ -181,78 +182,78 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Type <span class="text-red-500">*</span></label>
                             <select required  name="property_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Hotel" {{ old('property_type', $property->property_type ?? '') === 'Hotel' ? 'selected' : '' }}>Hotel</option>
-                                <option value="Resort" {{ old('property_type', $property->property_type ?? '') === 'Resort' ? 'selected' : '' }}>Resort</option>
-                                <option value="Guest House" {{ old('property_type', $property->property_type ?? '') === 'Guest House' ? 'selected' : '' }}>Guest House</option>
-                                <option value="Banquet Hall" {{ old('property_type', $property->property_type ?? '') === 'Banquet Hall' ? 'selected' : '' }}>Banquet Hall</option>
-                                <option value="Service Apartment block" {{ old('property_type', $property->property_type ?? '') === 'Service Apartment block' ? 'selected' : '' }}>Service Apartment block</option>
-                                <option value="Restaurant space" {{ old('property_type', $property->property_type ?? '') === 'Restaurant space' ? 'selected' : '' }}>Restaurant space</option>
+                                <option value="Hotel" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                                <option value="Resort" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Resort' ? 'selected' : '' }}>Resort</option>
+                                <option value="Guest House" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Guest House' ? 'selected' : '' }}>Guest House</option>
+                                <option value="Banquet Hall" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Banquet Hall' ? 'selected' : '' }}>Banquet Hall</option>
+                                <option value="Service Apartment block" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Service Apartment block' ? 'selected' : '' }}>Service Apartment block</option>
+                                <option value="Restaurant space" {{ old('property_type', $property?->fieldValue('property_type') ?? '') === 'Restaurant space' ? 'selected' : '' }}>Restaurant space</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Star / Positioning <span class="text-red-500">*</span></label>
                             <select required  name="star_positioning" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Budget" {{ old('star_positioning', $property->star_positioning ?? '') === 'Budget' ? 'selected' : '' }}>Budget</option>
-                                <option value="3-Star" {{ old('star_positioning', $property->star_positioning ?? '') === '3-Star' ? 'selected' : '' }}>3-Star</option>
-                                <option value="4-Star" {{ old('star_positioning', $property->star_positioning ?? '') === '4-Star' ? 'selected' : '' }}>4-Star</option>
-                                <option value="5-Star" {{ old('star_positioning', $property->star_positioning ?? '') === '5-Star' ? 'selected' : '' }}>5-Star</option>
-                                <option value="Unbranded" {{ old('star_positioning', $property->star_positioning ?? '') === 'Unbranded' ? 'selected' : '' }}>Unbranded</option>
+                                <option value="Budget" {{ old('star_positioning', $property?->fieldValue('star_positioning') ?? '') === 'Budget' ? 'selected' : '' }}>Budget</option>
+                                <option value="3-Star" {{ old('star_positioning', $property?->fieldValue('star_positioning') ?? '') === '3-Star' ? 'selected' : '' }}>3-Star</option>
+                                <option value="4-Star" {{ old('star_positioning', $property?->fieldValue('star_positioning') ?? '') === '4-Star' ? 'selected' : '' }}>4-Star</option>
+                                <option value="5-Star" {{ old('star_positioning', $property?->fieldValue('star_positioning') ?? '') === '5-Star' ? 'selected' : '' }}>5-Star</option>
+                                <option value="Unbranded" {{ old('star_positioning', $property?->fieldValue('star_positioning') ?? '') === 'Unbranded' ? 'selected' : '' }}>Unbranded</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Total Land / Plot Area (sq ft) </label>
-                            <input type="number" step="any" name="total_land_plot_area_sq_ft" value="{{ old('total_land_plot_area_sq_ft', $property->total_land_plot_area_sq_ft ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="total_land_plot_area_sq_ft" value="{{ old('total_land_plot_area_sq_ft', $property?->fieldValue('total_land_plot_area_sq_ft') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Total Built-up Area (sq ft) <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="any" name="total_built_up_area_sq_ft" value="{{ old('total_built_up_area_sq_ft', $property->total_built_up_area_sq_ft ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="any" name="total_built_up_area_sq_ft" value="{{ old('total_built_up_area_sq_ft', $property?->fieldValue('total_built_up_area_sq_ft') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Number of Keys / Rooms <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="any" name="number_of_keys_rooms" value="{{ old('number_of_keys_rooms', $property->number_of_keys_rooms ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="number" step="any" name="number_of_keys_rooms" value="{{ old('number_of_keys_rooms', $property?->fieldValue('number_of_keys_rooms') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Number of Floors </label>
-                            <input type="number" step="any" name="number_of_floors" value="{{ old('number_of_floors', $property->number_of_floors ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="number_of_floors" value="{{ old('number_of_floors', $property?->fieldValue('number_of_floors') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Banquet / Event Space (sq ft) </label>
-                            <input type="number" step="any" name="banquet_event_space_sq_ft" value="{{ old('banquet_event_space_sq_ft', $property->banquet_event_space_sq_ft ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="banquet_event_space_sq_ft" value="{{ old('banquet_event_space_sq_ft', $property?->fieldValue('banquet_event_space_sq_ft') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Banquet Guest Capacity (pax) </label>
-                            <input type="number" step="any" name="banquet_guest_capacity_pax" value="{{ old('banquet_guest_capacity_pax', $property->banquet_guest_capacity_pax ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="banquet_guest_capacity_pax" value="{{ old('banquet_guest_capacity_pax', $property?->fieldValue('banquet_guest_capacity_pax') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Restaurant / F&B Outlets </label>
-                            <input type="number" step="any" name="restaurant_f_b_outlets" value="{{ old('restaurant_f_b_outlets', $property->restaurant_f_b_outlets ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="restaurant_f_b_outlets" value="{{ old('restaurant_f_b_outlets', $property?->fieldValue('restaurant_f_b_outlets') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Parking Capacity </label>
-                            <input type="number" step="any" name="parking_capacity" value="{{ old('parking_capacity', $property->parking_capacity ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="parking_capacity" value="{{ old('parking_capacity', $property?->fieldValue('parking_capacity') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Operational Status <span class="text-red-500">*</span></label>
                             <select required  name="operational_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Operational" {{ old('operational_status', $property->operational_status ?? '') === 'Operational' ? 'selected' : '' }}>Operational</option>
-                                <option value="Under-construction" {{ old('operational_status', $property->operational_status ?? '') === 'Under-construction' ? 'selected' : '' }}>Under-construction</option>
-                                <option value="Closed" {{ old('operational_status', $property->operational_status ?? '') === 'Closed' ? 'selected' : '' }}>Closed</option>
-                                <option value="Bare structure" {{ old('operational_status', $property->operational_status ?? '') === 'Bare structure' ? 'selected' : '' }}>Bare structure</option>
+                                <option value="Operational" {{ old('operational_status', $property?->fieldValue('operational_status') ?? '') === 'Operational' ? 'selected' : '' }}>Operational</option>
+                                <option value="Under-construction" {{ old('operational_status', $property?->fieldValue('operational_status') ?? '') === 'Under-construction' ? 'selected' : '' }}>Under-construction</option>
+                                <option value="Closed" {{ old('operational_status', $property?->fieldValue('operational_status') ?? '') === 'Closed' ? 'selected' : '' }}>Closed</option>
+                                <option value="Bare structure" {{ old('operational_status', $property?->fieldValue('operational_status') ?? '') === 'Bare structure' ? 'selected' : '' }}>Bare structure</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Existing Brand / Operator </label>
-                            <input type="text" name="existing_brand_operator" value="{{ old('existing_brand_operator', $property->existing_brand_operator ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="existing_brand_operator" value="{{ old('existing_brand_operator', $property?->fieldValue('existing_brand_operator') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Furnishing / FF&E Status </label>
                             <select name="furnishing_ff_e_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Fully fitted" {{ old('furnishing_ff_e_status', $property->furnishing_ff_e_status ?? '') === 'Fully fitted' ? 'selected' : '' }}>Fully fitted</option>
-                                <option value="Partial" {{ old('furnishing_ff_e_status', $property->furnishing_ff_e_status ?? '') === 'Partial' ? 'selected' : '' }}>Partial</option>
-                                <option value="Bare" {{ old('furnishing_ff_e_status', $property->furnishing_ff_e_status ?? '') === 'Bare' ? 'selected' : '' }}>Bare</option>
+                                <option value="Fully fitted" {{ old('furnishing_ff_e_status', $property?->fieldValue('furnishing_ff_e_status') ?? '') === 'Fully fitted' ? 'selected' : '' }}>Fully fitted</option>
+                                <option value="Partial" {{ old('furnishing_ff_e_status', $property?->fieldValue('furnishing_ff_e_status') ?? '') === 'Partial' ? 'selected' : '' }}>Partial</option>
+                                <option value="Bare" {{ old('furnishing_ff_e_status', $property?->fieldValue('furnishing_ff_e_status') ?? '') === 'Bare' ? 'selected' : '' }}>Bare</option>
                             </select>
                         </div>
                     </div>
@@ -270,81 +271,81 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ownership / Title Type <span class="text-red-500">*</span></label>
                             <select required  name="ownership_title_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Freehold" {{ old('ownership_title_type', $property->ownership_title_type ?? '') === 'Freehold' ? 'selected' : '' }}>Freehold</option>
-                                <option value="Leasehold-Govt" {{ old('ownership_title_type', $property->ownership_title_type ?? '') === 'Leasehold-Govt' ? 'selected' : '' }}>Leasehold-Govt</option>
-                                <option value="Leasehold-Private" {{ old('ownership_title_type', $property->ownership_title_type ?? '') === 'Leasehold-Private' ? 'selected' : '' }}>Leasehold-Private</option>
-                                <option value="Society" {{ old('ownership_title_type', $property->ownership_title_type ?? '') === 'Society' ? 'selected' : '' }}>Society</option>
-                                <option value="Other" {{ old('ownership_title_type', $property->ownership_title_type ?? '') === 'Other' ? 'selected' : '' }}>Other</option>
+                                <option value="Freehold" {{ old('ownership_title_type', $property?->fieldValue('ownership_title_type') ?? '') === 'Freehold' ? 'selected' : '' }}>Freehold</option>
+                                <option value="Leasehold-Govt" {{ old('ownership_title_type', $property?->fieldValue('ownership_title_type') ?? '') === 'Leasehold-Govt' ? 'selected' : '' }}>Leasehold-Govt</option>
+                                <option value="Leasehold-Private" {{ old('ownership_title_type', $property?->fieldValue('ownership_title_type') ?? '') === 'Leasehold-Private' ? 'selected' : '' }}>Leasehold-Private</option>
+                                <option value="Society" {{ old('ownership_title_type', $property?->fieldValue('ownership_title_type') ?? '') === 'Society' ? 'selected' : '' }}>Society</option>
+                                <option value="Other" {{ old('ownership_title_type', $property?->fieldValue('ownership_title_type') ?? '') === 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Title Status <span class="text-red-500">*</span></label>
                             <select required  name="title_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Clear" {{ old('title_status', $property->title_status ?? '') === 'Clear' ? 'selected' : '' }}>Clear</option>
-                                <option value="Under Dispute" {{ old('title_status', $property->title_status ?? '') === 'Under Dispute' ? 'selected' : '' }}>Under Dispute</option>
-                                <option value="Encumbrance Being Resolved" {{ old('title_status', $property->title_status ?? '') === 'Encumbrance Being Resolved' ? 'selected' : '' }}>Encumbrance Being Resolved</option>
+                                <option value="Clear" {{ old('title_status', $property?->fieldValue('title_status') ?? '') === 'Clear' ? 'selected' : '' }}>Clear</option>
+                                <option value="Under Dispute" {{ old('title_status', $property?->fieldValue('title_status') ?? '') === 'Under Dispute' ? 'selected' : '' }}>Under Dispute</option>
+                                <option value="Encumbrance Being Resolved" {{ old('title_status', $property?->fieldValue('title_status') ?? '') === 'Encumbrance Being Resolved' ? 'selected' : '' }}>Encumbrance Being Resolved</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">RERA Registered <span class="text-red-500">*</span></label>
                             <select required  name="rera_registered" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('rera_registered', $property->rera_registered ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('rera_registered', $property->rera_registered ?? '') === 'No' ? 'selected' : '' }}>No</option>
-                                <option value="Not Applicable" {{ old('rera_registered', $property->rera_registered ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
+                                <option value="Yes" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Not Applicable" {{ old('rera_registered', $property?->fieldValue('rera_registered') ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">RERA Registration ID <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="rera_registration_id" value="{{ old('rera_registration_id', $property->rera_registration_id ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="rera_registration_id" value="{{ old('rera_registration_id', $property?->fieldValue('rera_registration_id') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Occupancy Certificate (OC) <span class="text-red-500">*</span></label>
                             <select required  name="occupancy_certificate_oc" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Received" {{ old('occupancy_certificate_oc', $property->occupancy_certificate_oc ?? '') === 'Received' ? 'selected' : '' }}>Received</option>
-                                <option value="Applied" {{ old('occupancy_certificate_oc', $property->occupancy_certificate_oc ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
-                                <option value="Not Received" {{ old('occupancy_certificate_oc', $property->occupancy_certificate_oc ?? '') === 'Not Received' ? 'selected' : '' }}>Not Received</option>
+                                <option value="Received" {{ old('occupancy_certificate_oc', $property?->fieldValue('occupancy_certificate_oc') ?? '') === 'Received' ? 'selected' : '' }}>Received</option>
+                                <option value="Applied" {{ old('occupancy_certificate_oc', $property?->fieldValue('occupancy_certificate_oc') ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
+                                <option value="Not Received" {{ old('occupancy_certificate_oc', $property?->fieldValue('occupancy_certificate_oc') ?? '') === 'Not Received' ? 'selected' : '' }}>Not Received</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">CLU / Land Use Approval <span class="text-red-500">*</span></label>
                             <select required  name="clu_land_use_approval" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Commercial Approved" {{ old('clu_land_use_approval', $property->clu_land_use_approval ?? '') === 'Commercial Approved' ? 'selected' : '' }}>Commercial Approved</option>
-                                <option value="Mixed-Use" {{ old('clu_land_use_approval', $property->clu_land_use_approval ?? '') === 'Mixed-Use' ? 'selected' : '' }}>Mixed-Use</option>
-                                <option value="Conversion Applied" {{ old('clu_land_use_approval', $property->clu_land_use_approval ?? '') === 'Conversion Applied' ? 'selected' : '' }}>Conversion Applied</option>
-                                <option value="Not Converted" {{ old('clu_land_use_approval', $property->clu_land_use_approval ?? '') === 'Not Converted' ? 'selected' : '' }}>Not Converted</option>
+                                <option value="Commercial Approved" {{ old('clu_land_use_approval', $property?->fieldValue('clu_land_use_approval') ?? '') === 'Commercial Approved' ? 'selected' : '' }}>Commercial Approved</option>
+                                <option value="Mixed-Use" {{ old('clu_land_use_approval', $property?->fieldValue('clu_land_use_approval') ?? '') === 'Mixed-Use' ? 'selected' : '' }}>Mixed-Use</option>
+                                <option value="Conversion Applied" {{ old('clu_land_use_approval', $property?->fieldValue('clu_land_use_approval') ?? '') === 'Conversion Applied' ? 'selected' : '' }}>Conversion Applied</option>
+                                <option value="Not Converted" {{ old('clu_land_use_approval', $property?->fieldValue('clu_land_use_approval') ?? '') === 'Not Converted' ? 'selected' : '' }}>Not Converted</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Fire NOC Status <span class="text-red-500">*</span></label>
                             <select required  name="fire_noc_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Obtained" {{ old('fire_noc_status', $property->fire_noc_status ?? '') === 'Obtained' ? 'selected' : '' }}>Obtained</option>
-                                <option value="Applied — In Process" {{ old('fire_noc_status', $property->fire_noc_status ?? '') === 'Applied — In Process' ? 'selected' : '' }}>Applied — In Process</option>
-                                <option value="Not Yet Applied" {{ old('fire_noc_status', $property->fire_noc_status ?? '') === 'Not Yet Applied' ? 'selected' : '' }}>Not Yet Applied</option>
-                                <option value="Not Required" {{ old('fire_noc_status', $property->fire_noc_status ?? '') === 'Not Required' ? 'selected' : '' }}>Not Required</option>
+                                <option value="Obtained" {{ old('fire_noc_status', $property?->fieldValue('fire_noc_status') ?? '') === 'Obtained' ? 'selected' : '' }}>Obtained</option>
+                                <option value="Applied — In Process" {{ old('fire_noc_status', $property?->fieldValue('fire_noc_status') ?? '') === 'Applied — In Process' ? 'selected' : '' }}>Applied — In Process</option>
+                                <option value="Not Yet Applied" {{ old('fire_noc_status', $property?->fieldValue('fire_noc_status') ?? '') === 'Not Yet Applied' ? 'selected' : '' }}>Not Yet Applied</option>
+                                <option value="Not Required" {{ old('fire_noc_status', $property?->fieldValue('fire_noc_status') ?? '') === 'Not Required' ? 'selected' : '' }}>Not Required</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pollution / Environment NOC </label>
                             <select name="pollution_environment_noc" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Obtained" {{ old('pollution_environment_noc', $property->pollution_environment_noc ?? '') === 'Obtained' ? 'selected' : '' }}>Obtained</option>
-                                <option value="Applied" {{ old('pollution_environment_noc', $property->pollution_environment_noc ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
-                                <option value="Not Applicable" {{ old('pollution_environment_noc', $property->pollution_environment_noc ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
+                                <option value="Obtained" {{ old('pollution_environment_noc', $property?->fieldValue('pollution_environment_noc') ?? '') === 'Obtained' ? 'selected' : '' }}>Obtained</option>
+                                <option value="Applied" {{ old('pollution_environment_noc', $property?->fieldValue('pollution_environment_noc') ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
+                                <option value="Not Applicable" {{ old('pollution_environment_noc', $property?->fieldValue('pollution_environment_noc') ?? '') === 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Encumbrance / Loan on Property <span class="text-red-500">*</span></label>
                             <select required  name="encumbrance_loan_on_property" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="None" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'None' ? 'selected' : '' }}>None</option>
-                                <option value="Loan" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Loan' ? 'selected' : '' }}>Loan</option>
-                                <option value="Mortgage" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Mortgage' ? 'selected' : '' }}>Mortgage</option>
-                                <option value="Other" {{ old('encumbrance_loan_on_property', $property->encumbrance_loan_on_property ?? '') === 'Other' ? 'selected' : '' }}>Other</option>
+                                <option value="None" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'None' ? 'selected' : '' }}>None</option>
+                                <option value="Loan" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Loan' ? 'selected' : '' }}>Loan</option>
+                                <option value="Mortgage" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Mortgage' ? 'selected' : '' }}>Mortgage</option>
+                                <option value="Other" {{ old('encumbrance_loan_on_property', $property?->fieldValue('encumbrance_loan_on_property') ?? '') === 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
                         </div>
                     </div>
@@ -359,54 +360,54 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Hotel / Hospitality Licence </label>
                             <select name="hotel_hospitality_licence" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Held" {{ old('hotel_hospitality_licence', $property->hotel_hospitality_licence ?? '') === 'Held' ? 'selected' : '' }}>Held</option>
-                                <option value="Applied" {{ old('hotel_hospitality_licence', $property->hotel_hospitality_licence ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
-                                <option value="None" {{ old('hotel_hospitality_licence', $property->hotel_hospitality_licence ?? '') === 'None' ? 'selected' : '' }}>None</option>
+                                <option value="Held" {{ old('hotel_hospitality_licence', $property?->fieldValue('hotel_hospitality_licence') ?? '') === 'Held' ? 'selected' : '' }}>Held</option>
+                                <option value="Applied" {{ old('hotel_hospitality_licence', $property?->fieldValue('hotel_hospitality_licence') ?? '') === 'Applied' ? 'selected' : '' }}>Applied</option>
+                                <option value="None" {{ old('hotel_hospitality_licence', $property?->fieldValue('hotel_hospitality_licence') ?? '') === 'None' ? 'selected' : '' }}>None</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Liquor Licence </label>
                             <select name="liquor_licence" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('liquor_licence', $property->liquor_licence ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('liquor_licence', $property->liquor_licence ?? '') === 'No' ? 'selected' : '' }}>No</option>
-                                <option value="Transferable" {{ old('liquor_licence', $property->liquor_licence ?? '') === 'Transferable' ? 'selected' : '' }}>Transferable</option>
+                                <option value="Yes" {{ old('liquor_licence', $property?->fieldValue('liquor_licence') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('liquor_licence', $property?->fieldValue('liquor_licence') ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Transferable" {{ old('liquor_licence', $property?->fieldValue('liquor_licence') ?? '') === 'Transferable' ? 'selected' : '' }}>Transferable</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Power Backup </label>
                             <select name="power_backup" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="100%" {{ old('power_backup', $property->power_backup ?? '') === '100%' ? 'selected' : '' }}>100%</option>
-                                <option value="Partial" {{ old('power_backup', $property->power_backup ?? '') === 'Partial' ? 'selected' : '' }}>Partial</option>
-                                <option value="None" {{ old('power_backup', $property->power_backup ?? '') === 'None' ? 'selected' : '' }}>None</option>
+                                <option value="100%" {{ old('power_backup', $property?->fieldValue('power_backup') ?? '') === '100%' ? 'selected' : '' }}>100%</option>
+                                <option value="Partial" {{ old('power_backup', $property?->fieldValue('power_backup') ?? '') === 'Partial' ? 'selected' : '' }}>Partial</option>
+                                <option value="None" {{ old('power_backup', $property?->fieldValue('power_backup') ?? '') === 'None' ? 'selected' : '' }}>None</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Sanctioned Power Load (KVA) </label>
-                            <input type="text" name="sanctioned_power_load_kva" value="{{ old('sanctioned_power_load_kva', $property->sanctioned_power_load_kva ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="sanctioned_power_load_kva" value="{{ old('sanctioned_power_load_kva', $property?->fieldValue('sanctioned_power_load_kva') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Water Source / STP </label>
-                            <input type="text" name="water_source_stp" value="{{ old('water_source_stp', $property->water_source_stp ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="water_source_stp" value="{{ old('water_source_stp', $property?->fieldValue('water_source_stp') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lifts </label>
-                            <input type="number" step="any" name="lifts" value="{{ old('lifts', $property->lifts ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="lifts" value="{{ old('lifts', $property?->fieldValue('lifts') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kitchen Infrastructure </label>
                             <select name="kitchen_infrastructure" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Full commercial" {{ old('kitchen_infrastructure', $property->kitchen_infrastructure ?? '') === 'Full commercial' ? 'selected' : '' }}>Full commercial</option>
-                                <option value="Basic" {{ old('kitchen_infrastructure', $property->kitchen_infrastructure ?? '') === 'Basic' ? 'selected' : '' }}>Basic</option>
-                                <option value="None" {{ old('kitchen_infrastructure', $property->kitchen_infrastructure ?? '') === 'None' ? 'selected' : '' }}>None</option>
+                                <option value="Full commercial" {{ old('kitchen_infrastructure', $property?->fieldValue('kitchen_infrastructure') ?? '') === 'Full commercial' ? 'selected' : '' }}>Full commercial</option>
+                                <option value="Basic" {{ old('kitchen_infrastructure', $property?->fieldValue('kitchen_infrastructure') ?? '') === 'Basic' ? 'selected' : '' }}>Basic</option>
+                                <option value="None" {{ old('kitchen_infrastructure', $property?->fieldValue('kitchen_infrastructure') ?? '') === 'None' ? 'selected' : '' }}>None</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Amenities </label>
                             <select name="amenities[]" multiple class="select2-multiple w-full">
-                                @php $sel = old('amenities', $property->amenities ?? []); @endphp
+                                @php $sel = old('amenities', $property?->fieldValue('amenities') ?? []); @endphp
                                     <option value="Pool" {{ in_array('Pool', (array)$sel) ? 'selected' : '' }}>Pool</option>
                                     <option value="Spa" {{ in_array('Spa', (array)$sel) ? 'selected' : '' }}>Spa</option>
                                     <option value="Gym" {{ in_array('Gym', (array)$sel) ? 'selected' : '' }}>Gym</option>
@@ -429,55 +430,55 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Listing Purpose (Transaction Type) <span class="text-red-500">*</span></label>
                             <select required  name="listing_purpose_transaction_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Sale" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Sale' ? 'selected' : '' }}>Sale</option>
-                                <option value="Lease" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Lease' ? 'selected' : '' }}>Lease</option>
-                                <option value="Management Contract" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Management Contract' ? 'selected' : '' }}>Management Contract</option>
-                                <option value="Revenue Share" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Revenue Share' ? 'selected' : '' }}>Revenue Share</option>
-                                <option value="Slump Sale" {{ old('listing_purpose_transaction_type', $property->listing_purpose_transaction_type ?? '') === 'Slump Sale' ? 'selected' : '' }}>Slump Sale</option>
+                                <option value="Sale" {{ old('listing_purpose_transaction_type', $property?->fieldValue('listing_purpose_transaction_type') ?? '') === 'Sale' ? 'selected' : '' }}>Sale</option>
+                                <option value="Lease" {{ old('listing_purpose_transaction_type', $property?->fieldValue('listing_purpose_transaction_type') ?? '') === 'Lease' ? 'selected' : '' }}>Lease</option>
+                                <option value="Management Contract" {{ old('listing_purpose_transaction_type', $property?->fieldValue('listing_purpose_transaction_type') ?? '') === 'Management Contract' ? 'selected' : '' }}>Management Contract</option>
+                                <option value="Revenue Share" {{ old('listing_purpose_transaction_type', $property?->fieldValue('listing_purpose_transaction_type') ?? '') === 'Revenue Share' ? 'selected' : '' }}>Revenue Share</option>
+                                <option value="Slump Sale" {{ old('listing_purpose_transaction_type', $property?->fieldValue('listing_purpose_transaction_type') ?? '') === 'Slump Sale' ? 'selected' : '' }}>Slump Sale</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Sale Price (₹) </label>
-                            <input type="number" step="any" name="expected_sale_price" value="{{ old('expected_sale_price', $property->expected_sale_price ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="expected_sale_price" value="{{ old('expected_sale_price', $property?->fieldValue('expected_sale_price') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Sale Price Band (shown live) </label>
                             <select name="sale_price_band_shown_live" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('sale_price_band_shown_live', $property->sale_price_band_shown_live ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('sale_price_band_shown_live', $property->sale_price_band_shown_live ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Yes" {{ old('sale_price_band_shown_live', $property?->fieldValue('sale_price_band_shown_live') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('sale_price_band_shown_live', $property?->fieldValue('sale_price_band_shown_live') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Expected Lease Rent (₹/month) </label>
-                            <input type="number" step="any" name="expected_lease_rent_month" value="{{ old('expected_lease_rent_month', $property->expected_lease_rent_month ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="expected_lease_rent_month" value="{{ old('expected_lease_rent_month', $property?->fieldValue('expected_lease_rent_month') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lease Rent Band (shown live) </label>
                             <select name="lease_rent_band_shown_live" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('lease_rent_band_shown_live', $property->lease_rent_band_shown_live ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('lease_rent_band_shown_live', $property->lease_rent_band_shown_live ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Yes" {{ old('lease_rent_band_shown_live', $property?->fieldValue('lease_rent_band_shown_live') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('lease_rent_band_shown_live', $property?->fieldValue('lease_rent_band_shown_live') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Revenue / ARR / Occupancy % </label>
-                            <input type="text" name="current_revenue_arr_occupancy" value="{{ old('current_revenue_arr_occupancy', $property->current_revenue_arr_occupancy ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="current_revenue_arr_occupancy" value="{{ old('current_revenue_arr_occupancy', $property?->fieldValue('current_revenue_arr_occupancy') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Negotiable Floor Price </label>
-                            <input type="number" step="any" name="negotiable_floor_price" value="{{ old('negotiable_floor_price', $property->negotiable_floor_price ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="negotiable_floor_price" value="{{ old('negotiable_floor_price', $property?->fieldValue('negotiable_floor_price') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Owner Flexibility Notes </label>
-                            <textarea name="owner_flexibility_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('owner_flexibility_notes', $property->owner_flexibility_notes ?? '') }}</textarea>
+                            <textarea name="owner_flexibility_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('owner_flexibility_notes', $property?->fieldValue('owner_flexibility_notes') ?? '') }}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Availability <span class="text-red-500">*</span></label>
                             <select required  name="availability" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Immediate" {{ old('availability', $property->availability ?? '') === 'Immediate' ? 'selected' : '' }}>Immediate</option>
-                                <option value="From date" {{ old('availability', $property->availability ?? '') === 'From date' ? 'selected' : '' }}>From date</option>
+                                <option value="Immediate" {{ old('availability', $property?->fieldValue('availability') ?? '') === 'Immediate' ? 'selected' : '' }}>Immediate</option>
+                                <option value="From date" {{ old('availability', $property?->fieldValue('availability') ?? '') === 'From date' ? 'selected' : '' }}>From date</option>
                             </select>
                         </div>
                     </div>
@@ -492,53 +493,53 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Currently Rented / Tenanted <span class="text-red-500">*</span></label>
                             <select required  name="currently_rented_tenanted" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'No' ? 'selected' : '' }}>No</option>
-                                <option value="Partially" {{ old('currently_rented_tenanted', $property->currently_rented_tenanted ?? '') === 'Partially' ? 'selected' : '' }}>Partially</option>
+                                <option value="Yes" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Partially" {{ old('currently_rented_tenanted', $property?->fieldValue('currently_rented_tenanted') ?? '') === 'Partially' ? 'selected' : '' }}>Partially</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Monthly Rent Received (₹) </label>
-                            <input type="number" step="any" name="current_monthly_rent_received" value="{{ old('current_monthly_rent_received', $property->current_monthly_rent_received ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="current_monthly_rent_received" value="{{ old('current_monthly_rent_received', $property?->fieldValue('current_monthly_rent_received') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Rental Income Band (shown live) </label>
                             <select name="rental_income_band_shown_live" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Yes" {{ old('rental_income_band_shown_live', $property->rental_income_band_shown_live ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
-                                <option value="No" {{ old('rental_income_band_shown_live', $property->rental_income_band_shown_live ?? '') === 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Yes" {{ old('rental_income_band_shown_live', $property?->fieldValue('rental_income_band_shown_live') ?? '') === 'Yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="No" {{ old('rental_income_band_shown_live', $property?->fieldValue('rental_income_band_shown_live') ?? '') === 'No' ? 'selected' : '' }}>No</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Rental Yield / ROI (% p.a.) </label>
-                            <input type="text" name="rental_yield_roi_p_a" value="{{ old('rental_yield_roi_p_a', $property->rental_yield_roi_p_a ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="rental_yield_roi_p_a" value="{{ old('rental_yield_roi_p_a', $property?->fieldValue('rental_yield_roi_p_a') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tenant Type (public) </label>
                             <select name="tenant_type_public" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="MNC" {{ old('tenant_type_public', $property->tenant_type_public ?? '') === 'MNC' ? 'selected' : '' }}>MNC</option>
-                                <option value="Corporate" {{ old('tenant_type_public', $property->tenant_type_public ?? '') === 'Corporate' ? 'selected' : '' }}>Corporate</option>
-                                <option value="Bank" {{ old('tenant_type_public', $property->tenant_type_public ?? '') === 'Bank' ? 'selected' : '' }}>Bank</option>
-                                <option value="Brand Retail" {{ old('tenant_type_public', $property->tenant_type_public ?? '') === 'Brand Retail' ? 'selected' : '' }}>Brand Retail</option>
-                                <option value="Individual" {{ old('tenant_type_public', $property->tenant_type_public ?? '') === 'Individual' ? 'selected' : '' }}>Individual</option>
+                                <option value="MNC" {{ old('tenant_type_public', $property?->fieldValue('tenant_type_public') ?? '') === 'MNC' ? 'selected' : '' }}>MNC</option>
+                                <option value="Corporate" {{ old('tenant_type_public', $property?->fieldValue('tenant_type_public') ?? '') === 'Corporate' ? 'selected' : '' }}>Corporate</option>
+                                <option value="Bank" {{ old('tenant_type_public', $property?->fieldValue('tenant_type_public') ?? '') === 'Bank' ? 'selected' : '' }}>Bank</option>
+                                <option value="Brand Retail" {{ old('tenant_type_public', $property?->fieldValue('tenant_type_public') ?? '') === 'Brand Retail' ? 'selected' : '' }}>Brand Retail</option>
+                                <option value="Individual" {{ old('tenant_type_public', $property?->fieldValue('tenant_type_public') ?? '') === 'Individual' ? 'selected' : '' }}>Individual</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lease Tenure (years) </label>
-                            <input type="number" step="any" name="lease_tenure_years" value="{{ old('lease_tenure_years', $property->lease_tenure_years ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="lease_tenure_years" value="{{ old('lease_tenure_years', $property?->fieldValue('lease_tenure_years') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Lock-in Remaining (months) </label>
-                            <input type="number" step="any" name="lock_in_remaining_months" value="{{ old('lock_in_remaining_months', $property->lock_in_remaining_months ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="number" step="any" name="lock_in_remaining_months" value="{{ old('lock_in_remaining_months', $property?->fieldValue('lock_in_remaining_months') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">CAM / Outgoings Borne By </label>
                             <select name="cam_outgoings_borne_by" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                                 <option value="">— Select —</option>
-                                <option value="Tenant" {{ old('cam_outgoings_borne_by', $property->cam_outgoings_borne_by ?? '') === 'Tenant' ? 'selected' : '' }}>Tenant</option>
-                                <option value="Owner" {{ old('cam_outgoings_borne_by', $property->cam_outgoings_borne_by ?? '') === 'Owner' ? 'selected' : '' }}>Owner</option>
-                                <option value="Shared" {{ old('cam_outgoings_borne_by', $property->cam_outgoings_borne_by ?? '') === 'Shared' ? 'selected' : '' }}>Shared</option>
+                                <option value="Tenant" {{ old('cam_outgoings_borne_by', $property?->fieldValue('cam_outgoings_borne_by') ?? '') === 'Tenant' ? 'selected' : '' }}>Tenant</option>
+                                <option value="Owner" {{ old('cam_outgoings_borne_by', $property?->fieldValue('cam_outgoings_borne_by') ?? '') === 'Owner' ? 'selected' : '' }}>Owner</option>
+                                <option value="Shared" {{ old('cam_outgoings_borne_by', $property?->fieldValue('cam_outgoings_borne_by') ?? '') === 'Shared' ? 'selected' : '' }}>Shared</option>
                             </select>
                         </div>
                     </div>
@@ -575,23 +576,23 @@
                         
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Officer / Submitter Remarks <span class="text-red-500">*</span></label>
-                            <textarea required  name="field_officer_submitter_remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('field_officer_submitter_remarks', $property->field_officer_submitter_remarks ?? '') }}</textarea>
+                            <textarea required  name="field_officer_submitter_remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('field_officer_submitter_remarks', $property?->fieldValue('field_officer_submitter_remarks') ?? '') }}</textarea>
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Property Description (public) </label>
-                            <textarea name="property_description_public" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('property_description_public', $property->property_description_public ?? '') }}</textarea>
+                            <textarea name="property_description_public" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('property_description_public', $property?->fieldValue('property_description_public') ?? '') }}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Officer Name <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="field_officer_name" value="{{ old('field_officer_name', $property->field_officer_name ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" name="field_officer_name" value="{{ old('field_officer_name', $property?->fieldValue('field_officer_name') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Field Verified </label>
-                            <input type="text" name="field_verified" value="{{ old('field_verified', $property->field_verified ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" name="field_verified" value="{{ old('field_verified', $property?->fieldValue('field_verified') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date <span class="text-red-500">*</span></label>
-                            <input required  type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', isset($property->inspection_submission_date) ? $property->inspection_submission_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="date" name="inspection_submission_date" value="{{ old('inspection_submission_date', ($property?->fieldValue('inspection_submission_date') !== null) ? $property?->fieldValue('inspection_submission_date')->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                 </div>

@@ -85,14 +85,26 @@ class AgriculturalFarmLandController extends Controller
 
         $entry = PropertyEntry::create($data);
 
+        // Reject non-image / oversized uploads before touching storage —
+        // this is validation-free for every other field on this form, but a
+        // malformed upload can't be allowed through regardless.
+        $request->validate([
+            'photo_0' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_3' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_4' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_5' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ]);
+
         // Upload photos
         for ($i = 0; $i <= 5; $i++) {
             if ($request->hasFile("photo_{$i}")) {
                 $path = $request->file("photo_{$i}")->store('property-photos', 'public');
                 PropertyEntryPhoto::create([
                     'property_entry_id' => $entry->id,
-                    'slot'              => $i,
-                    'photo_path'        => $path,
+                    'slot_label'        => self::PHOTO_SLOTS[$i] ?? "Photo {$i}",
+                    'file_path'         => $path,
                 ]);
             }
         }
@@ -173,6 +185,29 @@ class AgriculturalFarmLandController extends Controller
         }
 
         $property->update($data);
+
+        // update() never uploaded photos at all — a field officer editing a
+        // draft to attach/replace photos had every image silently dropped.
+        // Mirrors store()'s validation + upload loop, and replaces (not
+        // duplicates) an existing slot's photo on re-upload.
+        $request->validate([
+            'photo_0' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_3' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_4' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'photo_5' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ]);
+
+        for ($i = 0; $i <= 5; $i++) {
+            if ($request->hasFile("photo_{$i}")) {
+                $path = $request->file("photo_{$i}")->store('property-photos', 'public');
+                PropertyEntryPhoto::updateOrCreate(
+                    ['property_entry_id' => $property->id, 'slot_label' => self::PHOTO_SLOTS[$i] ?? "Photo {$i}"],
+                    ['file_path' => $path]
+                );
+            }
+        }
 
         if ($status === 'draft') {
             return redirect()->route('owner.properties.agricultural-farm-land.edit', $property)
