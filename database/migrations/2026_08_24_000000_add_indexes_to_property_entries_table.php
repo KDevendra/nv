@@ -26,10 +26,6 @@ return new class extends Migration
             // ── Single-Column Indexes ─────────────────────────────────────────
 
             if (!in_array('property_entries_status_index', $existing)) {
-                $table->index('status', 'property_entries_status_index');
-            }
-
-            if (!in_array('property_entries_status_index', $existing)) {
                 try {
                     $table->index('status', 'property_entries_status_index');
                 } catch (\Throwable $e) {}
