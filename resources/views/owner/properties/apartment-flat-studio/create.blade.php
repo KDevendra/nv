@@ -540,7 +540,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Possession By Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="possession_by"
-                                    value="{{ old('possession_by', ($property?->fieldValue('possession_by') !== null) ? $property?->fieldValue('possession_by')->format('Y-m-d') : '') }}"
+                                    value="{{ old('possession_by', $property?->dateFieldValue('possession_by') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -566,7 +566,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Available From Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="available_from"
-                                    value="{{ old('available_from', ($property?->fieldValue('available_from') !== null) ? $property?->fieldValue('available_from')->format('Y-m-d') : '') }}"
+                                    value="{{ old('available_from', $property?->dateFieldValue('available_from') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -1018,7 +1018,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lease Start Date <span
                                         class="text-red-500">*</span></label>
                                 <input required type="date" name="lease_start_date"
-                                    value="{{ old('lease_start_date', ($property?->fieldValue('lease_start_date') !== null) ? $property?->fieldValue('lease_start_date')->format('Y-m-d') : '') }}"
+                                    value="{{ old('lease_start_date', $property?->dateFieldValue('lease_start_date') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div x-show="isTenanted === 'Yes' || isTenanted === 'Partially'">
@@ -1143,7 +1143,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date
                                     <span class="text-red-500">*</span></label>
                                 <input required type="date" name="inspection_submission_date"
-                                    value="{{ old('inspection_submission_date', ($property?->fieldValue('inspection_submission_date') !== null) ? $property?->fieldValue('inspection_submission_date')->format('Y-m-d') : date('Y-m-d')) }}"
+                                    value="{{ old('inspection_submission_date', $property?->dateFieldValue('inspection_submission_date') ?: date('Y-m-d')) }}"
                                     required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>

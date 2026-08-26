@@ -467,7 +467,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Possession By (if under-constr.)
                                 </label>
                                 <input type="date" name="possession_by_if_under_constr"
-                                    value="{{ old('possession_by_if_under_constr', ($property?->fieldValue('possession_by_if_under_constr') !== null) ? $property?->fieldValue('possession_by_if_under_constr')->format('Y-m-d') : '') }}"
+                                    value="{{ old('possession_by_if_under_constr', $property?->dateFieldValue('possession_by_if_under_constr') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -495,7 +495,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Available From Date </label>
                                 <input type="date" name="available_from_date"
-                                    value="{{ old('available_from_date', ($property?->fieldValue('available_from_date') !== null) ? $property?->fieldValue('available_from_date')->format('Y-m-d') : '') }}"
+                                    value="{{ old('available_from_date', $property?->dateFieldValue('available_from_date') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>
@@ -936,7 +936,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date
                                     <span class="text-red-500">*</span></label>
                                 <input required type="date" name="inspection_submission_date"
-                                    value="{{ old('inspection_submission_date', ($property?->fieldValue('inspection_submission_date') !== null) ? $property?->fieldValue('inspection_submission_date')->format('Y-m-d') : '') }}"
+                                    value="{{ old('inspection_submission_date', $property?->dateFieldValue('inspection_submission_date') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                         </div>

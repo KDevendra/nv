@@ -562,7 +562,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Inspection / Submission Date
                                     <span class="text-red-500">*</span></label>
                                 <input required type="date" name="inspection_submission_date"
-                                    value="{{ old('inspection_submission_date', ($property?->fieldValue('inspection_submission_date') !== null) ? $property?->fieldValue('inspection_submission_date')->format('Y-m-d') : '') }}"
+                                    value="{{ old('inspection_submission_date', $property?->dateFieldValue('inspection_submission_date') ?: '') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                         </div>
