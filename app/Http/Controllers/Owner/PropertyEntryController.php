@@ -177,13 +177,14 @@ class PropertyEntryController extends Controller
             return $this->create();
         }
 
+        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
         $propertyType = $matched['property_type'];
         $typeMeta = $matched;
 
-        return view('owner.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks', 'propertyType', 'typeMeta'));
+        return view('owner.properties.create', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks', 'propertyType', 'typeMeta'));
     }
 
     // ── Create ────────────────────────────────────────────────────────────────
@@ -192,10 +193,11 @@ class PropertyEntryController extends Controller
     {
         abort_if(auth()->user()->role !== 'owner', 403);
 
+        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
-        return view('owner.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks'));
+        return view('owner.properties.create', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks'));
     }
 
     // ── Store ─────────────────────────────────────────────────────────────────

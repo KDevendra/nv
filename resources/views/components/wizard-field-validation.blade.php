@@ -437,7 +437,33 @@
             function applyPostOffice(po) {
                 if (villageInput && po.Name) villageInput.value = po.Name;
                 if (tehsilInput) tehsilInput.value = (po.Block && po.Block !== 'NA') ? po.Block : (po.Division || '');
-                if (districtInput && po.District) districtInput.value = po.District;
+                
+                var cityElements = document.querySelectorAll('input[name="city"], input[name="district"], input[name="nearest_city"], select[name="city"], select[name="nearest_city"]');
+                if (cityElements.length > 0 && po.District) {
+                    cityElements.forEach(function(districtInput) {
+                        if (districtInput.tagName === 'SELECT') {
+                            var distName = (po.District || '').toLowerCase();
+                            var matched = false;
+                            for (var i = 0; i < districtInput.options.length; i++) {
+                                if (districtInput.options[i].value.toLowerCase() === distName || districtInput.options[i].text.toLowerCase() === distName) {
+                                    districtInput.selectedIndex = i;
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if (!matched && po.District) {
+                                var opt = document.createElement('option');
+                                opt.value = po.District;
+                                opt.text = po.District;
+                                opt.selected = true;
+                                districtInput.appendChild(opt);
+                            }
+                        } else {
+                            districtInput.value = po.District;
+                        }
+                    });
+                }
+
                 if (stateInput) {
                     if (stateInput.tagName === 'SELECT') {
                         var stName = (po.State || '').toLowerCase();
@@ -454,7 +480,9 @@
                 if (countryInput && po.Country) countryInput.value = po.Country;
                 
                 // Clear any validation error on auto-filled fields
-                [villageInput, tehsilInput, districtInput, stateInput, countryInput].forEach(function(el) {
+                var allAutofilled = [villageInput, tehsilInput, stateInput, countryInput];
+                cityElements.forEach(function(el) { allAutofilled.push(el); });
+                allAutofilled.forEach(function(el) {
                     if (el && window.ZendoFieldValidation) {
                         window.ZendoFieldValidation.clearFieldError(el);
                     }

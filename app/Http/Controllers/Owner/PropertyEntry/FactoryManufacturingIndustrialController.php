@@ -23,8 +23,9 @@ class FactoryManufacturingIndustrialController extends Controller
     public function create(): View
     {
         abort_if(auth()->user()->role !== 'owner', 403);
+        $property = null;
         $slots = self::PHOTO_SLOTS;
-        return view('owner.properties.factory-manufacturing-industrial.create', compact('slots'));
+        return view('owner.properties.factory-manufacturing-industrial.create', compact('property', 'slots'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -154,7 +155,7 @@ class FactoryManufacturingIndustrialController extends Controller
     public function edit(PropertyEntry $property): View
     {
         abort_if(auth()->user()->role !== 'owner', 403);
-        $slots = self::PHOTO_SLOTS;
+                $slots = self::PHOTO_SLOTS;
         return view('owner.properties.factory-manufacturing-industrial.create', compact('property', 'slots'));
     }
 
@@ -205,8 +206,10 @@ class FactoryManufacturingIndustrialController extends Controller
         }
         $data['property_type'] = 'factory_manufacturing_industrial';
 
-        if (!empty($customFields)) {
-            $data['custom_fields'] = json_encode($customFields);
+        $existingCustom = $property->customFieldsArray();
+        $mergedCustom = array_merge($existingCustom, $customFields);
+        if (!empty($mergedCustom)) {
+            $data['custom_fields'] = json_encode($mergedCustom);
         }
 
         // Never user-controlled — see the note in store(). An edit must not

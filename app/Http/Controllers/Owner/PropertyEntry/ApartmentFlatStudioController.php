@@ -58,12 +58,13 @@ class ApartmentFlatStudioController extends Controller
     {
         abort_if(auth()->user()->role !== 'owner', 403);
 
+        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
         $propertyType = 'apartment_flat_studio';
 
-        return view('owner.properties.apartment-flat-studio.create', compact('slots', 'fieldConfigs', 'fieldRemarks', 'propertyType'));
+        return view('owner.properties.apartment-flat-studio.create', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks', 'propertyType'));
     }
 
     public function store(ApartmentFlatStudioRequest $request): RedirectResponse

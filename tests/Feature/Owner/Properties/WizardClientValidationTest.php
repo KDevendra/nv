@@ -242,7 +242,8 @@ class WizardClientValidationTest extends TestCase
             'security_deposit_months' => 'Negotiable',
         ]);
 
-        $entry = \App\Models\PropertyEntry::where('field_officer_id', $user->id)->latest()->first();
+        $response->assertSessionHasNoErrors();
+        $entry = \App\Models\PropertyEntry::latest('id')->first();
         $this->assertNotNull($entry);
         $this->assertEquals('Negotiable', $entry->security_deposit_months);
 
@@ -320,5 +321,26 @@ class WizardClientValidationTest extends TestCase
         $response->assertSee('Pooja Room');
         $response->assertSee('Servant Room');
         $response->assertSee('2 months');
+    }
+
+    public function test_washrooms_string_option_persists_on_update(): void
+    {
+        $property = \App\Models\PropertyEntry::create([
+            'field_officer_id' => $this->owner->id,
+            'user_id' => $this->owner->id,
+            'property_type' => 'office_space',
+            'code' => 'ZI-OF-99999',
+            'washrooms' => null,
+        ]);
+
+        $response = $this->actingAs($this->owner)->put(route('owner.properties.office-space.update', $property), [
+            'action' => 'draft',
+            'washrooms' => 'Private',
+            'flooring_type' => 'Vitrified',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $property->refresh();
+        $this->assertEquals('Private', $property->washrooms);
     }
 }

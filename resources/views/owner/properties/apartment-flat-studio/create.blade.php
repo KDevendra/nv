@@ -148,7 +148,10 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">City <span
                                         class="text-red-500">*</span></label>
-                                <input required type="text" name="city" value="{{ old('city', $property?->fieldValue('city') ?? '') }}"
+                                <input required type="text" name="city"
+                                    value="{{ old('city', $property?->fieldValue('city') ?? $property?->city ?? $property?->nearest_city ?? '') }}"
+                                    placeholder="e.g. Mumbai, Gurgaon, Delhi"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">fieldValue('city') ?? '') }}"
                                     required placeholder="e.g. Mumbai, Gurgaon, Delhi"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>

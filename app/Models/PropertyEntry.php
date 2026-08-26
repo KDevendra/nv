@@ -189,6 +189,9 @@ class PropertyEntry extends Model
         'furnishing_status',
         'furnishing_detail',
         'parking_slots',
+        'car_parking_slots',
+        'car_parking_capacity',
+        'total_car_parking',
         'covered_parking_slots',
         'open_parking_slots',
         'property_status',
@@ -319,7 +322,7 @@ class PropertyEntry extends Model
         'dock_height'                  => 'float',
         // E
         'office_cabin_area'            => 'float',
-        'washrooms'                    => 'integer',
+        'washrooms'                    => 'string',
         // F
         'power_sanctioned_kva'         => 'float',
         'solar'                        => 'boolean',
@@ -627,6 +630,31 @@ class PropertyEntry extends Model
     }
 
     /**
+     * Display label for facility type / property type in tables and lists.
+     * Uses facility_type if set, unit_property_type if set, otherwise looking up
+     * the property_type label in config('property_types').
+     */
+    public function getDisplayFacilityTypeAttribute(): string
+    {
+        if (!empty($this->facility_type)) {
+            return $this->facility_type;
+        }
+
+        if (!empty($this->unit_property_type)) {
+            return $this->unit_property_type;
+        }
+
+        $typeKey = $this->property_type ? str_replace('-', '_', $this->property_type) : 'warehouse';
+        $configLabel = config("property_types.types.{$typeKey}.label");
+
+        if ($configLabel) {
+            return $configLabel;
+        }
+
+        return $this->property_type ? ucwords(str_replace(['_', '-'], ' ', $this->property_type)) : '—';
+    }
+
+    /**
      * Ordered section => [column => normalised field definition] map for
      * this row's type, with every field definition expanded to the full
      * array form so the view never has to branch on shape.
@@ -672,6 +700,10 @@ class PropertyEntry extends Model
      */
     public function fieldValue(string $column): mixed
     {
+        if ($column === 'car_parking_slots') {
+            return $this->attributes['car_parking_slots'] ?? $this->attributes['parking_slots'] ?? $this->customFieldsArray()['car_parking_slots'] ?? null;
+        }
+
         if (array_key_exists($column, $this->getAttributes()) || $this->hasCast($column)) {
             return $this->$column;
         }

@@ -206,9 +206,9 @@
                                 <td class="px-5 py-3 text-sm text-gray-500">
                                     {{ $loop->iteration + ($entries->currentPage() - 1) * $entries->perPage() }}
                                 </td>
-                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->nearest_city ?? '—' }}</td>
+                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->nearest_city ?? $entry->city ?? '—' }}</td>
                                 <td class="px-5 py-3 text-sm font-mono font-medium text-zendo-navy">{{ $entry->code }}</td>
-                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
+                                <td class="px-5 py-3 text-sm text-gray-700">{{ $entry->display_facility_type }}</td>
                                 <td class="px-5 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                         {{ $entry->status_label }}
@@ -241,7 +241,7 @@
                                     <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-zendo-navy rounded-full">{{ $loop->iteration + ($entries->currentPage() - 1) * $entries->perPage() }}</span>
                                     <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ $entry->nearest_city ?? '—' }} • {{ $entry->facility_type ?? '—' }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $entry->nearest_city ?? $entry->city ?? '—' }} • {{ $entry->display_facility_type }}</p>
                             </div>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                 {{ $entry->status_label }}
