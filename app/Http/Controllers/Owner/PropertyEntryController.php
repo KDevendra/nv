@@ -230,7 +230,6 @@ class PropertyEntryController extends Controller
         if ($isDraft) {
             $entry = PropertyEntry::create(array_merge($data, [
                 'field_officer_id' => auth()->id(),
-                'supply_head_id'   => $supplyHeadId,
                 'status'           => 'draft',
                 'submitted_at'     => null,
                 'area_unit'        => $request->input('area_unit', 'sq_ft'),
@@ -245,7 +244,6 @@ class PropertyEntryController extends Controller
 
         $entry = PropertyEntry::create(array_merge($data, [
             'field_officer_id' => auth()->id(),
-            'supply_head_id'   => $supplyHeadId,
             'status'           => 'submitted',
             'submitted_at'     => now(),
             'area_unit'        => $request->input('area_unit', 'sq_ft'),

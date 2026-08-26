@@ -256,6 +256,30 @@ class PropertyEntry extends Model
         'field_officer_name',
         'field_verified',
         'inspection_submission_date',
+        // Additional columns
+        'ac_rooms',
+        'age_of_building',
+        'air_conditioning',
+        'amenities',
+        'annual_escalation',
+        'approach_road_width_ft',
+        'approved_layout_dtcp_rera_local',
+        'area_in_standard_unit_sq_ft',
+        'attached_bathroom',
+        'bank_loan_lease_financing_available',
+        'banquet_event_space_sq_ft',
+        'banquet_guest_capacity_pax',
+        'boiler_steam_gas_line',
+        'bonded_export_oriented_unit_distinct_compliance_loa_nfe_cust',
+        'boundary_demarcation',
+        'boundary_wall',
+        'building_management_system',
+        'building_security_access_control',
+        'built_up_chargeable_area_sq_ft',
+        'buyer_eligibility_restriction',
+        'cam_charges_sq_ft_month',
+        'carpet_area_per_unit_sq_ft',
+        'expires_at',
     ];
 
     protected $casts = [
@@ -374,6 +398,17 @@ class PropertyEntry extends Model
         'annual_escalation_in_lease'   => 'float',
         'lease_tenure'                 => 'float',
         'lock_in_remaining'            => 'float',
+        'amenities'                    => 'array',
+        'ac_rooms'                     => 'integer',
+        'approach_road_width_ft'       => 'float',
+        'area_in_standard_unit_sq_ft'  => 'float',
+        'banquet_event_space_sq_ft'    => 'float',
+        'banquet_guest_capacity_pax'   => 'integer',
+        'built_up_chargeable_area_sq_ft' => 'float',
+        'cam_charges_sq_ft_month'      => 'float',
+        'carpet_area_per_unit_sq_ft'   => 'float',
+        'expires_at'                   => 'datetime',
+        'total_car_parking'            => 'integer',
     ];
 
     protected static array $codePrefixes = [
