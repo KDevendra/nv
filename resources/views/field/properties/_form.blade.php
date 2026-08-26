@@ -305,7 +305,7 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('property_name')->keep_field)
-                <div class="sm:col-span-2">
+                <div class="md:col-span-3">
                     <label class="{{ $lc }}">Name of Property {!! $ast('property_name') !!}</label>
                     <input type="text" name="property_name" value="{{ $v('property_name') }}" {{ $req('property_name') }}
                         class="{{ $ic('property_name') }}">
@@ -316,7 +316,7 @@ STEP 0 — A. Location & Identification
             @endif
 
             @if($fc('name_full_address')->keep_field)
-                <div class="sm:col-span-2 lg:col-span-3">
+                <div class="md:col-span-3 lg:col-span-3">
                     <label class="{{ $lc }}">Address {!! $ast('name_full_address') !!}</label>
                     <textarea name="name_full_address" rows="2" {{ $req('name_full_address') }}
                         class="{{ $ic('name_full_address') }}">{{ $v('name_full_address') }}</textarea>
@@ -639,7 +639,7 @@ STEP 0 — A. Location & Identification
         <div class="{{ $sb }}">
 
             {{-- Area Unit Selector --}}
-            <div class="sm:col-span-2 lg:col-span-3 flex flex-col pb-2 border-b border-gray-100 mb-1">
+            <div class="md:col-span-3 lg:col-span-3 flex flex-col pb-2 border-b border-gray-100 mb-1">
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">Area
                         Unit</span>
@@ -1135,7 +1135,7 @@ STEP 0 — A. Location & Identification
                     });
                 </script>
 
-                <div class="sm:col-span-2 lg:col-span-3" x-data="officeWidget">
+                <div class="md:col-span-3 lg:col-span-3" x-data="officeWidget">
                     <div class="flex items-center gap-4 mb-3">
                         <label class="{{ $lc }} mb-0">Office Space Availability {!! $ast('no_of_offices') !!}</label>
                         <div class="flex rounded-lg border border-gray-300 overflow-hidden text-xs font-semibold">
@@ -1746,7 +1746,7 @@ STEP 0 — A. Location & Identification
                 </div>
             @endif
             @if($fc('top_neighbouring_companies')->keep_field)
-                <div class="sm:col-span-2"><label class="{{ $lc }}">Top Neighbouring Companies
+                <div class="md:col-span-3"><label class="{{ $lc }}">Top Neighbouring Companies
                         {!! $ast('top_neighbouring_companies') !!}</label>
                     <textarea name="top_neighbouring_companies" rows="2" {{ $req('top_neighbouring_companies') }}
                         class="{{ $ic('top_neighbouring_companies') }}">{{ $v('top_neighbouring_companies') }}</textarea>
@@ -1977,7 +1977,7 @@ STEP 0 — A. Location & Identification
         </div>
         <div class="{{ $sb }}">
             @if($fc('remarks')->keep_field)
-                <div class="sm:col-span-2 lg:col-span-3">
+                <div class="md:col-span-3 lg:col-span-3">
                     <label class="{{ $lc }}">Remarks / Observations {!! $ast('remarks') !!}</label>
                     <textarea name="remarks" rows="3" {{ $req('remarks') }} class="{{ $ic('remarks') }}">{{ $v('remarks') }}</textarea>
                     @error('remarks')
@@ -2592,7 +2592,12 @@ WIZARD — BOTTOM NAV BAR
         const wrapper = el.parentElement;
         if (wrapper) {
             wrapper.querySelectorAll('.wiz-inline-err').forEach(m => m.remove());
-            wrapper.querySelectorAll('p.text-red-600').forEach(m => m.remove());
+            // Clears server-rendered validation text only. `.field-format-err`
+            // is the shared live client-side validator's own message (see
+            // components/wizard-field-validation.blade.php) — it manages its
+            // own lifecycle, and sweeping it here would erase an error the
+            // instant the user typed the next character.
+            wrapper.querySelectorAll('p.text-red-600:not(.field-format-err)').forEach(m => m.remove());
         }
 
         const stepEl = el.closest('.wizard-step');
@@ -3045,106 +3050,13 @@ WIZARD — BOTTOM NAV BAR
     })();
 </script>
 
-
-<script>
-    // ── Inline format validation — PIN Code, Owner Phone, Owner E-mail ──
-    // Strips invalid characters as the user types (same as before) but now
-    // also explains *why* via an inline message, instead of silently
-    // swallowing keystrokes.
-    (function () {
-        function showFieldError(input, message) {
-            input.classList.add('border-red-500', 'ring-2', 'ring-red-300');
-            let msg = input.parentElement.querySelector('.field-format-err');
-            if (!msg) {
-                msg = document.createElement('p');
-                msg.className = 'field-format-err mt-1 text-xs text-red-600 font-medium';
-                input.parentElement.appendChild(msg);
-            }
-            msg.textContent = message;
-        }
-
-        function clearFieldError(input) {
-            input.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
-            const msg = input.parentElement.querySelector('.field-format-err');
-            if (msg) msg.remove();
-        }
-
-        // ── PIN Code — digits only, exactly 6 ──
-        const pinInput = document.querySelector('input[name="postal_address_pin"]');
-        if (pinInput) {
-            pinInput.addEventListener('input', function () {
-                const typedLetters = /[^0-9]/.test(pinInput.value);
-                pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 6);
-
-                if (typedLetters) {
-                    showFieldError(pinInput, 'PIN code can only contain numbers — letters and symbols are ignored.');
-                } else if (pinInput.value.length === 6) {
-                    clearFieldError(pinInput);
-                } else {
-                    clearFieldError(pinInput); // still mid-typing — don't flag "incomplete" until blur
-                }
-            });
-            pinInput.addEventListener('blur', function () {
-                if (pinInput.value && pinInput.value.length < 6) {
-                    showFieldError(pinInput, 'PIN code must be exactly 6 digits.');
-                }
-            });
-        }
-
-        // ── Owner Contact Phone — digits only, 10 digits starting 6-9 ──
-        const phoneInput = document.querySelector('input[name="owner_contact_phone"]');
-        if (phoneInput) {
-            phoneInput.addEventListener('input', function () {
-                const typedLetters = /[^0-9]/.test(phoneInput.value);
-                phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
-
-                if (typedLetters) {
-                    showFieldError(phoneInput, 'Phone number can only contain numbers — letters and symbols are ignored.');
-                } else if (phoneInput.value.length > 0 && !/^[6-9]/.test(phoneInput.value)) {
-                    showFieldError(phoneInput, 'Mobile number must start with 6, 7, 8 or 9.');
-                } else {
-                    clearFieldError(phoneInput); // still mid-typing — don't flag "incomplete" until blur
-                }
-            });
-            phoneInput.addEventListener('blur', function () {
-                if (phoneInput.value && !/^[6-9][0-9]{9}$/.test(phoneInput.value)) {
-                    showFieldError(phoneInput, 'Enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.');
-                }
-            });
-        }
-
-        // ── Owner E-mail — format check on blur, live-clears once fixed ──
-        const emailInput = document.querySelector('input[name="owner_email"]');
-        if (emailInput) {
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            let emailTouched = false;
-
-            function validateEmail() {
-                if (!emailInput.value) {
-                    clearFieldError(emailInput);
-                    return;
-                }
-                if (!emailPattern.test(emailInput.value)) {
-                    showFieldError(emailInput, 'Enter a valid e-mail address (e.g. name@example.com).');
-                } else {
-                    clearFieldError(emailInput);
-                }
-            }
-
-            emailInput.addEventListener('blur', function () {
-                emailTouched = true;
-                validateEmail();
-            });
-            // Only re-validate live once the field has already been checked
-            // once — avoids flashing an error while they're still typing it
-            // for the first time.
-            emailInput.addEventListener('input', function () {
-                if (emailTouched) validateEmail();
-            });
-        }
-    })();
-</script>
-
+{{-- Per-field format/required validation with inline messages below each
+     input. This replaces the three hand-written PIN / phone / e-mail
+     validators that used to live here — the shared component applies the
+     same rules and the same error styling to every field on the form
+     instead of just those three. Also used by all 13 dedicated property
+     wizards via components/property-wizard-shell.blade.php. --}}
+<x-wizard-field-validation />
 
 <script>
     // ── PIN code autofill — Village / Tehsil / District / State / Country ──

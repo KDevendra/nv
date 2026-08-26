@@ -28,6 +28,8 @@ class PropertyEntry extends Model
         'verified_at',
         'reviewed_by',
         'supply_head_viewed_at',
+        'property_type',
+        'custom_fields',
         // A
         'facility_type',
         'property_name',
@@ -147,6 +149,137 @@ class PropertyEntry extends Model
         // K
         'remarks',
         'form_submited_location',
+        // Apartment / Flat / Studio
+        'submitter_full_name',
+        'submitter_phone',
+        'submitter_email',
+        'submitter_role',
+        'company_entity_name',
+        'owner_email',
+        'city',
+        'locality_broad_area',
+        'sub_locality_society_name',
+        'project_name',
+        'builder_developer_name',
+        'nearby_landmarks_key_distances',
+        'nearby_landmarks',
+        'distance_from_key_locations',
+        'facing_orientation',
+        'overlooking_view',
+        'gps_latitude',
+        'gps_longitude',
+        'part_of_a_project_society',
+        'project_society_name',
+        'project_rera_id',
+        'developer_builder_name',
+        'total_towers_blocks',
+        'total_units_in_project',
+        'configurations_offered',
+        'project_amenities',
+        'approved_loan_banks',
+        'unit_property_type',
+        'configuration',
+        'super_built_up_area',
+        'floor_number',
+        'units_on_this_floor',
+        'no_of_bedrooms',
+        'no_of_bathrooms',
+        'no_of_balconies',
+        'additional_rooms',
+        'furnishing_status',
+        'furnishing_detail',
+        'parking_slots',
+        'car_parking_slots',
+        'car_parking_capacity',
+        'total_car_parking',
+        'covered_parking_slots',
+        'open_parking_slots',
+        'property_status',
+        'construction_listing_status',
+        'possession_by',
+        'age_of_property',
+        'availability',
+        'bank_loan_emi_available',
+        'ownership_type',
+        'title_status',
+        'rera_registered',
+        'rera_registration_id',
+        'completion_certificate',
+        'encumbrance_loan_on_property',
+        'khata_property_tax_status',
+        'lift_elevator',
+        'power_backup',
+        'water_source',
+        'water_availability',
+        'water_supply',
+        'electricity_status',
+        'gated_society',
+        'security_cctv',
+        'amenities_checklist',
+        'pet_friendly',
+        'price_on_request',
+        'rent_range_band',
+        'maintenance_charge',
+        'sale_price_band',
+        'price_per_sqft',
+        'booking_amount',
+        'negotiable_floor_price',
+        'owner_flexibility_notes',
+        'preferred_tenant',
+        'non_veg_allowed',
+        'pets_allowed',
+        'non_veg_pets_allowed',
+        'notice_period',
+        'minimum_lease_agreement_term',
+        'electricity_charges',
+        'water_charges',
+        'maintenance_inclusion',
+        'utilities_who_bears',
+        'currently_rented_tenanted',
+        'current_monthly_rent_received',
+        'rental_income_band',
+        'rental_yield_roi',
+        'tenant_name_profile',
+        'tenant_type',
+        'lease_start_date',
+        'lease_tenure',
+        'lock_in_remaining',
+        'annual_escalation_in_lease',
+        'security_deposit_held',
+        'deposit_adjustment_on_sale',
+        'cam_outgoings_borne_by',
+        'payback_capital_value_note',
+        'video_walkthrough_link',
+        'virtual_tour_360_link',
+        'video_virtual_tour_link',
+        'property_description',
+        'field_officer_name',
+        'field_verified',
+        'inspection_submission_date',
+        // Additional columns
+        'ac_rooms',
+        'age_of_building',
+        'air_conditioning',
+        'amenities',
+        'annual_escalation',
+        'approach_road_width_ft',
+        'approved_layout_dtcp_rera_local',
+        'area_in_standard_unit_sq_ft',
+        'attached_bathroom',
+        'bank_loan_lease_financing_available',
+        'banquet_event_space_sq_ft',
+        'banquet_guest_capacity_pax',
+        'boiler_steam_gas_line',
+        'bonded_export_oriented_unit_distinct_compliance_loa_nfe_cust',
+        'boundary_demarcation',
+        'boundary_wall',
+        'building_management_system',
+        'building_security_access_control',
+        'built_up_chargeable_area_sq_ft',
+        'buyer_eligibility_restriction',
+        'cam_charges_sq_ft_month',
+        'carpet_area_per_unit_sq_ft',
+        'expires_at',
     ];
 
     protected $casts = [
@@ -213,14 +346,14 @@ class PropertyEntry extends Model
         'dock_height'                  => 'float',
         // E
         'office_cabin_area'            => 'float',
-        'washrooms'                    => 'integer',
+        'washrooms'                    => 'string',
         // F
         'power_sanctioned_kva'         => 'float',
         'solar'                        => 'boolean',
         // G
         'expected_rent'                => 'float',
         'expected_sale_price'          => 'float',
-        'security_deposit_months'      => 'float',
+        'security_deposit_months'      => 'string',
         'lock_in_years'                => 'float',
         // H
         'approach_road_width'          => 'float',
@@ -228,6 +361,70 @@ class PropertyEntry extends Model
         'nearest_hospital_km'          => 'float',
         'nearest_fire_station_km'      => 'float',
         'nearest_police_station_km'    => 'float',
+        // Apartment / Flat / Studio casts
+        'overlooking_view'             => 'array',
+        'gps_latitude'                 => 'float',
+        'gps_longitude'                => 'float',
+        'configurations_offered'       => 'array',
+        'project_amenities'            => 'array',
+        'additional_rooms'             => 'array',
+        'furnishing_detail'            => 'array',
+        'amenities_checklist'          => 'array',
+        'preferred_tenant'             => 'array',
+        'possession_by'                => 'date',
+        'lease_start_date'             => 'date',
+        'inspection_submission_date'   => 'date',
+        'field_verified'               => 'boolean',
+        'total_towers_blocks'          => 'float',
+        'total_units_in_project'       => 'float',
+        'super_built_up_area'          => 'float',
+        'floor_number'                 => 'float',
+        'units_on_this_floor'          => 'float',
+        'no_of_bedrooms'               => 'float',
+        'no_of_bathrooms'              => 'float',
+        'no_of_balconies'              => 'float',
+        'covered_parking_slots'        => 'float',
+        'open_parking_slots'           => 'float',
+        'maintenance_charge'           => 'float',
+        'price_per_sqft'               => 'float',
+        'booking_amount'               => 'float',
+        'negotiable_floor_price'       => 'float',
+        'notice_period'                => 'float',
+        'minimum_lease_agreement_term' => 'float',
+        'current_monthly_rent_received'=> 'float',
+        'rental_yield_roi'             => 'float',
+        'lease_tenure'                 => 'float',
+        'lock_in_remaining'            => 'float',
+        'annual_escalation_in_lease'   => 'float',
+        'lease_tenure'                 => 'float',
+        'lock_in_remaining'            => 'float',
+        'amenities'                    => 'array',
+        'approach_road_width_ft'       => 'float',
+        'area_in_standard_unit_sq_ft'  => 'float',
+        'banquet_event_space_sq_ft'    => 'float',
+        'banquet_guest_capacity_pax'   => 'integer',
+        'built_up_chargeable_area_sq_ft' => 'float',
+        'cam_charges_sq_ft_month'      => 'float',
+        'carpet_area_per_unit_sq_ft'   => 'float',
+        'expires_at'                   => 'datetime',
+        'total_car_parking'            => 'integer',
+    ];
+
+    protected static array $codePrefixes = [
+        'warehouse'                         => 'ZI-WH-',
+        'apartment_flat_studio'            => 'ZI-RA-',
+        'house_villa_farmhouse'            => 'ZI-RH-',
+        'builder_floor'                    => 'ZI-RB-',
+        'residential_plot_land'            => 'ZI-RP-',
+        'service_apartment_pg'             => 'ZI-RS-',
+        'office_space'                     => 'ZI-CO-',
+        'retail_shop_showroom'             => 'ZI-CR-',
+        'sez_eou_stpi_unit'                => 'ZI-CS-',
+        'factory_manufacturing_industrial' => 'ZI-CF-',
+        'commercial_institutional_land'    => 'ZI-CL-',
+        'agricultural_farm_land'           => 'ZI-CA-',
+        'multi_tenant_building'            => 'ZI-CB-',
+        'hotel_resort_guesthouse_banquet'  => 'ZI-CH-',
     ];
 
     /**
@@ -236,8 +433,25 @@ class PropertyEntry extends Model
     protected static function booted(): void
     {
         static::creating(function (self $model) {
-            $seq = (static::max('id') ?? 0) + 1;
-            $model->code = 'ZI-WH-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
+            $prefix = static::$codePrefixes[$model->property_type ?? 'warehouse'] ?? 'ZI-WH-';
+
+            $existingCodes = static::withTrashed()
+                ->where('code', 'LIKE', $prefix . '%')
+                ->pluck('code');
+
+            $maxSeq = 0;
+            foreach ($existingCodes as $code) {
+                $suffix = substr($code, strlen($prefix));
+                if (is_numeric($suffix)) {
+                    $num = (int) $suffix;
+                    if ($num > $maxSeq) {
+                        $maxSeq = $num;
+                    }
+                }
+            }
+
+            $seq = $maxSeq + 1;
+            $model->code = $prefix . str_pad((string) $seq, 3, '0', STR_PAD_LEFT);
         });
     }
 
@@ -283,6 +497,23 @@ class PropertyEntry extends Model
     public function scopeActive($query)
     {
         return $query;
+    }
+
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('property_type', $type);
+    }
+
+    /**
+     * The sole gate for public visibility on the /properties listing —
+     * a deliberate two-stage gate (internal review status is a separate
+     * concern), matching what the admin report's Approve/Reject/toggle-
+     * website actions already control. Never join or union another table
+     * here; property_entries is the only source for that page.
+     */
+    public function scopePubliclyVisible($query)
+    {
+        return $query->where('admin_status', 'approved')->where('show_on_website', true);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -387,8 +618,496 @@ class PropertyEntry extends Model
         };
     }
 
+    public function getOwnerEditUrlAttribute(): string
+    {
+        if (!empty($this->property_type) && $this->property_type !== 'warehouse') {
+            $slug = str_replace('_', '-', $this->property_type);
+            $routeName = "owner.properties.{$slug}.edit";
+            if (\Illuminate\Support\Facades\Route::has($routeName)) {
+                return route($routeName, $this);
+            }
+        }
+
+        return route('owner.properties.edit', $this);
+    }
+
     public function adminActioner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_actioned_by');
+    }
+
+    // ── Admin detail view — type-aware section/field map ─────────────────────
+
+    /**
+     * Columns that are workflow/system plumbing rather than submitted data.
+     * Excluded from the admin detail view's "Other Data" catch-all, since
+     * they're already surfaced by the page's own header/status/log blocks.
+     */
+    private const NON_DATA_COLUMNS = [
+        'id', 'code', 'created_at', 'updated_at', 'deleted_at',
+        'field_officer_id', 'supply_head_id', 'zone_id', 'reviewed_by', 'admin_actioned_by',
+        'status', 'admin_status', 'admin_note', 'supply_head_note',
+        'submitted_at', 'reviewed_at', 'verified_at', 'admin_actioned_at', 'supply_head_viewed_at',
+        'allow_resubmit', 'show_on_website', 'property_type', 'custom_fields',
+        'form_submited_location', 'form_submited_address', 'form_submited_maps_url',
+    ];
+
+    /**
+     * The property_type this row should be *rendered* as. Legacy rows
+     * predate the property_type column and store NULL — they're all
+     * warehouse entries, matching how $codePrefixes and getOwnerEditUrl
+     * already treat an absent type.
+     */
+    public function getResolvedPropertyTypeAttribute(): string
+    {
+        return $this->property_type ?: 'warehouse';
+    }
+
+    /**
+     * Display label for facility type / property type in tables and lists.
+     * Uses facility_type if set, unit_property_type if set, otherwise looking up
+     * the property_type label in config('property_types').
+     */
+    public function getDisplayFacilityTypeAttribute(): string
+    {
+        if (!empty($this->facility_type)) {
+            return $this->facility_type;
+        }
+
+        if (!empty($this->unit_property_type)) {
+            return $this->unit_property_type;
+        }
+
+        $typeKey = $this->property_type ? str_replace('-', '_', $this->property_type) : 'warehouse';
+        $configLabel = config("property_types.types.{$typeKey}.label");
+
+        if ($configLabel) {
+            return $configLabel;
+        }
+
+        return $this->property_type ? ucwords(str_replace(['_', '-'], ' ', $this->property_type)) : '—';
+    }
+
+    /**
+     * Ordered section => [column => normalised field definition] map for
+     * this row's type, with every field definition expanded to the full
+     * array form so the view never has to branch on shape.
+     */
+    public function sectionMap(): array
+    {
+        $raw = config('property_entry_sections.' . $this->resolved_property_type)
+            ?? config('property_entry_sections.warehouse', []);
+
+        $out = [];
+        foreach ($raw as $section => $fields) {
+            foreach ($fields as $column => $definition) {
+                $out[$section][$column] = is_array($definition)
+                    ? $definition + ['label' => $column, 'type' => 'text', 'tier' => null, 'wide' => false]
+                    : ['label' => $definition, 'type' => 'text', 'tier' => null, 'wide' => false];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Decoded custom_fields payload. The 12 dedicated wizard forms route
+     * every submitted key without a matching real column into here, so for
+     * those types it holds the majority of the submission.
+     */
+    public function customFieldsArray(): array
+    {
+        $custom = $this->custom_fields;
+        if (is_string($custom)) {
+            $custom = json_decode($custom, true);
+        }
+        if (is_array($custom)) {
+            foreach ($custom as $k => $v) {
+                if (is_string($v)) {
+                    $custom[$k] = trim(preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $v));
+                }
+            }
+            return $custom;
+        }
+        return [];
+    }
+
+    /**
+     * Value for a mapped field, wherever it actually lives. Real columns
+     * win; otherwise fall back to the custom_fields blob, since most of the
+     * 12 dedicated types' fields have no dedicated column and would
+     * otherwise render as "—" on the admin detail view despite having been
+     * filled in.
+     */
+    public function setAttribute($key, $value)
+    {
+        $booleanCols = [
+            'canteen', 'stp_plant', 'female_washroom', 'driver_rest_room',
+            'mezzanine', 'scrap_yard', 'extension_possible', 'has_offices',
+            'has_dock_leveller', 'solar', 'field_verified'
+        ];
+
+        if (in_array($key, $booleanCols)) {
+            if (is_string($value)) {
+                $lower = strtolower(trim($value));
+                if (in_array($lower, ['yes', 'y', '1', 'true'])) {
+                    $value = true;
+                } elseif (in_array($lower, ['no', 'n', '0', 'false'])) {
+                    $value = false;
+                }
+            }
+        } elseif (is_string($value) && $key !== 'custom_fields') {
+            $value = trim(preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value));
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
+    public function fieldValue(string $column): mixed
+    {
+        if ($column === 'car_parking_slots') {
+            return $this->attributes['car_parking_slots'] ?? $this->attributes['parking_slots'] ?? $this->customFieldsArray()['car_parking_slots'] ?? null;
+        }
+
+        if ($column === 'property_type') {
+            $custom = $this->customFieldsArray();
+            if (!empty($custom['property_sub_type'])) {
+                return $custom['property_sub_type'];
+            }
+            if (!empty($custom['property_type'])) {
+                return $custom['property_type'];
+            }
+            if (!empty($this->attributes['property_sub_type'])) {
+                return $this->attributes['property_sub_type'];
+            }
+        }
+
+        if (array_key_exists($column, $this->getAttributes()) || $this->hasCast($column)) {
+            $val = $this->$column;
+            if ($val === null) {
+                return $this->customFieldsArray()[$column] ?? null;
+            }
+            if (is_bool($val) || (isset($this->casts[$column]) && $this->casts[$column] === 'boolean')) {
+                return $val ? 'Yes' : 'No';
+            }
+            return $val;
+        }
+
+        return $this->customFieldsArray()[$column] ?? null;
+    }
+
+    /**
+     * fieldValue() for a date field, always returned as a 'Y-m-d' string
+     * (or '' if empty) — safe to drop straight into an
+     * <input type="date" value="..."> regardless of where the value lives.
+     *
+     * A real column with a date cast returns a Carbon instance from
+     * fieldValue(); a custom_fields-backed date (most date fields on the
+     * 12 dedicated types aren't real columns) returns a plain string
+     * instead, since custom_fields is just decoded JSON. Blade markup that
+     * unconditionally called ->format() on the result crashed with "Call to
+     * a member function format() on string" for every such field — this
+     * normalises both shapes in one place instead of repeating a fragile
+     * type check at each of the 26 call sites across the 13 forms.
+     */
+    public function dateFieldValue(string $column): string
+    {
+        $value = $this->fieldValue($column);
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_string($value) && $value !== '') {
+            try {
+                return \Carbon\Carbon::parse($value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return ''; // unparseable — don't crash the page over it
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Conditional-field rules, sourced from the exact trigger phrases the
+     * Excel spec sheets use identically across all 13 types ("If RERA =
+     * Yes", "If Rent" / "If Lease", "If Sale", "If tenanted", "If project",
+     * "If under constr.", "If From date") — plus warehouse's own Alpine
+     * x-show conditions (it predates the spec sheets, so it isn't covered
+     * by them).
+     *
+     * Each rule is [column-name regex => [trigger-field-name regex, values
+     * that satisfy it]]. Deliberately NOT baked into config/property_entry_
+     * sections.php as a static per-field mapping: the trigger *concept* is
+     * universal but its literal field name differs per type (deal_type vs
+     * listing_purpose_transaction_type, construction_listing_status vs
+     * property_status, etc.), so the trigger field is resolved dynamically
+     * against whichever fields this row's own type actually has.
+     */
+    private const CONDITIONAL_FIELD_RULES = [
+        // "If RERA = Yes" — RERA Registration ID
+        '/rera_registration_id/' => ['/^rera_registered$/', ['Yes']],
+
+        // "If Sale" — sale-side commercial fields
+        '/expected_sale_price|sale_price_band|price_per_sqft/' => ['/deal_type|listing_purpose_transaction_type/', ['Sale', 'Both']],
+
+        // "If Rent" / "If Lease" — rent-side commercial fields
+        '/^expected_rent|rent_range_band|security_deposit_months|security_deposit$|preferred_tenant|lock_in_years|lock_in_period_months/'
+            => ['/deal_type|listing_purpose_transaction_type/', ['Rent', 'Lease', 'Both']],
+
+        // "If tenanted" — pre-leased / investment section
+        '/current_monthly_rent_received|rental_income_band|rental_yield_roi|tenant_name_profile|tenant_type|lease_start_date|lease_tenure|lock_in_remaining|annual_escalation_in_lease|security_deposit_held|deposit_adjustment_on_sale|cam_outgoings_borne_by|payback_capital_value_note/'
+            => ['/currently_rented_tenanted|currently_occupied/', ['Yes', 'Partially']],
+
+        // "If project" — project/society RERA id specifically (the rest of
+        // that section is gated as a whole via SECTION_CONDITIONS below)
+        '/^project_rera_id$/' => ['/part_of_a_project_society/', ['Yes']],
+
+        // "If under constr." — possession date
+        '/^possession_by$|possession_by_if_under_constr/' => ['/construction_listing_status|construction_status|property_status/', ['Under Construction']],
+
+        // "If From date" — availability date
+        '/^available_from$|available_from_date/' => ['/^availability$/', ['From date']],
+
+        // Warehouse-only (Alpine x-show in field/properties/_form.blade.php;
+        // no spec sheet of its own to source this from)
+        '/^canteen_size$/' => ['/^canteen$/', ['1', 'Yes', 'yes', true]],
+        '/^stp_capacity$/' => ['/^stp_plant$/', ['1', 'Yes', 'yes', true]],
+        '/^mezzanine_size$/' => ['/^mezzanine$/', ['1', 'Yes', 'yes', true]],
+    ];
+
+    /**
+     * Section header hints preserved verbatim from each spec sheet, e.g.
+     * "B2. Project / Society  (if unit is part of a builder project)" —
+     * gates the WHOLE section on the same trigger fields/values as above,
+     * so a household with no project doesn't show an almost-entirely-empty
+     * "Project / Society" card.
+     */
+    private const SECTION_CONDITIONS = [
+        '/if unit is part of a builder project/i' => ['/part_of_a_project_society/', ['Yes']],
+        '/if listed for rent/i' => ['/deal_type|listing_purpose_transaction_type/', ['Rent', 'Lease', 'Both']],
+        '/if property is tenanted|pre-leased/i' => ['/currently_rented_tenanted|currently_occupied/', ['Yes', 'Partially']],
+    ];
+
+    /**
+     * Whether $column should be displayed for this row right now — false
+     * only for fields with a known trigger whose condition genuinely isn't
+     * met; true for every unconditional field (including ones that are
+     * simply empty, which still render as "—" rather than being hidden).
+     */
+    public function isFieldApplicable(string $column): bool
+    {
+        foreach (self::CONDITIONAL_FIELD_RULES as $fieldPattern => [$triggerPattern, $satisfyingValues]) {
+            if (!preg_match($fieldPattern, $column)) {
+                continue;
+            }
+
+            $triggerColumn = $this->findSiblingColumn($triggerPattern);
+            if ($triggerColumn === null) {
+                return true; // this type has no such trigger field — don't hide blindly
+            }
+
+            $triggerValue = $this->fieldValue($triggerColumn);
+
+            return in_array($triggerValue, $satisfyingValues, false);
+        }
+
+        return true; // no rule matches — unconditional field
+    }
+
+    /**
+     * Whether an entire section (by its header text) should render at all.
+     */
+    public function isSectionApplicable(string $sectionHeader): bool
+    {
+        foreach (self::SECTION_CONDITIONS as $headerPattern => [$triggerPattern, $satisfyingValues]) {
+            if (!preg_match($headerPattern, $sectionHeader)) {
+                continue;
+            }
+
+            $triggerColumn = $this->findSiblingColumn($triggerPattern);
+            if ($triggerColumn === null) {
+                return true;
+            }
+
+            return in_array($this->fieldValue($triggerColumn), $satisfyingValues, false);
+        }
+
+        return true;
+    }
+
+    /**
+     * First column name in this row's own section map that matches the
+     * given regex — i.e. "whatever this type actually calls that concept",
+     * resolved dynamically rather than hardcoded per type.
+     */
+    private function findSiblingColumn(string $pattern): ?string
+    {
+        static $cache = [];
+        $cacheKey = $this->resolved_property_type . '|' . $pattern;
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
+        }
+
+        foreach ($this->sectionMap() as $fields) {
+            foreach (array_keys($fields) as $column) {
+                if (preg_match($pattern, $column)) {
+                    return $cache[$cacheKey] = $column;
+                }
+            }
+        }
+
+        return $cache[$cacheKey] = null;
+    }
+
+    /**
+     * Submitted values present on the row (or in custom_fields) that this
+     * type's section map doesn't account for — legacy or orphaned data.
+     * Surfaced under an "Other Data" section rather than silently dropped,
+     * so nothing a field officer entered can disappear from admin review.
+     * Only non-empty values are included: every mapped field already renders
+     * as "—" when empty, and listing every unmapped empty column here would
+     * bury the real leftovers under a wall of blanks.
+     */
+    public function unmappedData(): array
+    {
+        $mapped = collect($this->sectionMap())->flatMap(fn ($fields) => array_keys($fields))->all();
+        $skip = array_merge($mapped, self::NON_DATA_COLUMNS);
+
+        $out = [];
+        foreach ($this->getAttributes() as $column => $value) {
+            if (in_array($column, $skip, true)) {
+                continue;
+            }
+            $cast = $this->$column;
+            if ($cast === null || $cast === '' || (is_array($cast) && $cast === [])) {
+                continue;
+            }
+            $out[$column] = $cast;
+        }
+
+        // custom_fields holds whatever the 12 dedicated wizard forms couldn't
+        // map onto a real column — genuinely submitted data, so anything the
+        // section map doesn't already render belongs here.
+        foreach ($this->customFieldsArray() as $key => $value) {
+            if (in_array($key, $skip, true)) {
+                continue;
+            }
+            if ($value !== null && $value !== '' && $value !== []) {
+                $out[$key] = $value;
+            }
+        }
+
+        ksort($out);
+
+        return $out;
+    }
+
+    // ── Public-listing presentation (WEBSITE-tier fields only) ───────────────
+    //
+    // These back the /properties listing and its cards. They intentionally
+    // read only fields the Excel spec marks WEBSITE-tier (never VERIFIED or
+    // INTERNAL), and only real columns — most of the 12 dedicated wizard
+    // forms besides warehouse/apartment-flat-studio don't yet map their
+    // type-specific fields onto shared columns (they fall into custom_fields
+    // instead, a separate known gap), so those types render a leaner but
+    // honest card rather than fabricating detail that isn't reliably there.
+
+    /**
+     * Warehouse stores its city in `nearest_city`; every dedicated wizard
+     * form (including apartment-flat-studio) stores it in `city`. This is
+     * the single place that difference should be reconciled.
+     */
+    public function getPublicCityAttribute(): ?string
+    {
+        return $this->city ?: $this->nearest_city;
+    }
+
+    /**
+     * WEBSITE-tier title: property name first, falling back to the
+     * INTERNAL-tier `name_full_address` truncated for teaser use (per the
+     * apartment spec sheet, full address is INTERNAL — never publish the
+     * whole thing, just enough to identify the listing), then facility
+     * type as a last resort for warehouse rows with no name at all.
+     */
+    public function getPublicTitleAttribute(): ?string
+    {
+        if ($this->property_name) {
+            return $this->property_name;
+        }
+
+        if ($this->locality_broad_area || $this->public_city) {
+            return collect([$this->locality_broad_area, $this->public_city])->filter()->implode(', ');
+        }
+
+        return $this->facility_type;
+    }
+
+    /**
+     * The type-appropriate "middle line" detail — never a residential field
+     * on a non-residential card. Falls back to the property_type's own
+     * label from config('property_types') when the type has no dedicated
+     * detail field populated.
+     */
+    public function getPublicDetailLineAttribute(): ?string
+    {
+        $typeLabel = config("property_types.types.{$this->property_type}.label", $this->property_type);
+
+        $detail = match ($this->property_type) {
+            'apartment_flat_studio' => $this->configuration,
+            'warehouse'             => $this->facility_type,
+            default                 => $this->unit_property_type ?: $this->facility_type,
+        };
+
+        return collect([$this->public_city, $detail, $detail ? null : $typeLabel])->filter()->implode(' • ');
+    }
+
+    /**
+     * WEBSITE-tier price display — always a rounded-down band, never the
+     * exact internal figure. Picks whichever band the row actually has
+     * rather than trusting `deal_type`, since most of the 12 dedicated
+     * forms don't populate that shared column today.
+     */
+    public function getPublicPriceLabelAttribute(): string
+    {
+        if ($this->rent_range_band) {
+            return 'Rent';
+        }
+        if ($this->sale_price_band) {
+            return 'Price';
+        }
+        return 'Price';
+    }
+
+    public function getPublicPriceValueAttribute(): string
+    {
+        return $this->rent_range_band ?: ($this->sale_price_band ?: 'Price on Request');
+    }
+
+    /**
+     * Type-aware amenity tags, capped at 4. Only reads columns that are
+     * genuinely reliable for that type today — apartment-flat-studio's
+     * `amenities_checklist` (a real array-cast column) and warehouse's own
+     * real fillable columns already used for it before this rewrite. Every
+     * other type returns an empty list rather than showing amenities that
+     * weren't actually entered for that row.
+     */
+    public function getPublicAmenitiesAttribute(): array
+    {
+        if ($this->property_type === 'apartment_flat_studio') {
+            return array_slice((array) ($this->amenities_checklist ?? []), 0, 4);
+        }
+
+        if ($this->property_type === 'warehouse') {
+            return collect([
+                $this->dock_door_count ? "{$this->dock_door_count} Dock Doors" : null,
+                $this->clear_height_highest ? "{$this->clear_height_highest}ft Height" : null,
+                $this->power_sanctioned_kva ? "{$this->power_sanctioned_kva} KVA Power" : null,
+                $this->fire_fighting_system ? 'Fire Fighting System' : null,
+            ])->filter()->take(4)->values()->all();
+        }
+
+        return [];
     }
 }

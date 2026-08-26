@@ -130,10 +130,11 @@ class PropertyEntryController extends Controller
     {
         abort_if(auth()->user()->role !== 'supply_head', 403);
 
+        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
-        return view('supplyhead.properties.create', compact('slots', 'fieldConfigs', 'fieldRemarks'));
+        return view('supplyhead.properties.create', compact('property', 'slots', 'fieldConfigs', 'fieldRemarks'));
     }
 
     // ── Store ─────────────────────────────────────────────────────────────────
@@ -202,6 +203,7 @@ class PropertyEntryController extends Controller
 
         $property->load('photos');
 
+        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
@@ -349,6 +351,7 @@ class PropertyEntryController extends Controller
         }
 
         $property->load(['photos', 'fieldOfficer', 'reviewer', 'logs.user', 'fieldReviews']);
+        $property = null;
         $slots = self::PHOTO_SLOTS;
 
         // Get all reviewable fields (text) with their review status
@@ -1006,7 +1009,7 @@ class PropertyEntryController extends Controller
             'deal_type' => 'string|max:50',
             'expected_rent' => 'numeric|min:0',
             'expected_sale_price' => 'numeric|min:0',
-            'security_deposit_months' => 'numeric|min:0|max:60',
+            'security_deposit_months' => 'nullable|string|max:255',
             'lock_in_years' => 'numeric|min:0|max:99',
             'available_from' => 'date',
             'approach_road_width' => 'numeric|min:0',

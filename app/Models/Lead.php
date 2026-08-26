@@ -56,6 +56,7 @@ class Lead extends Model
         'name',
         'phone',
         'email',
+        'pincode',
         'property_id',
         'origin_table',
         'needs_division_review',
@@ -69,6 +70,7 @@ class Lead extends Model
         'lost_reason',
         'lost_reason_other',
         'assigned_se_id',
+        'zone_id',
         'assigned_cc_id',
         'cc_load_at_assignment',
         'contact_attempts',
@@ -142,9 +144,32 @@ class Lead extends Model
         return $this->belongsTo(User::class, 'assigned_cc_id');
     }
 
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
+    }
+
     public function feasibilitySH(): BelongsTo
     {
         return $this->belongsTo(User::class, 'feasibility_sh_id');
+    }
+
+    public function getPropertyZoneId(): ?int
+    {
+        if ($this->property && !empty($this->property->zone_id)) {
+            return (int) $this->property->zone_id;
+        }
+
+        if ($this->options_shared_property_ids && is_array($this->options_shared_property_ids)) {
+            $zoneId = \App\Models\PropertyEntry::whereIn('code', $this->options_shared_property_ids)
+                ->whereNotNull('zone_id')
+                ->value('zone_id');
+            if ($zoneId) {
+                return (int) $zoneId;
+            }
+        }
+
+        return null;
     }
 
     public function stageHistories(): HasMany
@@ -374,12 +399,32 @@ class Lead extends Model
         $this->update(['visit_link_opened_at' => now()]);
     }
 
-    // CC Assignment & Cap (20)
+    // CC Assignment & Cap (20) — Routed Zone-Wise to lowest-load CC
     public function assignBestCC(): ?User
     {
-        $ccs = User::getChiefCoordinatorsByDivision($this->division);
+        // Determine target zone_id: lead's zone_id, property's zone_id, or assigned SE's zone_id
+        $zoneId = $this->zone_id
+            ?? $this->getPropertyZoneId()
+            ?? $this->assignedSE?->zone_id;
 
-        foreach ($ccs as $cc) {
+        // 1. Try CCs assigned to the SAME zone_id in this division, ordered by lowest load
+        if ($zoneId) {
+            $zoneCcs = User::getChiefCoordinatorsByDivision($this->division, $zoneId);
+            foreach ($zoneCcs as $cc) {
+                if ($cc->active_cc_lead_count < self::CC_MAX_ACTIVE_LEADS) {
+                    $this->update([
+                        'assigned_cc_id'        => $cc->id,
+                        'cc_load_at_assignment' => $cc->active_cc_lead_count,
+                        'zone_id'               => $zoneId,
+                    ]);
+                    return $cc;
+                }
+            }
+        }
+
+        // 2. Fallback: Lowest-load CC in the division across any zone
+        $allCcs = User::getChiefCoordinatorsByDivision($this->division);
+        foreach ($allCcs as $cc) {
             if ($cc->active_cc_lead_count < self::CC_MAX_ACTIVE_LEADS) {
                 $this->update([
                     'assigned_cc_id'        => $cc->id,
@@ -389,7 +434,7 @@ class Lead extends Model
             }
         }
 
-        // Holding queue if all CCs are at cap (assigned_cc_id remains null)
+        // 3. Holding queue if all CCs in the division are at cap 20 (assigned_cc_id remains null)
         return null;
     }
 

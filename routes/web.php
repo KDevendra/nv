@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\InquiryController as AdminInquiryController;
 use App\Http\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Http\Controllers\Admin\WorkProcessController;
 use App\Http\Controllers\Admin\AboutPageController;
+use App\Http\Controllers\Admin\AdvisoryPageController;
 use App\Http\Controllers\Admin\OurClientController;
 use App\Http\Controllers\Admin\TeamMemberController;
 use App\Http\Controllers\Admin\ContactPageController;
@@ -69,7 +70,7 @@ Route::get('/optimize', function () {
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::view('/advisory-services', 'pages.advisory-services')->name('advisory.services');
+Route::get('/advisory-services', [HomeController::class, 'advisoryServices'])->name('advisory.services');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/blogs', [HomeController::class, 'blogs'])->name('blogs.index');
@@ -102,6 +103,9 @@ Route::get('/calculators/ft-to-mm', [HomeController::class, 'ftToMm'])->name('ca
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return redirect(auth()->user()->getDashboardUrl());
+    });
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->middleware(['verified', 'permission'])->name('dashboard');
     Route::prefix('user')->name('user.')->middleware('verified')->group(function () {
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
@@ -127,6 +131,47 @@ Route::middleware('auth')->group(function () {
         Route::get('location/reverse-geocode', [FieldOfficerPropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
     });
     Route::prefix('owner')->name('owner.')->group(function () {
+        Route::get('properties/select-type', [\App\Http\Controllers\Owner\PropertyEntryController::class, 'selectType'])->name('properties.select-type');
+        Route::get('properties/create/apartment-flat-studio', [\App\Http\Controllers\Owner\PropertyEntry\ApartmentFlatStudioController::class, 'create'])->name('properties.apartment-flat-studio.create');
+        Route::resource('properties/apartment-flat-studio', \App\Http\Controllers\Owner\PropertyEntry\ApartmentFlatStudioController::class, ['names' => 'properties.apartment-flat-studio', 'parameters' => ['apartment-flat-studio' => 'property']]);
+
+        Route::get('properties/create/house-villa-farmhouse', [\App\Http\Controllers\Owner\PropertyEntry\HouseVillaFarmhouseController::class, 'create'])->name('properties.house-villa-farmhouse.create');
+        Route::resource('properties/house-villa-farmhouse', \App\Http\Controllers\Owner\PropertyEntry\HouseVillaFarmhouseController::class, ['names' => 'properties.house-villa-farmhouse', 'parameters' => ['house-villa-farmhouse' => 'property']]);
+
+        Route::get('properties/create/builder-floor', [\App\Http\Controllers\Owner\PropertyEntry\BuilderFloorController::class, 'create'])->name('properties.builder-floor.create');
+        Route::resource('properties/builder-floor', \App\Http\Controllers\Owner\PropertyEntry\BuilderFloorController::class, ['names' => 'properties.builder-floor', 'parameters' => ['builder-floor' => 'property']]);
+
+        Route::get('properties/create/residential-plot-land', [\App\Http\Controllers\Owner\PropertyEntry\ResidentialPlotLandController::class, 'create'])->name('properties.residential-plot-land.create');
+        Route::resource('properties/residential-plot-land', \App\Http\Controllers\Owner\PropertyEntry\ResidentialPlotLandController::class, ['names' => 'properties.residential-plot-land', 'parameters' => ['residential-plot-land' => 'property']]);
+
+        Route::get('properties/create/service-apartment-pg', [\App\Http\Controllers\Owner\PropertyEntry\ServiceApartmentPgController::class, 'create'])->name('properties.service-apartment-pg.create');
+        Route::resource('properties/service-apartment-pg', \App\Http\Controllers\Owner\PropertyEntry\ServiceApartmentPgController::class, ['names' => 'properties.service-apartment-pg', 'parameters' => ['service-apartment-pg' => 'property']]);
+
+        Route::get('properties/create/office-space', [\App\Http\Controllers\Owner\PropertyEntry\OfficeSpaceController::class, 'create'])->name('properties.office-space.create');
+        Route::resource('properties/office-space', \App\Http\Controllers\Owner\PropertyEntry\OfficeSpaceController::class, ['names' => 'properties.office-space', 'parameters' => ['office-space' => 'property']]);
+
+        Route::get('properties/create/retail-shop-showroom', [\App\Http\Controllers\Owner\PropertyEntry\RetailShopShowroomController::class, 'create'])->name('properties.retail-shop-showroom.create');
+        Route::resource('properties/retail-shop-showroom', \App\Http\Controllers\Owner\PropertyEntry\RetailShopShowroomController::class, ['names' => 'properties.retail-shop-showroom', 'parameters' => ['retail-shop-showroom' => 'property']]);
+
+        Route::get('properties/create/sez-eou-stpi-unit', [\App\Http\Controllers\Owner\PropertyEntry\SezEouStpiUnitController::class, 'create'])->name('properties.sez-eou-stpi-unit.create');
+        Route::resource('properties/sez-eou-stpi-unit', \App\Http\Controllers\Owner\PropertyEntry\SezEouStpiUnitController::class, ['names' => 'properties.sez-eou-stpi-unit', 'parameters' => ['sez-eou-stpi-unit' => 'property']]);
+
+        Route::get('properties/create/factory-manufacturing-industrial', [\App\Http\Controllers\Owner\PropertyEntry\FactoryManufacturingIndustrialController::class, 'create'])->name('properties.factory-manufacturing-industrial.create');
+        Route::resource('properties/factory-manufacturing-industrial', \App\Http\Controllers\Owner\PropertyEntry\FactoryManufacturingIndustrialController::class, ['names' => 'properties.factory-manufacturing-industrial', 'parameters' => ['factory-manufacturing-industrial' => 'property']]);
+
+        Route::get('properties/create/commercial-institutional-land', [\App\Http\Controllers\Owner\PropertyEntry\CommercialInstitutionalLandController::class, 'create'])->name('properties.commercial-institutional-land.create');
+        Route::resource('properties/commercial-institutional-land', \App\Http\Controllers\Owner\PropertyEntry\CommercialInstitutionalLandController::class, ['names' => 'properties.commercial-institutional-land', 'parameters' => ['commercial-institutional-land' => 'property']]);
+
+        Route::get('properties/create/agricultural-farm-land', [\App\Http\Controllers\Owner\PropertyEntry\AgriculturalFarmLandController::class, 'create'])->name('properties.agricultural-farm-land.create');
+        Route::resource('properties/agricultural-farm-land', \App\Http\Controllers\Owner\PropertyEntry\AgriculturalFarmLandController::class, ['names' => 'properties.agricultural-farm-land', 'parameters' => ['agricultural-farm-land' => 'property']]);
+
+        Route::get('properties/create/multi-tenant-building', [\App\Http\Controllers\Owner\PropertyEntry\MultiTenantBuildingController::class, 'create'])->name('properties.multi-tenant-building.create');
+        Route::resource('properties/multi-tenant-building', \App\Http\Controllers\Owner\PropertyEntry\MultiTenantBuildingController::class, ['names' => 'properties.multi-tenant-building', 'parameters' => ['multi-tenant-building' => 'property']]);
+
+        Route::get('properties/create/hotel-resort-guesthouse-banquet', [\App\Http\Controllers\Owner\PropertyEntry\HotelResortGuesthouseBanquetController::class, 'create'])->name('properties.hotel-resort-guesthouse-banquet.create');
+        Route::resource('properties/hotel-resort-guesthouse-banquet', \App\Http\Controllers\Owner\PropertyEntry\HotelResortGuesthouseBanquetController::class, ['names' => 'properties.hotel-resort-guesthouse-banquet', 'parameters' => ['hotel-resort-guesthouse-banquet' => 'property']]);
+
+        Route::get('properties/create/{type}', [\App\Http\Controllers\Owner\PropertyEntryController::class, 'createType'])->name('properties.create-type');
         Route::resource('properties', \App\Http\Controllers\Owner\PropertyEntryController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show']);
         Route::get('location/reverse-geocode', [\App\Http\Controllers\Owner\PropertyEntryController::class, 'reverseGeocode'])->name('location.reverse-geocode');
     });
@@ -208,6 +253,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('work-processes/{workProcess}/toggle-status', [WorkProcessController::class, 'toggleStatus'])->name('work-processes.toggle-status');
         Route::get('about-page', [AboutPageController::class, 'edit'])->name('about-page.edit');
         Route::put('about-page', [AboutPageController::class, 'update'])->name('about-page.update');
+        Route::get('advisory-page', [AdvisoryPageController::class, 'edit'])->name('advisory-page.edit');
+        Route::put('advisory-page', [AdvisoryPageController::class, 'update'])->name('advisory-page.update');
         Route::resource('our-clients', OurClientController::class);
         Route::resource('team-members', TeamMemberController::class);
         Route::get('contact-page', [ContactPageController::class, 'edit'])->name('contact-page.edit');

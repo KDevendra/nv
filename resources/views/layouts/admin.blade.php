@@ -561,34 +561,74 @@
 
                     <!-- CRM Lead Pipeline -->
                     @if (in_array('dashboard.view', $navPerms))
-                        <a href="{{ route('admin.leads.index') }}"
-                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.leads.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
-                            :class="{ 'justify-center': sidebarCollapsed }" x-data="{ tooltip: false }"
-                            @mouseenter="tooltip = sidebarCollapsed" @mouseleave="tooltip = false">
-                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                            </svg>
-                            <span x-show="!sidebarCollapsed" x-transition>CRM Lead Pipeline</span>
-                            @php 
-                                $activeLeads = App\Models\Lead::whereNull('side_state')->count();
-                                $holdingQueue = App\Models\Lead::holdingQueue()->count();
-                            @endphp
-                            @if($holdingQueue > 0)
-                                <span x-show="!sidebarCollapsed"
-                                    class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 min-w-[18px] h-4 justify-center">
-                                    {{ $holdingQueue }}
-                                </span>
-                                <span x-show="sidebarCollapsed"
-                                    class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-indigo-500"></span>
-                            @endif
-                            <!-- Tooltip -->
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
-                                CRM Lead Pipeline
+                        <div x-data="{ open: {{ request()->routeIs('admin.leads.*') ? 'true' : 'false' }}, showFloating: false }" class="relative">
+                            <button @click="if (!sidebarCollapsed) open = !open" 
+                                    @mouseenter="if (sidebarCollapsed) showFloating = true"
+                                    @mouseleave="if (sidebarCollapsed) showFloating = false"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg text-gray-300 hover:text-white transition-colors cursor-pointer {{ request()->routeIs('admin.leads.*') ? 'bg-gray-800 text-white' : '' }}"
+                                    :class="{ 'justify-center': sidebarCollapsed }">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                    </svg>
+                                    <span x-show="!sidebarCollapsed" x-transition>CRM Lead Pipeline</span>
+                                    @php 
+                                        $holdingQueue = App\Models\Lead::holdingQueue()->count();
+                                    @endphp
+                                    @if($holdingQueue > 0)
+                                        <span x-show="!sidebarCollapsed"
+                                            class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 min-w-[18px] h-4 justify-center">
+                                            {{ $holdingQueue }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <svg x-show="!sidebarCollapsed" class="w-4 h-4 transition-transform duration-200"
+                                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Floating Menu (Collapsed Sidebar) -->
+                            <div x-show="showFloating && sidebarCollapsed" x-cloak
+                                class="absolute left-full top-0 ml-2 w-56 bg-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-700">
+                                <div class="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-700 mb-1">
+                                    CRM Lead Pipeline
+                                </div>
+                                <a href="{{ route('admin.leads.index') }}"
+                                    class="flex items-center px-4 py-2 text-xs text-gray-300 hover:bg-gray-700 hover:text-white transition-colors {{ request()->routeIs('admin.leads.index') && !request()->filled('zone_id') ? 'bg-gray-700 text-white font-semibold' : '' }}">
+                                    All Leads / Zones
+                                </a>
+                                @foreach(Illuminate\Support\Facades\DB::table('zones')->orderBy('name')->get() as $z)
+                                    <a href="{{ route('admin.leads.index', ['zone_id' => $z->id]) }}"
+                                        class="flex items-center px-4 py-2 text-xs text-gray-300 hover:bg-gray-700 hover:text-white transition-colors {{ request('zone_id') == $z->id ? 'bg-gray-700 text-white font-semibold' : '' }}">
+                                        <span class="w-2 h-2 rounded-full bg-purple-400 mr-2 flex-shrink-0"></span>
+                                        {{ $z->name }}
+                                    </a>
+                                @endforeach
                             </div>
-                        </a>
+
+                            <!-- Submenu (Expanded Sidebar) -->
+                            <div x-show="open && !sidebarCollapsed" x-transition class="mt-1 pl-4 space-y-1">
+                                <a href="{{ route('admin.leads.index') }}"
+                                    class="admin-sidebar-link flex items-center px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.leads.index') && !request()->filled('zone_id') ? 'active' : 'text-gray-400 hover:text-white' }}">
+                                    <svg class="w-3.5 h-3.5 mr-2 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                    </svg>
+                                    All Leads / Zones
+                                </a>
+                                @foreach(Illuminate\Support\Facades\DB::table('zones')->orderBy('name')->get() as $z)
+                                    <a href="{{ route('admin.leads.index', ['zone_id' => $z->id]) }}"
+                                        class="admin-sidebar-link flex items-center px-3 py-2 text-xs font-medium rounded-lg {{ request('zone_id') == $z->id ? 'active font-semibold text-white' : 'text-gray-400 hover:text-white' }}">
+                                        <svg class="w-3.5 h-3.5 mr-2 flex-shrink-0 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        {{ $z->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                     @endif
 
                     <!-- Property Entry Report -->
@@ -1362,6 +1402,21 @@
                                 @endif
                             </div>
                         </div>
+                    @endif
+
+                    <!-- Advisory Page -->
+                    @if (in_array('advisory-page.view', $navPerms))
+                        <a href="{{ route('admin.advisory-page.edit') }}"
+                            class="admin-sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.advisory-page.*') ? 'active' : 'text-gray-300 hover:text-white' }}"
+                            :class="{ 'justify-center': sidebarCollapsed }">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="{ 'mr-3': !sidebarCollapsed }" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" x-transition>Advisory Page</span>
+                        </a>
                     @endif
 
                     <!-- Contact Page Dropdown -->

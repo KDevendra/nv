@@ -189,7 +189,7 @@
                                     <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->fieldOfficer?->name ?? '—' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->display_facility_type }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                         {{ $entry->status_label }}
@@ -221,7 +221,7 @@
                                 <div class="min-w-0">
                                     <span class="text-sm font-semibold text-gray-800">{{ $entry->nearest_city ?? '—' }}</span>
                                     <span class="text-xs font-mono text-zendo-navy ml-1">{{ $entry->code }}</span>
-                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->facility_type ?? '—' }}</p>
+                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->display_facility_type }}</p>
                                 </div>
                             </div>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }} flex-shrink-0 ml-2">
@@ -304,7 +304,7 @@
                                     <span class="text-sm font-mono font-semibold text-zendo-navy">{{ $entry->code }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->fieldOfficer?->name ?? '—' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->facility_type ?? '—' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">{{ $entry->display_facility_type }}</td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }}">
                                         {{ $entry->status_label }}
@@ -340,7 +340,7 @@
                                         <span class="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-amber-400 align-middle"></span>
                                     @endif
                                     <span class="text-xs font-mono text-zendo-navy ml-1">{{ $entry->code }}</span>
-                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->facility_type ?? '—' }}</p>
+                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $entry->fieldOfficer?->name }} · {{ $entry->display_facility_type }}</p>
                                 </div>
                             </div>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $entry->status_badge_class }} flex-shrink-0 ml-2">

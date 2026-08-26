@@ -80,6 +80,7 @@
                             <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">#</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lead</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Zone</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Contacts</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SLA</th>
@@ -99,6 +100,15 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $lead->stage_badge }}">
                                         {{ $lead->stage_label }}
                                     </span>
+                                </td>
+                                <td class="px-5 py-3 text-xs">
+                                    @if($lead->zone)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-800">
+                                            {{ $lead->zone->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $lead->side_state_badge }}">

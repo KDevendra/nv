@@ -21,7 +21,7 @@ class SalesExecutiveLeadController extends Controller
             ->whereIn('stage', Lead::SE_STAGES)
             ->with(['property' => function ($q) {
                 $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'plot_area', 'city_id', 'location_id', 'property_type_id');
-            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name']);
+            }, 'property.city:id,name', 'property.location:id,name', 'property.propertyType:id,name', 'zone:id,name,slug']);
 
         if ($request->filled('stage')) {
             $query->where('stage', $request->stage);

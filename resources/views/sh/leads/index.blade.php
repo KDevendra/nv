@@ -58,6 +58,7 @@
                         <tr>
                             <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">#</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lead</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Zone</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Requested</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SLA</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">CC</th>
@@ -72,6 +73,15 @@
                                 <td class="px-5 py-3">
                                     <div class="font-semibold text-sm text-zendo-navy">{{ $lead->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $lead->phone }}</div>
+                                </td>
+                                <td class="px-5 py-3 text-xs">
+                                    @if($lead->zone)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-800">
+                                            {{ $lead->zone->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3 text-xs text-gray-500">
                                     {{ $lead->feasibility_requested_at?->diffForHumans() ?? '—' }}

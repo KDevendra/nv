@@ -83,8 +83,16 @@
         <div><span class="text-xs text-gray-400 block mb-0.5">Name</span><span class="font-medium text-gray-800">{{ $lead->name }}</span></div>
         <div><span class="text-xs text-gray-400 block mb-0.5">Phone</span><span class="font-medium text-gray-800">{{ $lead->phone }}</span></div>
         <div><span class="text-xs text-gray-400 block mb-0.5">Email</span><span class="font-medium text-gray-800">{{ $lead->email ?? '—' }}</span></div>
+        <div><span class="text-xs text-gray-400 block mb-0.5">Pin Code</span><span class="font-medium text-gray-800">{{ $lead->pincode ?? '—' }}</span></div>
         <div><span class="text-xs text-gray-400 block mb-0.5">Division</span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{{ ucfirst($lead->division) }}</span>
+        </div>
+        <div><span class="text-xs text-gray-400 block mb-0.5">Zone</span>
+            @if($lead->zone)
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">{{ $lead->zone->name }}</span>
+            @else
+                <span class="text-gray-400 font-medium">—</span>
+            @endif
         </div>
         <div><span class="text-xs text-gray-400 block mb-0.5">Origin</span>
             <span class="font-medium text-gray-800">{{ $lead->origin_table ? ucwords(str_replace('_',' ',$lead->origin_table)).' #'.$lead->origin_id : '—' }}</span>

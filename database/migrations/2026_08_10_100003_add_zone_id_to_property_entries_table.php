@@ -13,7 +13,11 @@ return new class extends Migration
                 // Zone the entry belongs to — copied from the submitting
                 // field officer, and used to route the entry to the supply
                 // heads assigned to that zone.
-                $table->foreignId('zone_id')->nullable()->after('supply_head_id')->constrained('zones')->nullOnDelete();
+                $col = $table->foreignId('zone_id')->nullable();
+                if (Schema::hasColumn('property_entries', 'supply_head_id')) {
+                    $col->after('supply_head_id');
+                }
+                $col->constrained('zones')->nullOnDelete();
             }
         });
     }

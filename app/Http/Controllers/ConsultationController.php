@@ -20,6 +20,7 @@ class ConsultationController extends Controller
             'name'         => 'required|string|max:255',
             'phone'        => 'required|string|max:20',
             'email'        => 'required|email|max:255',
+            'pincode'      => 'required|string|max:10',
             'property_type'=> 'nullable|string|max:100',
             'location'     => 'nullable|string|max:255',
             'budget_range' => 'nullable|string|max:100',
@@ -48,6 +49,7 @@ class ConsultationController extends Controller
                     $se = User::getSalesExecutivesByDivision($division)->first();
 
                     $notes = implode("\n", array_filter([
+                        $request->pincode ? "Pin Code: {$request->pincode}" : null,
                         $request->location ? "Location: {$request->location}" : null,
                         $request->budget_range ? "Budget: {$request->budget_range}" : null,
                         $request->requirements ? "Requirements: {$request->requirements}" : null,
@@ -59,10 +61,16 @@ class ConsultationController extends Controller
                         'name' => $request->name,
                         'phone' => $request->phone,
                         'email' => $request->email,
+                        'pincode' => $request->pincode,
                         'stage' => 'new_lead',
                         'assigned_se_id' => $se?->id,
                         'qualification_notes' => $notes,
                     ]);
+                } else {
+                    if ($request->filled('pincode')) {
+                        $lead->pincode = $request->pincode;
+                        $lead->save();
+                    }
                 }
             });
 

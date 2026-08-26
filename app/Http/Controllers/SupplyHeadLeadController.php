@@ -22,7 +22,7 @@ class SupplyHeadLeadController extends Controller
             ->with(['property' => function ($q) {
                 $q->select('id', 'title', 'slug', 'price', 'carpet_area', 'built_up_area', 'address', 'latitude', 'longitude', 'user_id', 'city_id', 'location_id')
                   ->with('user:id,name,phone,email');
-            }, 'assignedCC:id,name']);
+            }, 'assignedCC:id,name', 'zone:id,name,slug']);
 
         $stats = [
             'pending'      => (clone $query)->whereNull('feasibility_responded_at')->count(),

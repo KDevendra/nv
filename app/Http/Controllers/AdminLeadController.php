@@ -19,12 +19,18 @@ class AdminLeadController extends Controller
             'property.location:id,name',
             'assignedSE:id,name,division',
             'assignedCC:id,name,division',
-            'feasibilitySH:id,name,division'
+            'feasibilitySH:id,name,division',
+            'zone:id,name,slug'
         ]);
 
         // Filter by division
         if ($request->filled('division')) {
             $query->where('division', $request->division);
+        }
+
+        // Filter by zone
+        if ($request->filled('zone_id')) {
+            $query->where('zone_id', $request->zone_id);
         }
 
         // Filter by stage
@@ -58,13 +64,14 @@ class AdminLeadController extends Controller
 
         $leads = $query->orderBy('updated_at', 'desc')->paginate(20);
 
-        // Fetch SEs and CCs grouped by division for manual reassignment dropdowns
+        // Fetch SEs, CCs, and Zones for filters and manual reassignment dropdowns
         $salesExecutives = User::where('role', 'sales_executive')->where('is_active', true)->get();
         $chiefCoordinators = User::where('role', 'chief_coordinator')->where('is_active', true)->get();
+        $zones = \Illuminate\Support\Facades\DB::table('zones')->orderBy('name')->get();
 
         $holdingQueueCount = Lead::holdingQueue()->count();
 
-        return view('admin.leads.index', compact('leads', 'salesExecutives', 'chiefCoordinators', 'holdingQueueCount', 'stats'));
+        return view('admin.leads.index', compact('leads', 'salesExecutives', 'chiefCoordinators', 'holdingQueueCount', 'stats', 'zones'));
     }
 
     /**
@@ -72,7 +79,7 @@ class AdminLeadController extends Controller
      */
     public function show(Lead $lead)
     {
-        $lead->load(['property', 'property.user', 'assignedSE', 'assignedCC', 'feasibilitySH', 'stageHistories.changedBy']);
+        $lead->load(['property', 'property.user', 'assignedSE', 'assignedCC', 'feasibilitySH', 'zone', 'stageHistories.changedBy']);
         
         $salesExecs = User::where('role', 'sales_executive')->where('division', $lead->division)->where('is_active', true)->get();
         $chiefCoords = User::where('role', 'chief_coordinator')->where('division', $lead->division)->where('is_active', true)->get();

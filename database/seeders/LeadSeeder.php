@@ -23,6 +23,24 @@ class LeadSeeder extends Seeder
             return;
         }
 
+        // Get or create default zone for seeded test leads
+        $zoneId = DB::table('zones')->value('id');
+        if (!$zoneId) {
+            $zoneId = DB::table('zones')->insertGetId([
+                'name'       => 'Raipur Central Zone',
+                'slug'       => 'raipur-central-zone',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Tag testing users to zone if not set
+        if ($zoneId) {
+            if (!$se->zone_id) { $se->update(['zone_id' => $zoneId]); }
+            if (!$cc->zone_id) { $cc->update(['zone_id' => $zoneId]); }
+            if (!$sh->zone_id) { $sh->update(['zone_id' => $zoneId]); }
+        }
+
         // Disable foreign key checks for clean truncation of test data
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         LeadStageHistory::truncate();
@@ -218,6 +236,7 @@ class LeadSeeder extends Seeder
                 'id'                    => $id,
                 'division'              => 'warehousing',
                 'assigned_se_id'        => $se->id,
+                'zone_id'               => $zoneId,
                 'origin_table'          => 'seed',
                 'needs_division_review' => false,
                 'side_state'            => 'none',

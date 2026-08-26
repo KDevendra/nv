@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PropertyEntry;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -67,10 +68,192 @@ class PropertyEntryReportController extends Controller
         $cities        = PropertyEntry::whereNotNull('nearest_city')
             ->distinct()->orderBy('nearest_city')->pluck('nearest_city');
 
+        $analytics = $this->buildAnalytics($request);
+
         return view('admin.property-entry-report.index', compact(
             'summary', 'entries', 'supplyHeads', 'officers', 'officersBySupplyHead',
-            'zones', 'statuses', 'facilityTypes', 'cities'
+            'zones', 'statuses', 'facilityTypes', 'cities', 'analytics'
         ));
+    }
+
+    // ── Analytics (cached aggregate queries — never pulls rows into PHP) ─────
+
+    /**
+     * All aggregate numbers behind the charts/leaderboards. Each block is its
+     * own short-lived cache entry (5 min) keyed by the active filter set, so
+     * the same filtered view doesn't re-hit the DB on every request but a
+     * different filter combo still gets a fresh query.
+     */
+    private function buildAnalytics(Request $request): array
+    {
+        return [
+            'by_property_type'  => $this->analyticsByPropertyType($request),
+            'submissions_daily'   => $this->analyticsSubmissionsDaily($request),
+            'submissions_monthly' => $this->analyticsSubmissionsMonthly($request),
+            'by_city'            => $this->analyticsTopBreakdown($request, 'nearest_city', 'city'),
+            'by_officer'         => $this->analyticsTopBreakdown($request, 'field_officer_id', 'officer'),
+            'draft_vs_submitted' => $this->analyticsDraftVsSubmitted($request),
+        ];
+    }
+
+    /**
+     * Cache key incorporates every filter buildQuery() understands plus a
+     * distinguishing suffix per aggregate, so two different charts (or two
+     * different filter combos) never collide on the same cached value.
+     */
+    private function filterCacheKey(Request $request, string $suffix): string
+    {
+        $filters = $request->only([
+            'supply_head_id', 'officer_id', 'zone_id', 'status',
+            'facility_type', 'property_type', 'field_verified', 'city',
+            'date_from', 'date_to',
+        ]);
+        ksort($filters);
+
+        return 'property_entry_report:' . $suffix . ':' . md5(json_encode($filters));
+    }
+
+    /**
+     * Counts per property_type, in config('property_types') display order
+     * (types with zero matching entries are still included at 0 so the
+     * chart's category set never shifts between filter combos), respecting
+     * every active filter except property_type itself — clicking one
+     * segment should narrow to that type without losing e.g. a status or
+     * city filter already applied, and clicking a different segment should
+     * still be a meaningful choice rather than a no-op.
+     */
+    private function analyticsByPropertyType(Request $request): array
+    {
+        return Cache::remember($this->filterCacheKey($request, 'by_type'), 300, function () use ($request) {
+            $counts = $this->buildQuery($request, ['property_type'])
+                ->selectRaw('property_type, COUNT(*) as total')
+                ->groupBy('property_type')
+                ->pluck('total', 'property_type');
+
+            $types = config('property_types.types', []);
+            $out = [];
+            foreach ($types as $key => $meta) {
+                $out[] = [
+                    'key'   => $key,
+                    'label' => $meta['label'] ?? $key,
+                    'count' => (int) ($counts[$key] ?? 0),
+                ];
+            }
+
+            // Rows that predate the property_type backfill have a null type.
+            // PHP coerces a null array key to '' on both write and read, so
+            // a single lookup already covers both — summing $counts[''] and
+            // $counts->get(null) here would double-count the same bucket.
+            $unclassified = (int) ($counts[''] ?? 0);
+            if ($unclassified > 0) {
+                $out[] = ['key' => null, 'label' => 'Unclassified', 'count' => $unclassified];
+            }
+
+            return $out;
+        });
+    }
+
+    /**
+     * Daily submitted_at counts for the last 90 days — one query covers the
+     * 7d/30d/90d toggle client-side (the "all-time" toggle uses the separate
+     * monthly aggregate below instead of extending this range indefinitely).
+     */
+    private function analyticsSubmissionsDaily(Request $request): array
+    {
+        return Cache::remember($this->filterCacheKey($request, 'daily'), 300, function () use ($request) {
+            $since = now()->subDays(89)->startOfDay();
+
+            $rows = $this->buildQuery($request, ['date_from', 'date_to'])
+                ->whereNotNull('submitted_at')
+                ->where('submitted_at', '>=', $since)
+                ->selectRaw('DATE(submitted_at) as day, COUNT(*) as total')
+                ->groupBy('day')
+                ->pluck('total', 'day');
+
+            $out = [];
+            for ($d = $since->copy(); $d->lte(now()); $d->addDay()) {
+                $key = $d->format('Y-m-d');
+                $out[] = ['date' => $key, 'count' => (int) ($rows[$key] ?? 0)];
+            }
+
+            return $out;
+        });
+    }
+
+    /**
+     * Monthly submitted_at counts since the earliest submission — backs the
+     * "all-time" toggle without ever materialising one row per entry.
+     */
+    private function analyticsSubmissionsMonthly(Request $request): array
+    {
+        return Cache::remember($this->filterCacheKey($request, 'monthly'), 300, function () use ($request) {
+            $rows = $this->buildQuery($request, ['date_from', 'date_to'])
+                ->setEagerLoads([])
+                ->whereNotNull('submitted_at')
+                ->selectRaw("DATE_FORMAT(submitted_at, '%Y-%m') as month, COUNT(*) as total")
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            return $rows->map(fn ($r) => ['month' => $r->month, 'count' => (int) $r->total])->all();
+        });
+    }
+
+    /**
+     * Top-5 + "and N more" for a city / field-officer leaderboard, respecting
+     * every currently active filter (including property_type/status/etc.) so
+     * the leaderboard always matches whatever the table below is showing.
+     */
+    private function analyticsTopBreakdown(Request $request, string $column, string $suffix): array
+    {
+        return Cache::remember($this->filterCacheKey($request, 'top_' . $suffix), 300, function () use ($request, $column, $suffix) {
+            $query = $this->buildQuery($request)->setEagerLoads([])->whereNotNull($column);
+
+            if ($suffix === 'officer') {
+                $rows = $query->selectRaw("{$column} as key_id, COUNT(*) as total")
+                    ->groupBy($column)
+                    ->orderByDesc('total')
+                    ->get();
+
+                $officerNames = User::whereIn('id', $rows->pluck('key_id'))->pluck('name', 'id');
+                $rows = $rows->map(fn ($r) => [
+                    'label' => $officerNames[$r->key_id] ?? "Officer #{$r->key_id}",
+                    'count' => (int) $r->total,
+                ]);
+            } else {
+                $rows = $query->selectRaw("{$column} as label, COUNT(*) as total")
+                    ->groupBy($column)
+                    ->orderByDesc('total')
+                    ->get()
+                    ->map(fn ($r) => ['label' => $r->label, 'count' => (int) $r->total]);
+            }
+
+            return [
+                'top'         => $rows->take(5)->values()->all(),
+                'all'         => $rows->values()->all(),
+                'total_count' => $rows->count(),
+            ];
+        });
+    }
+
+    /**
+     * Draft vs. submitted+ counts — the data-quality signal called out in
+     * the report brief (most entries currently sit in draft and never reach
+     * a reviewable state). Respects active filters like the other blocks.
+     */
+    private function analyticsDraftVsSubmitted(Request $request): array
+    {
+        return Cache::remember($this->filterCacheKey($request, 'draft_ratio'), 300, function () use ($request) {
+            $draft = $this->buildQuery($request)->where('status', 'draft')->count();
+            $beyondDraft = $this->buildQuery($request)->where('status', '!=', 'draft')->count();
+            $total = $draft + $beyondDraft;
+
+            return [
+                'draft'          => $draft,
+                'beyond_draft'   => $beyondDraft,
+                'draft_percent'  => $total > 0 ? round($draft / $total * 100, 1) : 0.0,
+            ];
+        });
     }
 
     // ── Admin Show (read-only, no role guard) ─────────────────────────────────
@@ -99,39 +282,53 @@ class PropertyEntryReportController extends Controller
 
     // ── Shared Filter Logic ───────────────────────────────────────────────────
 
-    private function buildQuery(Request $request)
+    /**
+     * @param string[] $excluding Filter keys to skip even if present in the
+     *                            request — used by the analytics blocks so a
+     *                            chart can respect every filter except the
+     *                            one dimension it's itself breaking down by
+     *                            (e.g. the property-type chart still honours
+     *                            status/city/etc. but not property_type,
+     *                            otherwise every bar but one would be zero
+     *                            whenever a type filter is already active).
+     */
+    private function buildQuery(Request $request, array $excluding = [])
     {
         $query = PropertyEntry::with(['fieldOfficer', 'supplyHead', 'zone']);
 
-        if ($request->filled('supply_head_id')) {
+        if (!in_array('supply_head_id', $excluding) && $request->filled('supply_head_id')) {
             $query->where('supply_head_id', $request->supply_head_id);
         }
 
-        if ($request->filled('officer_id')) {
+        if (!in_array('officer_id', $excluding) && $request->filled('officer_id')) {
             $query->where('field_officer_id', $request->officer_id);
         }
 
-        if ($request->filled('zone_id')) {
+        if (!in_array('zone_id', $excluding) && $request->filled('zone_id')) {
             $query->where('zone_id', $request->zone_id);
         }
 
-        if ($request->filled('status')) {
+        if (!in_array('status', $excluding) && $request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('facility_type')) {
+        if (!in_array('property_type', $excluding) && $request->filled('property_type')) {
+            $query->where('property_type', $request->property_type);
+        }
+
+        if (!in_array('facility_type', $excluding) && $request->filled('facility_type')) {
             $query->where('facility_type', $request->facility_type);
         }
 
-        if ($request->filled('city')) {
+        if (!in_array('city', $excluding) && $request->filled('city')) {
             $query->where('nearest_city', $request->city);
         }
 
-        if ($request->filled('date_from')) {
+        if (!in_array('date_from', $excluding) && $request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
 
-        if ($request->filled('date_to')) {
+        if (!in_array('date_to', $excluding) && $request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 

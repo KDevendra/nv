@@ -11,8 +11,8 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        DB::table('role_permissions')->truncate();
-        DB::table('permissions')->truncate();
+        DB::table('role_permissions')->delete();
+        DB::table('permissions')->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // ---------------------------------------------------------------
@@ -54,6 +54,7 @@ class PermissionSeeder extends Seeder
 
             // ── Single-page settings ────────────────────────────────────
             'about-page'             => ['type' => 'page', 'label' => 'About Page Settings'],
+            'advisory-page'          => ['type' => 'page', 'label' => 'Advisory Page Settings'],
             'contact-info'           => ['type' => 'page', 'label' => 'Contact Info'],
             'contact-page'           => ['type' => 'page', 'label' => 'Contact Page Settings'],
             'privacy-policy'         => ['type' => 'page', 'label' => 'Privacy Policy'],
@@ -101,6 +102,7 @@ class PermissionSeeder extends Seeder
             'inquiries'              => ['view'],
             'property-inquiries'     => ['view'],
             'about-page'             => ['view', 'edit'],
+            'advisory-page'          => ['view', 'edit'],
             'contact-info'           => ['view', 'edit'],
             'contact-page'           => ['view', 'edit'],
             'privacy-policy'         => ['view', 'edit'],
@@ -136,6 +138,7 @@ class PermissionSeeder extends Seeder
             'inquiries'              => ['view'],
             'property-inquiries'     => ['view'],
             'about-page'             => ['view'],
+            'advisory-page'          => ['view'],
             'contact-info'           => ['view'],
             'contact-page'           => ['view'],
             'privacy-policy'         => ['view'],
@@ -221,11 +224,12 @@ class PermissionSeeder extends Seeder
         // ---------------------------------------------------------------
         $rows = [];
         $now  = now();
+        $idCounter = 1;
 
         foreach ($roleMap as $role => $access) {
             if ($access === '*') {
                 foreach ($permissionMap as $permId) {
-                    $rows[] = ['role' => $role, 'permission_id' => $permId, 'created_at' => $now, 'updated_at' => $now];
+                    $rows[] = ['id' => $idCounter++, 'role' => $role, 'permission_id' => $permId, 'created_at' => $now, 'updated_at' => $now];
                 }
             } else {
                 foreach ($access as $module => $actions) {
@@ -233,6 +237,7 @@ class PermissionSeeder extends Seeder
                         $name = "{$module}.{$action}";
                         if (isset($permissionMap[$name])) {
                             $rows[] = [
+                                'id'            => $idCounter++,
                                 'role'          => $role,
                                 'permission_id' => $permissionMap[$name],
                                 'created_at'    => $now,

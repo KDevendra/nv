@@ -76,6 +76,17 @@
                     placeholder="Search name / phone / email…"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
             </div>
+            @if(isset($zones) && $zones->isNotEmpty())
+            <div>
+                <label class="text-xs text-gray-500 block mb-1">Zone</label>
+                <select name="zone_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
+                    <option value="">All Zones</option>
+                    @foreach($zones as $z)
+                        <option value="{{ $z->id }}" {{ request('zone_id') == $z->id ? 'selected' : '' }}>{{ $z->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div>
                 <label class="text-xs text-gray-500 block mb-1">Division</label>
                 <select name="division" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
@@ -146,6 +157,7 @@
                             <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">#</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lead</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Division</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Zone</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SE</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">CC</th>
@@ -168,6 +180,15 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                                         {{ ucfirst($lead->division) }}
                                     </span>
+                                </td>
+                                <td class="px-5 py-3 text-xs">
+                                    @if($lead->zone)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-purple-100 text-purple-800">
+                                            {{ $lead->zone->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $lead->stage_badge }}">
