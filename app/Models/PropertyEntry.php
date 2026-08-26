@@ -399,7 +399,6 @@ class PropertyEntry extends Model
         'lease_tenure'                 => 'float',
         'lock_in_remaining'            => 'float',
         'amenities'                    => 'array',
-        'ac_rooms'                     => 'integer',
         'approach_road_width_ft'       => 'float',
         'area_in_standard_unit_sq_ft'  => 'float',
         'banquet_event_space_sq_ft'    => 'float',
@@ -722,8 +721,15 @@ class PropertyEntry extends Model
         if (is_string($custom)) {
             $custom = json_decode($custom, true);
         }
-
-        return is_array($custom) ? $custom : [];
+        if (is_array($custom)) {
+            foreach ($custom as $k => $v) {
+                if (is_string($v)) {
+                    $custom[$k] = trim(preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $v));
+                }
+            }
+            return $custom;
+        }
+        return [];
     }
 
     /**
@@ -733,17 +739,94 @@ class PropertyEntry extends Model
      * otherwise render as "—" on the admin detail view despite having been
      * filled in.
      */
+    public function setAttribute($key, $value)
+    {
+        $booleanCols = [
+            'canteen', 'stp_plant', 'female_washroom', 'driver_rest_room',
+            'mezzanine', 'scrap_yard', 'extension_possible', 'has_offices',
+            'has_dock_leveller', 'solar', 'field_verified'
+        ];
+
+        if (in_array($key, $booleanCols)) {
+            if (is_string($value)) {
+                $lower = strtolower(trim($value));
+                if (in_array($lower, ['yes', 'y', '1', 'true'])) {
+                    $value = true;
+                } elseif (in_array($lower, ['no', 'n', '0', 'false'])) {
+                    $value = false;
+                }
+            }
+        } elseif (is_string($value) && $key !== 'custom_fields') {
+            $value = trim(preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value));
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
     public function fieldValue(string $column): mixed
     {
         if ($column === 'car_parking_slots') {
             return $this->attributes['car_parking_slots'] ?? $this->attributes['parking_slots'] ?? $this->customFieldsArray()['car_parking_slots'] ?? null;
         }
 
+        if ($column === 'property_type') {
+            $custom = $this->customFieldsArray();
+            if (!empty($custom['property_sub_type'])) {
+                return $custom['property_sub_type'];
+            }
+            if (!empty($custom['property_type'])) {
+                return $custom['property_type'];
+            }
+            if (!empty($this->attributes['property_sub_type'])) {
+                return $this->attributes['property_sub_type'];
+            }
+        }
+
         if (array_key_exists($column, $this->getAttributes()) || $this->hasCast($column)) {
-            return $this->$column;
+            $val = $this->$column;
+            if ($val === null) {
+                return $this->customFieldsArray()[$column] ?? null;
+            }
+            if (is_bool($val) || (isset($this->casts[$column]) && $this->casts[$column] === 'boolean')) {
+                return $val ? 'Yes' : 'No';
+            }
+            return $val;
         }
 
         return $this->customFieldsArray()[$column] ?? null;
+    }
+
+    /**
+     * fieldValue() for a date field, always returned as a 'Y-m-d' string
+     * (or '' if empty) — safe to drop straight into an
+     * <input type="date" value="..."> regardless of where the value lives.
+     *
+     * A real column with a date cast returns a Carbon instance from
+     * fieldValue(); a custom_fields-backed date (most date fields on the
+     * 12 dedicated types aren't real columns) returns a plain string
+     * instead, since custom_fields is just decoded JSON. Blade markup that
+     * unconditionally called ->format() on the result crashed with "Call to
+     * a member function format() on string" for every such field — this
+     * normalises both shapes in one place instead of repeating a fragile
+     * type check at each of the 26 call sites across the 13 forms.
+     */
+    public function dateFieldValue(string $column): string
+    {
+        $value = $this->fieldValue($column);
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_string($value) && $value !== '') {
+            try {
+                return \Carbon\Carbon::parse($value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return ''; // unparseable — don't crash the page over it
+            }
+        }
+
+        return '';
     }
 
     /**
