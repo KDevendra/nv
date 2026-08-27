@@ -176,7 +176,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span
                                         class="text-red-500">*</span></label>
                                 <input type="number" step="0.000001" name="gps_latitude"
-                                    value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}" required
+                                    value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}"
                                     placeholder="e.g. 28.459512"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
@@ -198,7 +198,7 @@
                                 </div>
                                 <input type="number" step="0.000001" name="gps_longitude"
                                     value="{{ old('gps_longitude', $property?->fieldValue('gps_longitude') ?? '') }}"
-                                    required placeholder="e.g. 77.026634"
+                                    placeholder="e.g. 77.026634"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div>

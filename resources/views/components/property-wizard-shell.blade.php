@@ -170,46 +170,56 @@
     // Shared across all 13 dedicated property-type wizards. Only ever defined
     // once — the apartment-flat-studio view (and possibly others) ships its
     // own copy of wizardGoTo/wizardNext/wizardPrev ahead of this include, in
-    // which case that copy wins and this block is skipped entirely.
     if (typeof window.wizardValidateStep === 'undefined') {
-        // A required field counts as "in play" only while actually visible —
-        // Alpine's x-show (e.g. canteen_size only required when canteen=1)
-        // sets display:none rather than removing the node, and offsetParent
-        // is null for anything display:none, on the field itself or an
-        // ancestor (including a not-yet-active wizard-step-content panel).
         window.wizardValidateStep = function(stepIndex) {
             const steps = document.querySelectorAll('.wizard-step-content');
             const panel = steps[stepIndex];
             if (!panel) return true;
 
-            // Shared per-field rules (format + required) render their own
-            // inline messages below each input — see the
-            // components/wizard-field-validation.blade.php component. Runs
-            // first so the user sees every problem on the step at once,
-            // not just the first one.
-            if (window.ZendoFieldValidation
-                && !window.ZendoFieldValidation.validateContainer(panel, true)) {
+            let fieldValidationPassed = true;
+            if (window.ZendoFieldValidation) {
+                fieldValidationPassed = window.ZendoFieldValidation.validateContainer(panel, true);
+            }
+
+            const fields = panel.querySelectorAll('[required], input, select, textarea');
+            const invalidFields = [];
+
+            for (const field of fields) {
+                if (field.disabled || field.offsetParent === null) continue;
+                if (!field.checkValidity() || (field.hasAttribute('required') && (!field.value || !field.value.toString().trim()))) {
+                    invalidFields.push(field);
+                }
+            }
+
+            if (!fieldValidationPassed || invalidFields.length > 0) {
+                const firstInvalid = invalidFields[0] || panel.querySelector('.border-red-500, .wiz-field-err');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    try { firstInvalid.focus({ preventScroll: true }); } catch (e) {}
+                }
+
+                const fieldNames = [];
+                invalidFields.forEach(el => {
+                    let labelText = '';
+                    const parent = el.closest('div');
+                    if (parent) {
+                        const lbl = parent.querySelector('label');
+                        if (lbl) labelText = lbl.textContent.replace('*', '').trim();
+                    }
+                    if (!labelText) labelText = el.getAttribute('placeholder') || el.getAttribute('name') || 'Required field';
+                    if (labelText && !fieldNames.includes(labelText)) fieldNames.push(labelText);
+                });
+
+                if (typeof window.flashLockMessage === 'function') {
+                    window.flashLockMessage(fieldNames.slice(0, 3).join(', '));
+                }
+
                 return false;
             }
 
-            // Native constraint check as a backstop for anything the shared
-            // rules don't model (pattern attributes, custom validity, etc.).
-            const fields = panel.querySelectorAll('[required]');
-            for (const field of fields) {
-                if (field.disabled || field.offsetParent === null) continue;
-                if (!field.checkValidity()) {
-                    field.reportValidity();
-                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return false;
-                }
-            }
             return true;
         };
 
-        // Walks every step from the start, stopping (and leaving the wizard
-        // parked on) the first one that fails — used to gate the final
-        // submit, since a hidden step's required fields never take part in
-        // the browser's own form-level constraint validation.
         window.wizardValidateAll = function() {
             const total = document.querySelectorAll('.wizard-step-content').length;
             for (let i = 0; i < total; i++) {
@@ -282,21 +292,6 @@
         };
     }
 
-    // ── Step-tab gating ─────────────────────────────────────────────────────
-    // The A/B/C/D dots call wizardGoTo() from an inline onclick, which would
-    // otherwise let someone jump from A straight to D and skip every check
-    // "Save & Next" enforces. This intercepts the click in the CAPTURE phase
-    // on document, so a blocked click never reaches the button's own inline
-    // handler at all — which also means it keeps working regardless of which
-    // per-type view has overridden window.wizardGoTo.
-    //
-    // Validity comes from window.wizardValidateStep — the exact same function
-    // wizardNext() uses — so a tab and "Save & Next" can never disagree.
-    //
-    // wizFrontier = furthest step legitimately reached. Anything at or below
-    // it is revisitable (backward navigation is never blocked); going beyond
-    // it is only allowed one step at a time, and only when the current step
-    // passes validation.
     (function () {
         if (window.__wizTabGateInstalled) return;
         window.__wizTabGateInstalled = true;
@@ -318,19 +313,21 @@
             if (current() > frontier()) window.wizFrontier = current();
         }
 
-        function flashLockMessage() {
+        window.flashLockMessage = function(fieldNamesStr) {
             var msg = document.getElementById('wiz-lock-msg');
             if (!msg) return;
+            if (fieldNamesStr) {
+                msg.innerHTML = '⚠️ <span class="font-bold">Please complete required field(s):</span> <span class="text-red-700 font-semibold">' + fieldNamesStr + '</span>';
+            } else {
+                msg.textContent = 'Complete this step before continuing.';
+            }
             msg.classList.remove('hidden');
             clearTimeout(window.__wizLockMsgTimer);
             window.__wizLockMsgTimer = setTimeout(function () {
                 msg.classList.add('hidden');
-            }, 4000);
-        }
+            }, 6000);
+        };
 
-        // A tab is reachable if it's already been visited, or it's the very
-        // next step. Whether that next step may actually be *entered* still
-        // depends on the current step validating — checked at click time.
         function isReachable(target) {
             return target <= frontier() || target === current() + 1;
         }
