@@ -61,7 +61,8 @@
         <div class="flex items-center gap-1">
             @foreach($stepList as $i => $st)
                 @php
-                    $ltr = is_array($st) ? ($st['key'] ?? ($i + 1)) : $st;
+                    $rawKey = is_array($st) ? ($st['key'] ?? '') : $st;
+                    $ltr = ($rawKey === '✓' || $i === $totalSteps - 1 && str_contains(strtolower($st['title'] ?? ''), 'review')) ? '✓' : chr(65 + $i);
                     $stTitle = is_array($st) ? ($st['title'] ?? '') : '';
                     $isActive = ($i == $currentStep);
                     $isPast = ($i < $currentStep);

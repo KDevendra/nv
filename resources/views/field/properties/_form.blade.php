@@ -443,7 +443,7 @@ STEP 0 — A. Location & Identification
             @if($fc('owner_contact_phone')->keep_field)
                 <div>
                     <label class="{{ $lc }}">Owner Contact Number {!! $ast('owner_contact_phone') !!}</label>
-                    <input type="text" name="owner_contact_phone" value="{{ $v('owner_contact_phone') }}" {{ $req('owner_contact_phone') }} maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}"
+                    <input type="tel" name="owner_contact_phone" value="{{ $v('owner_contact_phone') }}" {{ $req('owner_contact_phone') }} maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}"
                         title="Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9" class="{{ $ic('owner_contact_phone') }}">
                     @error('owner_contact_phone')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
@@ -759,7 +759,7 @@ STEP 0 — A. Location & Identification
             @if($fc('fsi_far')->keep_field)
                 <div>
                     <label class="{{ $lc }}">FSI / FAR {!! $ast('fsi_far') !!}</label>
-                    <input type="text" name="fsi_far" value="{{ $v('fsi_far') }}" {{ $req('fsi_far') }} class="{{ $ic('fsi_far') }}">
+                    <input type="text" name="fsi_far" value="{{ $v('fsi_far') }}" placeholder="e.g. 1.5, 2.0" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" {{ $req('fsi_far') }} class="{{ $ic('fsi_far') }}">
                     @error('fsi_far')
                     <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>@enderror
                     {!! $rmk('fsi_far') !!}
@@ -3299,27 +3299,23 @@ WIZARD — BOTTOM NAV BAR
 
         const showWarning = (el, text) => {
             if (!el) return;
-            const msg = document.createElement('p');
-            msg.className = 'wiz-hierarchy-err mt-1 text-xs text-red-600 font-medium';
+            let msg = el.parentElement.querySelector('.wiz-hierarchy-err');
+            if (!msg) {
+                msg = document.createElement('p');
+                msg.className = 'wiz-hierarchy-err mt-1 text-xs text-red-600 font-medium';
+                el.parentElement.appendChild(msg);
+            }
             msg.textContent = text;
-            el.parentElement.appendChild(msg);
-            // auto-remove the warning after a few seconds
-            setTimeout(() => msg.remove(), 3000);
         };
 
         // Built-up Area cannot exceed Plot Area
         if (plot !== null && built !== null && built > plot) {
-            builtEl.value = '';
-            showWarning(builtEl, `Cleared — Built-up Area cannot exceed Plot Area (${plot})`);
+            showWarning(builtEl, "Built-up area can't be bigger than the plot area.");
         }
 
-        // Re-read built (in case it was just cleared above) before checking carpet
-        const builtAfter = builtEl && builtEl.value !== '' ? parseFloat(builtEl.value) : null;
-
         // Carpet Area cannot exceed Built-up Area
-        if (builtAfter !== null && carpet !== null && carpet > builtAfter) {
-            carpetEl.value = '';
-            showWarning(carpetEl, `Cleared — Carpet Area cannot exceed Built-up Area (${builtAfter})`);
+        if (built !== null && carpet !== null && carpet > built) {
+            showWarning(carpetEl, "Carpet area can't be bigger than the built-up area.");
         }
 
         return true;

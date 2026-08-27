@@ -63,7 +63,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Phone <span class="text-red-500">*</span></label>
-                            <input required  type="text" name="submitter_phone" value="{{ old('submitter_phone', $property?->fieldValue('submitter_phone') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="tel" maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" name="submitter_phone" value="{{ old('submitter_phone', $property?->fieldValue('submitter_phone') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Submitter Email <span class="text-red-500">*</span></label>
@@ -100,7 +100,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pin Code <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="any" name="pin_code" value="{{ old('pin_code', $property?->fieldValue('pin_code') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input required  type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" name="pin_code" value="{{ old('pin_code', $property?->fieldValue('pin_code') ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         
                         <div>
@@ -133,7 +133,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">GPS Latitude <span class="text-red-500">*</span></label>
-                            <input required  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input  type="number" step="0.000001" name="gps_latitude" value="{{ old('gps_latitude', $property?->fieldValue('gps_latitude') ?? '') }}" required placeholder="e.g. 28.459512" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">

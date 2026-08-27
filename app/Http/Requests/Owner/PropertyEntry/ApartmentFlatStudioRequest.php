@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Owner\PropertyEntry;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ApartmentFlatStudioRequest extends FormRequest
 {
@@ -227,11 +228,11 @@ class ApartmentFlatStudioRequest extends FormRequest
             // Section G
             'deal_type' => 'required|in:Rent,Sale,Both',
             'price_on_request' => 'nullable|in:Yes,No',
-            'expected_rent' => 'nullable|required_if:deal_type,Rent,Both|numeric|gt:0',
+            'expected_rent' => Rule::requiredIf(fn() => in_array($this->deal_type, ['Rent', 'Both']) && $this->price_on_request !== 'Yes') . '|nullable|numeric|gt:0',
             'rent_range_band' => 'nullable|string|max:255',
             'maintenance_charge' => 'nullable|numeric|gt:0',
-            'security_deposit_months' => 'nullable|required_if:deal_type,Rent,Both|string|max:255',
-            'expected_sale_price' => 'nullable|required_if:deal_type,Sale,Both|numeric|gt:0',
+            'security_deposit_months' => 'nullable|string|max:255',
+            'expected_sale_price' => Rule::requiredIf(fn() => in_array($this->deal_type, ['Sale', 'Both']) && $this->price_on_request !== 'Yes') . '|nullable|numeric|gt:0',
             'sale_price_band' => 'nullable|string|max:255',
             'price_per_sqft' => 'nullable|numeric|gt:0',
             'booking_amount' => 'nullable|numeric|gt:0',
