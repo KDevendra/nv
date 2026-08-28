@@ -44,7 +44,7 @@
     @endif
 
     @if(session('error'))
-        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition-all" role="alert">
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm transition-all mb-4" role="alert">
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -52,6 +52,25 @@
                 <span>{{ session('error') }}</span>
             </div>
             <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-lg leading-none focus:outline-none">&times;</button>
+        </div>
+    @endif
+
+    @if(isset($errors) && $errors->any())
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl shadow-sm" role="alert">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-red-800 font-bold">
+                    <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Please correct the following error(s):</span>
+                </div>
+                <button type="button" onclick="this.closest('[role=alert]').remove()" class="text-red-500 hover:text-red-700 text-lg leading-none focus:outline-none">&times;</button>
+            </div>
+            <ul class="mt-2 list-disc list-inside text-sm text-red-700 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -181,12 +200,26 @@
                 fieldValidationPassed = window.ZendoFieldValidation.validateContainer(panel, true);
             }
 
-            const fields = panel.querySelectorAll('[required], input, select, textarea');
+            const fields = panel.querySelectorAll('input, select, textarea');
             const invalidFields = [];
 
             for (const field of fields) {
                 if (field.disabled || field.offsetParent === null) continue;
-                if (!field.checkValidity() || (field.hasAttribute('required') && (!field.value || !field.value.toString().trim()))) {
+                
+                const isRequired = field.hasAttribute('required');
+                const val = (field.value || '').toString().trim();
+
+                // Optional empty fields are always valid
+                if (!isRequired && val === '') continue;
+
+                // Required empty fields are invalid
+                if (isRequired && val === '') {
+                    invalidFields.push(field);
+                    continue;
+                }
+
+                // Filled fields check native validity
+                if (!field.checkValidity()) {
                     invalidFields.push(field);
                 }
             }
@@ -223,8 +256,10 @@
         window.wizardValidateAll = function() {
             const total = document.querySelectorAll('.wizard-step-content').length;
             for (let i = 0; i < total; i++) {
-                window.wizardGoTo(i);
-                if (!window.wizardValidateStep(i)) return false;
+                if (!window.wizardValidateStep(i)) {
+                    window.wizardGoTo(i);
+                    return false;
+                }
             }
             return true;
         };
@@ -292,6 +327,7 @@
         };
     }
 
+    // ── Step-tab gating ─────────────────────────────────────────────────────
     (function () {
         if (window.__wizTabGateInstalled) return;
         window.__wizTabGateInstalled = true;
@@ -354,52 +390,42 @@
             if (isNaN(target)) return;
 
             var cur = current();
-            if (target === cur) return;                 // no-op
-            if (target <= frontier()) return;           // already reached — allow, incl. backward
+            if (target === cur) return;
 
-            var blocked = false;
-            if (target > cur + 1) {
-                blocked = true;                          // must advance one step at a time
-            } else if (typeof window.wizardValidateStep === 'function'
-                       && !window.wizardValidateStep(cur)) {
-                blocked = true;                          // next step, but this one isn't valid
-            }
-
-            if (blocked) {
+            if (!isReachable(target)) {
                 e.preventDefault();
-                e.stopPropagation();                     // inline onclick never fires
+                e.stopPropagation();
                 flashLockMessage();
-                // wizardValidateStep already rendered the inline field errors
-                // when it ran above; for the "too far ahead" case run it now so
-                // the user still sees what is actually holding them back.
                 if (target > cur + 1 && typeof window.wizardValidateStep === 'function') {
                     window.wizardValidateStep(cur);
                 }
             }
         }, true);
 
-        // Submit is a real <button type="submit">, so this has to run on click
-        // (before the browser starts submitting) rather than on a form "submit"
-        // listener — by the time "submit" fires it's too late to swap the
-        // visible step without the in-flight submission going through anyway.
+        // Submit button handler
         document.addEventListener('DOMContentLoaded', function () {
             const submitBtn = document.getElementById('wiz-submit-btn');
             if (submitBtn && !submitBtn.dataset.wizGuarded) {
                 submitBtn.dataset.wizGuarded = '1';
                 submitBtn.addEventListener('click', function (e) {
+                    const form = submitBtn.closest('form');
                     if (typeof window.wizardValidateAll === 'function' && !window.wizardValidateAll()) {
                         e.preventDefault();
+                        return false;
+                    }
+                    if (form) {
+                        let actionInp = form.querySelector('input[name="action"]');
+                        if (!actionInp) {
+                            actionInp = document.createElement('input');
+                            actionInp.type = 'hidden';
+                            actionInp.name = 'action';
+                            form.appendChild(actionInp);
+                        }
+                        actionInp.value = 'submit';
                     }
                 });
             }
 
-            // Each per-type view defines its own window.wizardGoTo inline in
-            // its own scripts section, which the layout renders after this
-            // block — so by DOMContentLoaded that override is final and safe
-            // to wrap. (Do not write Blade directive names in these comments;
-            // Blade compiles them even inside JS comments.)
-            // Wrapping (rather than redefining) keeps each view's own dot/
-            // select2/scroll behaviour intact while tracking the frontier.
             var inner = window.wizardGoTo;
             if (typeof inner === 'function' && !inner.__wizWrapped) {
                 var wrapped = function (s) {

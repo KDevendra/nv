@@ -45,15 +45,15 @@ class CommercialInstitutionalLandController extends Controller
         
         if ($status === 'submitted') {
             $request->validate([
-                'available_from' => 'nullable|required_if:availability,From date|date',
-                'possession_by' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
-                'possession_by_if_under_constr' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
-                'project_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'project_society_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'builder_developer_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'developer_builder_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'project_rera_id' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'rera_registration_id' => 'nullable|required_if:rera_registered,Yes|string|max:120',
+                'available_from' => 'nullable|string|max:120',
+                'possession_by' => 'nullable|string|max:120',
+                'possession_by_if_under_constr' => 'nullable|string|max:120',
+                'project_name' => 'nullable|string|max:120',
+                'project_society_name' => 'nullable|string|max:120',
+                'builder_developer_name' => 'nullable|string|max:120',
+                'developer_builder_name' => 'nullable|string|max:120',
+                'project_rera_id' => 'nullable|string|max:120',
+                'rera_registration_id' => 'nullable|string|max:120',
             ]);
         }
 
@@ -171,15 +171,15 @@ class CommercialInstitutionalLandController extends Controller
         
         if ($status === 'submitted') {
             $request->validate([
-                'available_from' => 'nullable|required_if:availability,From date|date',
-                'possession_by' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
-                'possession_by_if_under_constr' => 'nullable|required_if:construction_status,Under Construction|required_if:property_status,Under Construction|date',
-                'project_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'project_society_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'builder_developer_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'developer_builder_name' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'project_rera_id' => 'nullable|required_if:part_of_a_project_society,Yes|string|max:120',
-                'rera_registration_id' => 'nullable|required_if:rera_registered,Yes|string|max:120',
+                'available_from' => 'nullable|string|max:120',
+                'possession_by' => 'nullable|string|max:120',
+                'possession_by_if_under_constr' => 'nullable|string|max:120',
+                'project_name' => 'nullable|string|max:120',
+                'project_society_name' => 'nullable|string|max:120',
+                'builder_developer_name' => 'nullable|string|max:120',
+                'developer_builder_name' => 'nullable|string|max:120',
+                'project_rera_id' => 'nullable|string|max:120',
+                'rera_registration_id' => 'nullable|string|max:120',
             ]);
         }
 

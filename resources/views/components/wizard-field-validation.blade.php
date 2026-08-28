@@ -719,18 +719,24 @@
 
                             var label = fieldWrap.querySelector('label');
                             var asterisk = label ? label.querySelector('.text-red-500') : null;
+                            var isNameField = (name === 'project_name' || name === 'project_society_name');
 
                             if (isYes) {
                                 fieldWrap.style.display = '';
-                                input.required = true;
-                                input.setAttribute('required', 'required');
                                 if (label && !asterisk) {
                                     var span = document.createElement('span');
                                     span.className = 'text-red-500 ml-0.5';
-                                    span.textContent = '*';
+                                    span.textContent = ' *';
                                     label.appendChild(span);
                                 } else if (asterisk) {
                                     asterisk.style.display = '';
+                                }
+                                if (isNameField) {
+                                    input.required = true;
+                                    input.setAttribute('required', 'required');
+                                } else {
+                                    input.required = false;
+                                    input.removeAttribute('required');
                                 }
                             } else {
                                 fieldWrap.style.display = 'none';
@@ -887,7 +893,7 @@
                 function toggleReraFields() {
                     var val = (reraSelect.value || '').trim().toLowerCase();
                     var isYes = val === 'yes' || val.startsWith('yes');
-                    var reraInputs = form.querySelectorAll('input[name="rera_registration_id"], input[name="project_rera_id"]');
+                    var reraInputs = form.querySelectorAll('input[name="rera_registration_id"]');
 
                     reraInputs.forEach(function (input) {
                         var fieldWrap = input.closest('div');
@@ -898,16 +904,9 @@
 
                         if (isYes) {
                             fieldWrap.style.display = '';
-                            input.required = true;
-                            input.setAttribute('required', 'required');
-                            if (label && !asterisk) {
-                                var span = document.createElement('span');
-                                span.className = 'text-red-500 ml-0.5';
-                                span.textContent = '*';
-                                label.appendChild(span);
-                            } else if (asterisk) {
-                                asterisk.style.display = '';
-                            }
+                            input.required = false;
+                            input.removeAttribute('required');
+                            if (asterisk) asterisk.style.display = 'none';
                         } else {
                             fieldWrap.style.display = 'none';
                             input.required = false;
@@ -947,10 +946,12 @@
                     var isRent = val === 'rent' || val === 'both' || val === 'lease' || val.indexOf('rent') !== -1 || val.indexOf('lease') !== -1;
                     var isSale = val === 'sale' || val === 'both' || val.indexOf('sale') !== -1;
 
-                    var rentFieldNames = ['expected_rent', 'rent_per_month', 'rent_per_bed_room_month', 'security_deposit_months', 'security_deposit'];
-                    var saleFieldNames = ['expected_sale_price', 'total_sale_price', 'price_cost', 'sale_price_band_shown_live'];
+                    var rentRequiredNames = ['expected_rent', 'rent_per_month', 'rent_per_bed_room_month'];
+                    var rentOptionalNames = ['security_deposit_months', 'security_deposit'];
+                    var saleRequiredNames = ['expected_sale_price', 'total_sale_price', 'price_cost'];
+                    var saleOptionalNames = ['sale_price_band_shown_live'];
 
-                    rentFieldNames.forEach(function (name) {
+                    rentRequiredNames.forEach(function (name) {
                         var inputs = form.querySelectorAll('[name="' + name + '"]');
                         inputs.forEach(function (input) {
                             var fieldWrap = input.closest('div');
@@ -980,7 +981,15 @@
                         });
                     });
 
-                    saleFieldNames.forEach(function (name) {
+                    rentOptionalNames.concat(saleOptionalNames).forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"]');
+                        inputs.forEach(function (input) {
+                            input.required = false;
+                            input.removeAttribute('required');
+                        });
+                    });
+
+                    saleRequiredNames.forEach(function (name) {
                         var inputs = form.querySelectorAll('[name="' + name + '"]');
                         inputs.forEach(function (input) {
                             var fieldWrap = input.closest('div');
@@ -1037,9 +1046,10 @@
                     var val = (tenantedSelect.value || '').trim().toLowerCase();
                     var isTenanted = val === 'yes' || val === 'partially' || val.indexOf('yes') !== -1;
 
-                    var tenantedFieldNames = ['current_monthly_rent_received', 'lease_start_date', 'lease_tenure', 'lock_in_remaining'];
+                    var tenantedRequiredNames = ['current_monthly_rent_received'];
+                    var tenantedOptionalNames = ['lease_start_date', 'lease_tenure', 'lock_in_remaining'];
 
-                    tenantedFieldNames.forEach(function (name) {
+                    tenantedRequiredNames.forEach(function (name) {
                         var inputs = form.querySelectorAll('[name="' + name + '"]');
                         inputs.forEach(function (input) {
                             var fieldWrap = input.closest('div');
@@ -1066,6 +1076,14 @@
                                     window.ZendoFieldValidation.clearFieldError(input);
                                 }
                             }
+                        });
+                    });
+
+                    tenantedOptionalNames.forEach(function (name) {
+                        var inputs = form.querySelectorAll('[name="' + name + '"]');
+                        inputs.forEach(function (input) {
+                            input.required = false;
+                            input.removeAttribute('required');
                         });
                     });
                 }
@@ -1103,6 +1121,7 @@
             var allSteps = document.querySelectorAll('.wizard-step-content');
             var firstInvalidStep = -1;
             var firstInvalidInput = null;
+            var errorSummaries = [];
 
             for (var fieldKey in serverErrors) {
                 if (!Object.prototype.hasOwnProperty.call(serverErrors, fieldKey)) continue;
@@ -1124,6 +1143,8 @@
                     }
                 }
 
+                errorSummaries.push(displayMsg);
+
                 // Find matching input in the DOM
                 var input = document.querySelector('[name="' + targetName + '"], [name="' + targetName + '[]"], [name="' + fieldKey + '"]');
 
@@ -1144,6 +1165,11 @@
                         }
                     }
                 }
+            }
+
+            // Always display top banner if server errors occurred
+            if (errorSummaries.length > 0 && typeof window.flashLockMessage === 'function') {
+                window.flashLockMessage(errorSummaries.slice(0, 3).join(' | '));
             }
 
             // Directly move user to that tab/step and scroll/focus first invalid field
