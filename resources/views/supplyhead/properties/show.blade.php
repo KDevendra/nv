@@ -1,5 +1,5 @@
 @extends('layouts.field')
-@section('title', 'Review — ' . $property->code)
+@section('title', 'Review — ' . ($property?->code ?? ''))
 
 @section('content')
 <div class="max-w-5xl mx-auto space-y-6">
@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <div class="flex items-center gap-3 mb-1">
-                <h2 class="text-2xl font-heading text-zendo-navy font-semibold">{{ $property->code }}</h2>
+                <h2 class="text-2xl font-heading text-zendo-navy font-semibold">{{ $property?->code ?? '—' }}</h2>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $property->status_badge_class }}">{{ $property->status_label }}</span>
                 @if($property->is_expired)
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600">Expired</span>

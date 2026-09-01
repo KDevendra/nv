@@ -1,5 +1,5 @@
 @extends('layouts.field')
-@section('title', 'Edit & Resubmit — ' . $property->code)
+@section('title', 'Edit & Resubmit — ' . ($property?->code ?? ''))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between mb-4">
         <div>
             <h2 class="text-2xl font-heading text-zendo-navy font-semibold">Edit &amp; Resubmit</h2>
-            <p class="text-gray-500 text-sm mt-1">Code: <span class="font-mono font-medium">{{ $property->code }}</span></p>
+            <p class="text-gray-500 text-sm mt-1">Code: <span class="font-mono font-medium">{{ $property?->code ?? '—' }}</span></p>
         </div>
         <a href="{{ route('field.dashboard') }}"
             class="inline-flex items-center text-sm text-gray-500 hover:text-zendo-navy transition-colors">

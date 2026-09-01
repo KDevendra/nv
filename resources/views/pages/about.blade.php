@@ -492,7 +492,7 @@
                 <span class="section-subheading-dark-bg">Get Inquiry</span>
                 <h2 class="md:text-5xl font-heading text-white">Find Your Perfect Property — Connect with Our Advisors Today</h2>
                 <p class="text-lg text-gray-300 font-body max-w-2xl mx-auto">
-                    Partner with ZENDO Private Limited to find your ideal space. Secure your property requirements across industrial warehousing, warehouse land, factories, 3PL company tie-ups, commercial land, shops, agricultural land, or premium residential plots and flats—it's just an inquiry away.
+                    Partner with ZENDO INDIA to find your ideal space. Secure your property requirements across industrial warehousing, warehouse land, factories, 3PL company tie-ups, commercial land, shops, agricultural land, or premium residential plots and flats—it's just an inquiry away.
                 </p>
             </div>
 

@@ -203,7 +203,6 @@ class PropertyEntryController extends Controller
 
         $property->load('photos');
 
-        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
         $fieldRemarks = [];
@@ -351,7 +350,6 @@ class PropertyEntryController extends Controller
         }
 
         $property->load(['photos', 'fieldOfficer', 'reviewer', 'logs.user', 'fieldReviews']);
-        $property = null;
         $slots = self::PHOTO_SLOTS;
 
         // Get all reviewable fields (text) with their review status
