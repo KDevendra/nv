@@ -106,7 +106,7 @@ class PropertyEntryReportController extends Controller
     private function filterCacheKey(Request $request, string $suffix): string
     {
         $filters = $request->only([
-            'search', 'supply_head_id', 'officer_id', 'zone_id', 'status', 'admin_status',
+            'search', 'supply_head_id', 'officer_id', 'zone_id', 'status', 'admin_status', 'show_on_website',
             'facility_type', 'property_type', 'field_verified', 'city',
             'date_from', 'date_to',
         ]);
@@ -344,6 +344,10 @@ class PropertyEntryReportController extends Controller
             } else {
                 $query->where('admin_status', $adminStatus);
             }
+        }
+
+        if (!in_array('show_on_website', $excluding) && $request->filled('show_on_website')) {
+            $query->where('show_on_website', $request->boolean('show_on_website'));
         }
 
         if (!in_array('property_type', $excluding) && $request->filled('property_type')) {

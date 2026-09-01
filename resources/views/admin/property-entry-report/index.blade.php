@@ -339,6 +339,17 @@
                     </select>
                 </div>
 
+                {{-- Show on Website --}}
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Website Visibility</label>
+                    <select name="show_on_website" id="filter-show-on-website"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-zendo-gold focus:border-transparent">
+                        <option value="">All Website Statuses</option>
+                        <option value="1" {{ request('show_on_website') === '1' ? 'selected' : '' }}>Shown (Published)</option>
+                        <option value="0" {{ request('show_on_website') === '0' ? 'selected' : '' }}>Hidden (Unpublished)</option>
+                    </select>
+                </div>
+
                 {{-- Facility Type --}}
                 <div class="flex-1 min-w-[160px]">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Facility Type</label>
@@ -413,6 +424,7 @@
             'officer_id' => request('officer_id') ? ['label' => 'Officer: ' . ($officers->firstWhere('id', request('officer_id'))?->name ?? request('officer_id')), 'key' => 'officer_id'] : null,
             'status' => request('status') ? ['label' => 'Status: ' . ucfirst(request('status')), 'key' => 'status'] : null,
             'admin_status' => request('admin_status') ? ['label' => 'Admin Status: ' . ucfirst(str_replace('_', ' ', request('admin_status'))), 'key' => 'admin_status'] : null,
+            'show_on_website' => request()->has('show_on_website') && request('show_on_website') !== '' ? ['label' => 'Website: ' . (request('show_on_website') === '1' ? 'Shown' : 'Hidden'), 'key' => 'show_on_website'] : null,
             'facility_type' => request('facility_type') ? ['label' => 'Type: ' . request('facility_type'), 'key' => 'facility_type'] : null,
             'city' => request('city') ? ['label' => 'City: ' . request('city'), 'key' => 'city'] : null,
             'date_from' => request('date_from') ? ['label' => 'From: ' . request('date_from'), 'key' => 'date_from'] : null,
@@ -476,6 +488,8 @@
                             Status</th>
                         <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                             Admin Status</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                            Website</th>
                         <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                             Submitted</th>
                         <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
@@ -549,6 +563,17 @@
                                     {{ $adminLabel }}
                                 </span>
                             </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                @if($entry->show_on_website)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        Shown
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                        Hidden
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                                 {{ $entry->submitted_at?->format('d M Y') ?? '—' }}
                             </td>
@@ -565,7 +590,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-16 text-center">
+                            <td colspan="12" class="px-6 py-16 text-center">
                                 <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
