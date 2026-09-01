@@ -43,4 +43,11 @@ return [
         'access_token' => env('MAPPLS_ACCESS_TOKEN'),
     ],
 
+    'otp' => [
+        'user_id'     => env('SMS_PROVIDER_USER_ID', env('OTP_USER_ID')),
+        'password'    => env('SMS_PROVIDER_PASSWORD', env('OTP_PASSWORD')),
+        'sender_id'   => env('SMS_PROVIDER_SENDER_ID', env('OTP_SENDER_ID', 'NULAC')),
+        'template_id' => env('SMS_PROVIDER_OTP_TEMPLATE_ID', env('OTP_TEMPLATE_ID')),
+    ],
+
 ];

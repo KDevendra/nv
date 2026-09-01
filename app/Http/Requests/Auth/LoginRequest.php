@@ -41,21 +41,41 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // Determine if the login field is email or phone
-        $loginField = $this->input('login_field');
+        $loginField = trim($this->input('login_field'));
         $isEmail = filter_var($loginField, FILTER_VALIDATE_EMAIL);
-        
-        $credentials = [
-            $isEmail ? 'email' : 'phone' => $loginField,
-            'password' => $this->input('password')
-        ];
+
+        if ($isEmail) {
+            $credentials = [
+                'email' => $loginField,
+                'password' => $this->input('password')
+            ];
+        } else {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $loginField);
+            if (strlen($cleanPhone) === 12 && str_starts_with($cleanPhone, '91')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            }
+            $credentials = [
+                'phone' => $cleanPhone,
+                'password' => $this->input('password')
+            ];
+        }
 
         if (! Auth::attempt($credentials, $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            // Fallback check matching email or phone directly
+            $user = \App\Models\User::where('email', $loginField)
+                ->orWhere('phone', $loginField)
+                ->orWhere('phone', preg_replace('/[^0-9]/', '', $loginField))
+                ->first();
 
-            throw ValidationException::withMessages([
-                'login_field' => trans('auth.failed'),
-            ]);
+            if ($user && \Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+                Auth::login($user, $this->boolean('remember'));
+            } else {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'login_field' => trans('auth.failed'),
+                ]);
+            }
         }
 
         // Check if the authenticated user is active
