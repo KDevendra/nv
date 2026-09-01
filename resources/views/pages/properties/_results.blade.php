@@ -35,8 +35,6 @@
 </template>
 
 <!-- Property Cards — property_entries only, type-aware -->
-<p class="apw-listSub" style="margin-bottom:12px">Showing {{ $properties->count() }} of {{ $properties->total() }} properties</p>
-
 @if ($properties->count() > 0)
     <div class="apw-cardGrid">
         @foreach ($properties as $entry)

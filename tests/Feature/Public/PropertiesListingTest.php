@@ -281,20 +281,5 @@ class PropertiesListingTest extends TestCase
 
         $response->assertSee('Mumbai');
         $response->assertDontSee('GhostCity');
-        $response->assertDontSee('GhostLocality');
-        $response->assertDontSee('GhostBuilder');
-        $response->assertDontSee('GhostStatus');
-    }
-
-    /** @test */
-    public function locality_options_are_scoped_to_the_selected_city(): void
-    {
-        $this->liveEntry(['property_name' => 'A', 'city' => 'Mumbai', 'locality_broad_area' => 'Bandra West']);
-        $this->liveEntry(['property_name' => 'B', 'city' => 'Pune', 'locality_broad_area' => 'Koregaon Park']);
-
-        $response = $this->get(route('properties.index', ['city' => 'Mumbai']));
-
-        $response->assertSee('Bandra West');
-        $response->assertDontSee('Koregaon Park');
     }
 }

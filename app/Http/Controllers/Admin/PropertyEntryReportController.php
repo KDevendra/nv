@@ -63,6 +63,8 @@ class PropertyEntryReportController extends Controller
         $zones = \App\Models\Zone::ordered()->get(['id', 'name']);
 
         $statuses      = ['draft', 'submitted', 'verified', 'recheck', 'rejected'];
+        $adminStatuses = PropertyEntry::whereNotNull('admin_status')
+            ->distinct()->orderBy('admin_status')->pluck('admin_status');
         $facilityTypes = PropertyEntry::whereNotNull('facility_type')
             ->distinct()->orderBy('facility_type')->pluck('facility_type');
         $cities        = PropertyEntry::whereNotNull('nearest_city')
@@ -72,7 +74,7 @@ class PropertyEntryReportController extends Controller
 
         return view('admin.property-entry-report.index', compact(
             'summary', 'entries', 'supplyHeads', 'officers', 'officersBySupplyHead',
-            'zones', 'statuses', 'facilityTypes', 'cities', 'analytics'
+            'zones', 'statuses', 'adminStatuses', 'facilityTypes', 'cities', 'analytics'
         ));
     }
 
@@ -104,7 +106,7 @@ class PropertyEntryReportController extends Controller
     private function filterCacheKey(Request $request, string $suffix): string
     {
         $filters = $request->only([
-            'supply_head_id', 'officer_id', 'zone_id', 'status',
+            'search', 'supply_head_id', 'officer_id', 'zone_id', 'status', 'admin_status',
             'facility_type', 'property_type', 'field_verified', 'city',
             'date_from', 'date_to',
         ]);
@@ -296,6 +298,21 @@ class PropertyEntryReportController extends Controller
     {
         $query = PropertyEntry::with(['fieldOfficer', 'supplyHead', 'zone']);
 
+        if (!in_array('search', $excluding) && $request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('property_name', 'like', "%{$search}%")
+                  ->orWhere('owner_contact_name', 'like', "%{$search}%")
+                  ->orWhere('owner_contact_phone', 'like', "%{$search}%")
+                  ->orWhere('submitter_full_name', 'like', "%{$search}%")
+                  ->orWhere('locality_broad_area', 'like', "%{$search}%")
+                  ->orWhere('name_full_address', 'like', "%{$search}%")
+                  ->orWhere('nearest_city', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%");
+            });
+        }
+
         if (!in_array('supply_head_id', $excluding) && $request->filled('supply_head_id')) {
             $query->where('supply_head_id', $request->supply_head_id);
         }
@@ -310,6 +327,23 @@ class PropertyEntryReportController extends Controller
 
         if (!in_array('status', $excluding) && $request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if (!in_array('admin_status', $excluding) && $request->filled('admin_status')) {
+            $adminStatus = $request->admin_status;
+            if ($adminStatus === 'approved') {
+                $query->where('admin_status', 'approved');
+            } elseif ($adminStatus === 'pending' || $adminStatus === 'not_approved') {
+                $query->where(function ($q) {
+                    $q->whereNull('admin_status')
+                      ->orWhere('admin_status', 'pending')
+                      ->orWhere('admin_status', '!=', 'approved');
+                });
+            } elseif ($adminStatus === 'rejected') {
+                $query->where('admin_status', 'rejected');
+            } else {
+                $query->where('admin_status', $adminStatus);
+            }
         }
 
         if (!in_array('property_type', $excluding) && $request->filled('property_type')) {

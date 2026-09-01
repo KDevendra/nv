@@ -256,6 +256,7 @@
                             this.actionedBy      = d.actioned_by;
                             this.actionedAt      = d.actioned_at;
                             this.showApproveModal = false;
+                            window.location.reload();
                         } else { alert(d.message || 'Failed.'); }
                     })
                     .catch(() => alert('Network error.'))
@@ -280,6 +281,7 @@
                             this.actionedBy      = d.actioned_by;
                             this.actionedAt      = d.actioned_at;
                             this.showRejectModal = false;
+                            window.location.reload();
                         } else { alert(d.message || 'Failed.'); }
                     })
                     .catch(() => alert('Network error.'))

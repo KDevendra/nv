@@ -343,7 +343,7 @@
 
         .apw-resiFilter {
             position: sticky;
-            top: 18px;
+            top: 85px;
             border-radius: 10px;
             background: #0b2c3d;
             color: #fbf8f2;
@@ -460,6 +460,14 @@
         .apw-filterApply:hover {
             transform: translateY(-1px);
             filter: brightness(1.02);
+        }
+
+        .apw-filterApply:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+            transform: none;
+            filter: none;
+            box-shadow: none;
         }
 
         .apw-filterNote {
@@ -1245,7 +1253,7 @@
                     <div class="apw-filterHead">
                         <div class="apw-filterTitleWrap">
                             <h2 class="apw-filterTitle">Filter</h2>
-                            <p class="apw-filterSub">Quickly refine by budget, location & type.</p>
+                            <p class="apw-filterSub">Quickly refine by location & type.</p>
                         </div>
 
                         <button type="button" class="apw-filterReset" @click.prevent="resetFilters()"
@@ -1259,7 +1267,7 @@
                         <div class="apw-field">
                             <label class="apw-label" for="city">City</label>
                             <div class="apw-selectWrap">
-                                <select id="city" name="city" class="apw-select" x-model="city" @change="onCityChange()">
+                                <select id="city" name="city" class="apw-select" x-model="city" @change="applyFilters()">
                                     <option value="">All Cities</option>
                                     @foreach ($cities as $city)
                                         <option value="{{ $city }}" {{ request('city') === $city ? 'selected' : '' }}>
@@ -1276,28 +1284,7 @@
                             </div>
                         </div>
 
-                        <!-- Location (locality, scoped to selected city) -->
-                        <div class="apw-field">
-                            <label class="apw-label" for="locality">Location</label>
-                            <div class="apw-selectWrap">
-                                <select id="locality" name="locality" class="apw-select" x-model="locality" @change="applyFilters()">
-                                    <option value="">All Locations</option>
-                                    @foreach ($localities as $locality)
-                                        <option value="{{ $locality }}" {{ request('locality') === $locality ? 'selected' : '' }}>
-                                            {{ $locality }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <span class="apw-selectSvg" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                        <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Property Type (the 13 real wizard types) -->
+                        <!-- Property Type -->
                         <div class="apw-field">
                             <label class="apw-label" for="property_type_slug">Property Type</label>
                             <div class="apw-selectWrap">
@@ -1319,69 +1306,9 @@
                             </div>
                         </div>
 
-                        <!-- Availability (public-facing construction/listing status, NOT internal workflow status) -->
-                        @if ($constructionStatuses->isNotEmpty())
-                            <div class="apw-field">
-                                <label class="apw-label" for="construction_status">Availability</label>
-                                <div class="apw-selectWrap">
-                                    <select id="construction_status" name="construction_status" class="apw-select" x-model="construction_status" @change="applyFilters()">
-                                        <option value="">Any Availability</option>
-                                        @foreach ($constructionStatuses as $status)
-                                            <option value="{{ $status }}"
-                                                {{ request('construction_status') === $status ? 'selected' : '' }}>
-                                                {{ $status }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <span class="apw-selectSvg" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                            <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Builder -->
-                        @if ($builders->isNotEmpty())
-                            <div class="apw-field">
-                                <label class="apw-label" for="builder">Builder</label>
-                                <div class="apw-selectWrap">
-                                    <select id="builder" name="builder" class="apw-select" x-model="builder" @change="applyFilters()">
-                                        <option value="">All Builders</option>
-                                        @foreach ($builders as $builder)
-                                            <option value="{{ $builder }}" {{ request('builder') === $builder ? 'selected' : '' }}>
-                                                {{ $builder }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <span class="apw-selectSvg" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                                            <path d="M7 10l5 5 5-5" stroke="#b39359" stroke-width="1.8"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                        @endif
-
                         <button type="submit" class="apw-filterApply" :disabled="loading" @click.prevent="applyFilters()">
-                            <span x-show="!loading" style="display: inline-flex; align-items: center; gap: 10px;">
-                                Apply Filters
-                            </span>
-                            <span x-show="loading" x-cloak style="display: inline-flex; align-items: center; gap: 8px;">
-                                <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle>
-                                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75;"></path>
-                                </svg>
-                                Applying...
-                            </span>
+                            <span x-text="loading ? 'Applying...' : 'Apply Filters'">Apply Filters</span>
                         </button>
-
-                        <p class="apw-filterNote">
-                            Tip: Use "Location + Budget" for best matching results.
-                        </p>
                     </form>
                 </aside>
 

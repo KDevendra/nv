@@ -75,7 +75,37 @@ class HomeController extends Controller
 
         $selectedPropertyTypeKey = $request->filled('property_type_slug') ? $request->property_type_slug : null;
         if ($selectedPropertyTypeKey) {
-            $query->where('property_type', $selectedPropertyTypeKey);
+            if ($selectedPropertyTypeKey === 'warehouse' || $selectedPropertyTypeKey === 'warehousing') {
+                $query->where(function ($q) {
+                    $q->where('property_type', 'warehouse')
+                      ->orWhere('facility_type', 'Warehouse')
+                      ->orWhere('facility_type', 'like', '%warehouse%');
+                });
+            } elseif ($selectedPropertyTypeKey === 'residential') {
+                $residentialTypes = ['apartment_flat_studio', 'house_villa_farmhouse', 'builder_floor', 'residential_plot_land', 'service_apartment_pg'];
+                $query->where(function ($q) use ($residentialTypes) {
+                    $q->whereIn('property_type', $residentialTypes)
+                      ->orWhere('facility_type', 'like', '%residential%');
+                });
+            } elseif ($selectedPropertyTypeKey === 'commercial') {
+                $commercialTypes = [
+                    'office_space', 'retail_shop_showroom', 'sez_eou_stpi_unit',
+                    'factory_manufacturing_industrial', 'commercial_institutional_land',
+                    'agricultural_farm_land', 'multi_tenant_building', 'hotel_resort_guesthouse_banquet'
+                ];
+                $query->where(function ($q) use ($commercialTypes) {
+                    $q->whereIn('property_type', $commercialTypes)
+                      ->orWhere('facility_type', 'like', '%commercial%')
+                      ->orWhere('facility_type', 'Commercial Space')
+                      ->orWhere('facility_type', 'Industrial Shed')
+                      ->orWhere('facility_type', 'Factory');
+                });
+            } else {
+                $query->where(function ($q) use ($selectedPropertyTypeKey) {
+                    $q->where('property_type', $selectedPropertyTypeKey)
+                      ->orWhere('facility_type', 'like', "%{$selectedPropertyTypeKey}%");
+                });
+            }
         }
 
         if ($request->filled('city')) {
@@ -137,9 +167,25 @@ class HomeController extends Controller
             ->distinct()->orderBy('locality_broad_area')->pluck('locality_broad_area');
 
         $propertyTypeOptions = $filterBase()
-            ->whereNotNull('property_type')
-            ->distinct()->pluck('property_type')
-            ->map(fn ($key) => ['key' => $key, 'label' => config("property_types.types.{$key}.label", $key)])
+            ->where(function ($q) {
+                $q->whereNotNull('property_type')->orWhereNotNull('facility_type');
+            })
+            ->get(['property_type', 'facility_type'])
+            ->map(function ($entry) {
+                if ($entry->property_type) {
+                    return $entry->property_type;
+                }
+                if ($entry->facility_type) {
+                    $fac = strtolower($entry->facility_type);
+                    if (str_contains($fac, 'warehouse')) return 'warehouse';
+                    if (str_contains($fac, 'commercial')) return 'office_space';
+                    if (str_contains($fac, 'factory') || str_contains($fac, 'industrial')) return 'factory_manufacturing_industrial';
+                }
+                return null;
+            })
+            ->filter()
+            ->unique()
+            ->map(fn ($key) => ['key' => $key, 'label' => config("property_types.types.{$key}.label", ucfirst(str_replace('_', ' ', $key)))])
             ->sortBy('label')->values();
 
         $constructionStatuses = $filterBase()
