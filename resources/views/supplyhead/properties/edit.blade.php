@@ -1,5 +1,5 @@
 @extends('layouts.field')
-@section('title', 'Continue Draft — ' . $property->code)
+@section('title', 'Continue Draft — ' . ($property?->code ?? ''))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -8,7 +8,7 @@
         <div>
             <h2 class="text-2xl font-heading text-zendo-navy font-semibold">Continue Draft</h2>
             <p class="text-gray-500 text-sm mt-1">
-                Code: <span class="font-mono font-medium">{{ $property->code }}</span>
+                Code: <span class="font-mono font-medium">{{ $property?->code ?? '—' }}</span>
                 — finish the sections and submit when ready
             </p>
         </div>
@@ -32,6 +32,7 @@
 
     @include('field.properties._error-stepper')
 
+    @if($property)
     <form method="POST" action="{{ route('supplyhead.properties.update', $property) }}" enctype="multipart/form-data" x-data="{ isDraft: false }">
         @csrf
         @method('PUT')
@@ -40,6 +41,7 @@
 
         {{-- Buttons are in the wizard nav bar inside _form.blade.php --}}
     </form>
+    @endif
 
 </div>
 @endsection

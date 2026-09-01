@@ -194,7 +194,6 @@ class PropertyEntryController extends Controller
         }
 
         $property->load('photos');
-        $property = null;
         $slots = self::PHOTO_SLOTS;
 
         return view('field.properties.show', compact('property', 'slots'));
@@ -211,7 +210,6 @@ class PropertyEntryController extends Controller
         abort_if(!$property->isEditable(), 403, 'This entry cannot be edited. It may have been permanently rejected or is in a non-editable state.');
 
         $property->load(['photos', 'fieldReviews']);
-        $property = null;
         $slots = self::PHOTO_SLOTS;
         $fieldConfigs = PropertyFieldConfig::allKeyed();
 
