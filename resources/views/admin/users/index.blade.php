@@ -188,7 +188,12 @@
                                                 <span class="text-xs text-zendo-gold font-medium">(You)</span>
                                             @endif
                                         </div>
-                                        <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $user->email }}
+                                            @if($user->phone)
+                                                <span class="text-gray-400">&bull;</span> {{ $user->phone }}
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </td>

@@ -70,6 +70,20 @@
                     </div>
 
                     <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="text" 
+                               name="phone" 
+                               id="phone" 
+                               value="{{ old('phone', $user->phone) }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('phone') border-red-500 @enderror"
+                               placeholder="Enter phone number"
+                               required>
+                        @error('phone')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                         <select name="role" id="role"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-zendo-gold focus:border-transparent @error('role') border-red-500 @enderror select2-role"

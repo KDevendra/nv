@@ -80,6 +80,10 @@
                         <p class="text-base font-medium text-gray-900">{{ $user->email }}</p>
                     </div>
                     <div>
+                        <p class="text-sm text-gray-600 mb-1">Phone Number</p>
+                        <p class="text-base font-medium text-gray-900">{{ $user->phone ?? '—' }}</p>
+                    </div>
+                    <div>
                         <p class="text-sm text-gray-600 mb-1">User ID</p>
                         <p class="text-base font-medium text-gray-900">#{{ $user->id }}</p>
                     </div>

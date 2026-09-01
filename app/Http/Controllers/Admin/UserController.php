@@ -55,7 +55,8 @@ class UserController extends Controller
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                  ->orWhere('email', 'like', '%' . $request->search . '%')
+                  ->orWhere('phone', 'like', '%' . $request->search . '%');
             });
         }
         
@@ -88,6 +89,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'division' => $this->resolveDivision($request),
@@ -122,6 +124,7 @@ class UserController extends Controller
                 'required', 'string', 'email', 'max:255',
                 $user ? Rule::unique('users')->ignore($user->id) : 'unique:users',
             ],
+            'phone' => ['required', 'string', 'max:20'],
             'password' => $user
                 ? ['nullable', 'string', 'min:8', 'confirmed']
                 : ['required', 'string', 'min:8', 'confirmed'],
@@ -234,6 +237,7 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'role' => $request->role,
             'division' => $this->resolveDivision($request),
             'supply_head_id' => null,
