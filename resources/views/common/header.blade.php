@@ -70,8 +70,8 @@
 
                 <!-- User Authentication -->
                 @if (Route::has('login'))
-                    @auth
-                        <!-- User Dropdown -->
+                    @if (Auth::check() && in_array(Auth::user()->role, ['owner', 'user']))
+                        <!-- User Dropdown (Owner & User only) -->
                         <div class="relative group ml-4">
                             <button class="header-nav-link font-highlight font-medium flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,15 @@
                             </button>
                             <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
                                 <div class="py-2">
-                                    @if(Auth::user()->role === 'user')
+                                    @if(Auth::user()->role === 'owner')
+                                        <a href="{{ route('owner.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">
+                                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v0M8 5a2 2 0 012-2h4a2 2 0 012 2v0"></path>
+                                            </svg>
+                                            Dashboard
+                                        </a>
+                                    @elseif(Auth::user()->role === 'user')
                                         <a href="{{ route('user.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">
                                             <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -103,14 +111,6 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                             </svg>
                                             My Inquiries
-                                        </a>
-                                    @else
-                                        <a href="{{ url('/dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-zendo-light-bg hover:text-zendo-navy transition-colors">
-                                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v0M8 5a2 2 0 012-2h4a2 2 0 012 2v0"></path>
-                                            </svg>
-                                            Dashboard
                                         </a>
                                     @endif
                                     <div class="border-t border-gray-100"></div>
@@ -141,7 +141,7 @@
                                 Register
                             </a>
                         @endif
-                    @endauth
+                    @endif
                 @endif
                 
                 <a href="tel:+917494010101"
@@ -231,7 +231,7 @@
                 Us</a>
 
             @if (Route::has('login'))
-                @auth
+                @if (Auth::check() && in_array(Auth::user()->role, ['owner', 'user']))
                     <div class="border-t border-gray-200 mt-4 pt-4">
                         <div class="flex items-center px-3 py-2 mb-3">
                             <svg class="w-5 h-5 mr-2 text-zendo-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +239,12 @@
                             </svg>
                             <span class="font-highlight font-semibold text-zendo-navy">{{ Auth::user()->name }}</span>
                         </div>
-                        @if(Auth::user()->role === 'user')
+                        @if(Auth::user()->role === 'owner')
+                            <a href="{{ route('owner.dashboard') }}"
+                                class="block px-3 py-2 rounded-md font-highlight font-semibold text-gray-700 hover:bg-gray-100 hover:text-zendo-navy">
+                                Dashboard
+                            </a>
+                        @elseif(Auth::user()->role === 'user')
                             <a href="{{ route('user.dashboard') }}"
                                 class="block px-3 py-2 rounded-md font-highlight font-semibold text-gray-700 hover:bg-gray-100 hover:text-zendo-navy">
                                 Dashboard
@@ -251,11 +256,6 @@
                             <a href="{{ route('user.inquiries') }}"
                                 class="block px-3 py-2 rounded-md font-highlight font-semibold text-gray-700 hover:bg-gray-100 hover:text-zendo-navy">
                                 My Inquiries
-                            </a>
-                        @else
-                            <a href="{{ url('/dashboard') }}"
-                                class="block px-3 py-2 rounded-md font-highlight font-semibold text-gray-700 hover:bg-gray-100 hover:text-zendo-navy">
-                                Dashboard
                             </a>
                         @endif
                         <form method="POST" action="{{ route('logout') }}" class="mt-2">
@@ -278,7 +278,7 @@
                             </a>
                         @endif
                     </div>
-                @endauth
+                @endif
             @else
                 <a href="tel:+917494010101"
                     class="w-full text-center mt-2 px-5 py-3 rounded-full font-highlight font-semibold shadow-lg transition-all btn-anim btn-light-bg">
