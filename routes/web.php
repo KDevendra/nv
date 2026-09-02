@@ -272,6 +272,8 @@ Route::middleware('auth')->group(function () {
         Route::get('property-entry-report', [PropertyEntryReportController::class, 'index'])->name('property-entry-report.index');
         Route::get('property-entry-report/export', [PropertyEntryReportController::class, 'export'])->name('property-entry-report.export');
         Route::get('property-entry-report/{entry}', [PropertyEntryReportController::class, 'show'])->name('property-entry-report.show');
+        Route::get('property-entry-report/{entry}/edit', [PropertyEntryReportController::class, 'edit'])->name('property-entry-report.edit');
+        Route::put('property-entry-report/{entry}', [PropertyEntryReportController::class, 'update'])->name('property-entry-report.update');
         Route::post('property-entry-report/{entry}/toggle-website', [PropertyEntryReportController::class, 'toggleWebsite'])->name('property-entry-report.toggle-website');
         Route::post('property-entry-report/{entry}/admin-approve', [PropertyEntryReportController::class, 'adminApprove'])->name('property-entry-report.admin-approve');
         Route::post('property-entry-report/{entry}/admin-reject', [PropertyEntryReportController::class, 'adminReject'])->name('property-entry-report.admin-reject');

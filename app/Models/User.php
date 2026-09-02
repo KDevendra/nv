@@ -358,7 +358,8 @@ class User extends Authenticatable
     public function getDashboardUrl(): string
     {
         return match ($this->role) {
-            'supply_head', 'field_officer' => route('field.dashboard'),
+            'supply_head'                => route('supplyhead.properties.index'),
+            'field_officer'              => route('field.dashboard'),
             'sales_executive'            => route('se.leads.index'),
             'chief_coordinator'          => route('cc.leads.index'),
             'owner'                      => route('owner.dashboard'),

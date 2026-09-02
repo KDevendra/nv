@@ -15,8 +15,13 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if ($user) {
-            if (in_array($user->role, ['supply_head', 'field_officer'])) {
+
+            if ($user->role === 'field_officer') {
                 return redirect()->route('field.dashboard');
+            }
+
+            if ($user->role === 'supply_head') {
+                return redirect()->route('supplyhead.properties.index');
             }
 
             if ($user->role === 'sales_executive') {

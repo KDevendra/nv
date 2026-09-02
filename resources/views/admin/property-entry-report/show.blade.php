@@ -166,13 +166,22 @@
                 </p>
             @endif
         </div>
-        <a href="{{ route('admin.property-entry-report.index', request()->query()) }}"
-            class="inline-flex items-center text-sm text-gray-500 hover:text-zendo-navy transition-colors flex-shrink-0">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            Back to Report
-        </a>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <a href="{{ route('admin.property-entry-report.edit', $entry) }}"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-zendo-gold text-zendo-navy hover:bg-amber-400 transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Entry
+            </a>
+            <a href="{{ route('admin.property-entry-report.index', request()->query()) }}"
+                class="inline-flex items-center text-sm text-gray-500 hover:text-zendo-navy transition-colors px-2 py-1">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Report
+            </a>
+        </div>
     </div>
 
     {{-- Submitted Location — captured from the field officer's device at submit time --}}
@@ -226,7 +235,7 @@
     @endif
 
     {{-- ── Admin Approve / Reject Panel ─────────────────────────────────────── --}}
-    @if($entry->status === 'verified')
+    @if(true)
         <div
             x-data="{
                 adminStatus: '{{ $entry->admin_status ?? '' }}',

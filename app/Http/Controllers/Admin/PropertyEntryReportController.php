@@ -6,9 +6,12 @@ use App\Exports\PropertyEntriesExport;
 use App\Http\Controllers\Controller;
 use App\Models\PropertyEntry;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -373,17 +376,88 @@ class PropertyEntryReportController extends Controller
         return $query;
     }
 
+    // ── Admin Edit Form ───────────────────────────────────────────────────────
+
+    public function edit(PropertyEntry $entry): View
+    {
+        $entry->load(['photos', 'fieldReviews', 'fieldOfficer', 'supplyHead', 'zone']);
+        $property = $entry;
+        $slots = self::PHOTO_SLOTS;
+        $fieldConfigs = \App\Models\PropertyFieldConfig::allKeyed();
+        $fieldRemarks = [];
+        $correctFields = [];
+
+        return view('admin.property-entry-report.edit', compact(
+            'entry', 'property', 'slots', 'fieldConfigs', 'fieldRemarks', 'correctFields'
+        ));
+    }
+
+    // ── Admin Update Processing ───────────────────────────────────────────────
+
+    public function update(Request $request, PropertyEntry $entry): RedirectResponse
+    {
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300);
+
+        $input = $request->except(['_token', '_method', 'action', 'photos']);
+
+        if (isset($input['office_sizes']) && is_string($input['office_sizes'])) {
+            $input['office_sizes'] = json_decode($input['office_sizes'], true) ?: [];
+        }
+
+        if ($request->has('show_on_website')) {
+            $input['show_on_website'] = $request->boolean('show_on_website');
+        }
+
+        if ($request->filled('admin_status')) {
+            $input['admin_status']      = $request->input('admin_status');
+            $input['admin_actioned_at'] = now();
+            $input['admin_actioned_by'] = $request->user()->id;
+        }
+
+        if ($request->has('admin_note')) {
+            $input['admin_note'] = $request->input('admin_note');
+        }
+
+        // Separate real database columns vs custom_fields payload
+        $fillable = $entry->getFillable();
+        $realData = [];
+        $customFields = $entry->customFieldsArray();
+
+        foreach ($input as $key => $val) {
+            if (in_array($key, $fillable)) {
+                $realData[$key] = $val;
+            } else {
+                $customFields[$key] = $val;
+            }
+        }
+
+        if (!empty($customFields)) {
+            $realData['custom_fields'] = json_encode($customFields);
+        }
+
+        $entry->update($realData);
+
+        // Handle photo uploads if provided
+        if ($request->hasFile('photos')) {
+            $this->handlePhotos($entry, $request);
+        }
+
+        // Log admin edit action
+        $entry->logs()->create([
+            'user_id' => $request->user()->id,
+            'action'  => 'admin_edited',
+            'note'    => 'Property entry updated by admin.',
+        ]);
+
+        return redirect()->route('admin.property-entry-report.show', $entry)
+            ->with('success', 'Property entry updated successfully by admin. Code: ' . $entry->code);
+    }
+
     // ── Admin Approve ─────────────────────────────────────────────────────────
 
     public function adminApprove(Request $request, PropertyEntry $entry)
     {
-        if ($entry->status !== 'verified') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only supply-head verified entries can be approved by admin.',
-            ], 422);
-        }
-
         $entry->admin_status      = 'approved';
         $entry->admin_note        = $request->input('note');
         $entry->admin_actioned_at = now();
@@ -410,13 +484,6 @@ class PropertyEntryReportController extends Controller
 
     public function adminReject(Request $request, PropertyEntry $entry)
     {
-        if ($entry->status !== 'verified') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only supply-head verified entries can be rejected by admin.',
-            ], 422);
-        }
-
         $request->validate(['note' => 'required|string|max:1000']);
 
         $entry->admin_status      = 'rejected';
@@ -465,6 +532,55 @@ class PropertyEntryReportController extends Controller
                 ? 'Property entry is now visible on the website.'
                 : 'Property entry is now hidden from the website.',
         ]);
+    }
+
+    // ── Helper: Handle Photo Uploads ──────────────────────────────────────────
+
+    private function handlePhotos(PropertyEntry $entry, Request $request): void
+    {
+        if (!$request->hasFile('photos')) {
+            return;
+        }
+
+        $manager = new ImageManager(new Driver());
+
+        foreach (self::PHOTO_SLOTS as $index => $slotLabel) {
+            $inputKey = 'photos.' . $index;
+
+            if (!$request->hasFile($inputKey)) {
+                continue;
+            }
+
+            $file = $request->file($inputKey);
+
+            $image = $manager->read($file->getRealPath());
+            $webpData = $image->toWebp(75)->toString();
+
+            $publicPath = public_path('images/property_photos');
+            if (!file_exists($publicPath)) {
+                mkdir($publicPath, 0755, true);
+            }
+
+            $filename = $entry->id . '_' . $index . '_' . time() . '.webp';
+            $fullPath = $publicPath . '/' . $filename;
+            file_put_contents($fullPath, $webpData);
+
+            $old = $entry->photos()->where('slot_label', $slotLabel)->first();
+            if ($old) {
+                $oldPath = public_path('images/property_photos/' . basename($old->file_path));
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+                $old->delete();
+            }
+
+            $entry->photos()->create([
+                'slot_label' => $slotLabel,
+                'file_path'  => 'images/property_photos/' . $filename,
+                'mime_type'  => 'image/webp',
+                'file_size'  => strlen($webpData),
+            ]);
+        }
     }
 
 }
